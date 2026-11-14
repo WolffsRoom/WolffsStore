@@ -30,7 +30,7 @@ Automated scheduled builds happen every 12 hours. They can be delayed or skipped
 
 - HTML attributes such as width="48" and height="50" are retained; tables and centered content use old-style HTML and basic CSS suitable for PS Vita.
 - GIFs are mirrored as animated GIFs (not static PNGs), with resizing and frame-duration preservation for large files.
-- SVGs and badges are rasterized into PNGs so the browser does not need native SVG support.
+- Shields.io badges are rendered as lightweight HTML/CSS labels (with readable native text and the original badge colors), avoiding low-resolution SVG text on the Vita. Ordinary SVG illustrations are still converted into PNG.
 - Images use local URLs in the generated Pages artifact, improving TLS compatibility versus loading third-party assets directly.
 - All content is rendered server-side in the build process using Python. GitHub Pages **cannot** run Python requests or dynamic APIs on each Vita page load.
 

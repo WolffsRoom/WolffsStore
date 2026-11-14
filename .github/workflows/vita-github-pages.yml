@@ -33,6 +33,8 @@ jobs:
           cache-dependency-path: vita-github/requirements.txt
       - name: Install generator dependencies
         run: pip install -r vita-github/requirements.txt
+      - name: Test readable Shields.io badges
+        run: python -m unittest discover -s vita-github/tests -p 'test_*.py' -v
       - name: Generate PS Vita-compatible static pages
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -44,6 +46,8 @@ jobs:
           test -s _site/WolffsRoom/WolffsStore/index.html
           test -s _site/WolffsRoom/DeltaruneVita/index.html
           test -s _site/WolffsRoom/DeltaruneVita/releases/index.html
+          test -s _site/WolffsRoom/FileManager/index.html
+          grep -q 'vita-badge' _site/WolffsRoom/FileManager/index.html
           if grep -Rqi '<script' _site --include='*.html'; then echo 'Unexpected script tag'; exit 1; fi
       - name: Configure Pages
         uses: actions/configure-pages@v5

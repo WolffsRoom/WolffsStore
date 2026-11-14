@@ -11,7 +11,7 @@ import sys
 from collections import defaultdict
 from math import ceil
 from pathlib import Path
-from urllib.parse import quote, unquote, urlparse
+from urllib.parse import quote, unquote, urlparse, parse_qs
 from xml.etree import ElementTree
 
 import cairosvg
@@ -148,6 +148,104 @@ def safe_image_source(src, owner, repo, branch, context):
     return src
 
 
+def shields_badge_data(src, alt):
+    """Return native-text badge metadata instead of blurry SVG bitmap text.
+
+    GitHub's Shields.io banners are mostly SVG text and flat color blocks.
+    On the stock Vita WebKit, rasterized 10px lettering can become illegible,
+    so we render their labels as HTML text, retaining the theme colors.
+    """
+    src = html.unescape(str(src or "").strip())
+    parsed = urlparse(src)
+    if parsed.scheme != "https" or (parsed.hostname or "").lower() != "img.shields.io":
+        return None
+
+    label, value, color = "", "", "#4c9aff"
+    route = unquote(parsed.path)
+    query = parse_qs(parsed.query)
+    if route.startswith("/badge/"):
+        # Shields.io escapes literal hyphens with "--" in static badges.
+        slug = route[len("/badge/"):].replace("--", "\u0001")
+        parts = [p.replace("\u0001", "-").replace("_", " ") for p in slug.split("-")]
+        if len(parts) >= 3:
+            label, value, color_spec = parts[0], "-".join(parts[1:-1]), parts[-1]
+            color = badge_color(color_spec)
+    else:
+        bits = [b for b in route.strip("/").split("/") if b]
+        label = (bits[1] if len(bits) > 1 else "status").replace("_", " ")
+        value = str(alt or "").strip()
+        if value.lower().endswith(" license"):
+            value = value[:-8].strip()
+        if value.lower() == label.lower():
+            value = ""
+        color = badge_color(query.get("color", [""])[0])
+
+    # Dynamic badges (license/download count/version) must read the value from
+    # the actual SVG when possible. Static badge URLs need no extra request.
+    if not route.startswith("/badge/"):
+        try:
+            r = SESSION.get(src, timeout=12, headers={"Accept": "image/svg+xml"})
+            r.raise_for_status()
+            if len(r.content) < 300_000 and r.content.lstrip().startswith(b"<svg"):
+                root = ElementTree.fromstring(r.content)
+                texts = []
+                for node in root.iter():
+                    if node.tag.rsplit("}", 1)[-1] == "text":
+                        t = "".join(node.itertext()).strip()
+                        if t and (not texts or texts[-1] != t):
+                            texts.append(t)
+                if len(texts) >= 2:
+                    label, value = texts[0], texts[-1]
+                elif len(texts) == 1:
+                    value = texts[0]
+                elif root.attrib.get("aria-label"):
+                    aria = root.attrib["aria-label"].split(":", 1)
+                    if len(aria) == 2:
+                        label, value = aria[0].strip(), aria[1].strip()
+                if not query.get("color"):
+                    rectangles = [node.attrib.get("fill", "") for node in root.iter()
+                                  if node.tag.rsplit("}", 1)[-1] == "rect"]
+                    candidates = [x for x in rectangles if re.fullmatch(r"#[0-9A-Fa-f]{3,8}", x)]
+                    if len(candidates) >= 2:
+                        color = candidates[1]
+        except (requests.RequestException, ElementTree.ParseError, ValueError) as exc:
+            print("Badge metadata fallback:", src[:100], type(exc).__name__, flush=True)
+
+    if not label:
+        label = "STATUS"
+    if not value:
+        value = str(alt or "").strip() or "unknown"
+    label, value = label[:65], value[:100]
+    return label, value, color
+
+
+def badge_color(raw):
+    """Only accept known-safe color tokens for HTML inline CSS."""
+    raw = str(raw or "").strip().lower().removeprefix("#")
+    common = {"brightgreen": "4c1", "green": "97ca00", "blue": "007ec6",
+              "yellow": "dfb317", "orange": "fe7d37", "red": "e05d44",
+              "lightgrey": "9f9f9f", "lightgray": "9f9f9f",
+              "grey": "555", "gray": "555", "blueviolet": "8a2be2"}
+    raw = common.get(raw, raw)
+    return "#" + raw if re.fullmatch(r"(?:[0-9a-f]{3}|[0-9a-f]{6})", raw) else "#4c9aff"
+
+
+def replace_shields_image(soup, tag):
+    badge = shields_badge_data(tag.get("src", ""), tag.get("alt", ""))
+    if not badge:
+        return False
+    label, value, color = badge
+    container = soup.new_tag("span", attrs={"class": "vita-badge", "title": str(tag.get("alt", ""))})
+    left = soup.new_tag("span", attrs={"class": "vita-badge-label"})
+    left.string = label.upper()
+    right = soup.new_tag("span", attrs={"class": "vita-badge-value", "style": "background-color:" + color})
+    right.string = value.upper()
+    container.append(left)
+    container.append(right)
+    tag.replace_with(container)
+    return True
+
+
 def mirror_image(src, owner, repo, branch, context, page):
     url = safe_image_source(src, owner, repo, branch, context)
     if not url:
@@ -282,6 +380,8 @@ def markdown_html(text, owner, repo, branch, current_dir, page, entries):
             if attribute.lower().startswith("on") or attribute.lower() not in {"href", "src", "alt", "width", "height", "title", "id", "class", "align", "colspan", "rowspan"}:
                 del tag.attrs[attribute]
         if tag.name == "img":
+            if replace_shields_image(soup, tag):
+                continue
             original = tag.get("src", "")
             converted = mirror_image(original, owner, repo, branch, current_dir, page)
             if converted:
@@ -427,7 +527,7 @@ def main():
     REPOS[:] = public_repositories()
     print("Selected public repos:", len(REPOS), [repo for _, repo in REPOS], flush=True)
     (OUT / ".nojekyll").write_text("", encoding="utf-8")
-    (OUT / "style.css").write_text('''*{box-sizing:border-box}body{margin:0;color:#24292f;background:#f6f8fa;font:15px Arial,Helvetica,sans-serif;line-height:1.5}header{background:#24292f;color:white;padding:12px 16px}header a{color:white;text-decoration:none;font-size:19px}header span{color:#c9d1d9}main{max-width:920px;margin:14px auto;background:white;padding:18px;border:1px solid #d0d7de}a{color:#0969da;text-decoration:none}a:hover{text-decoration:underline}h1{font-size:26px;margin:12px 0}h2{font-size:21px}h3{font-size:17px}.tabs,.crumb{padding:10px 0;border-bottom:1px solid #d8dee4;margin-bottom:14px}.tabs a{font-weight:bold}.files{width:100%;border-collapse:collapse;font-size:14px}.files td,.files th{padding:7px 6px;border-bottom:1px solid #d8dee4;text-align:left;word-break:break-word}.files th{background:#f6f8fa}.files td:first-child{width:44px;font-size:11px;color:#57606a}.files td:last-child{width:65px;color:#57606a}.readme{margin-top:18px;border:1px solid #d8dee4;padding:14px;overflow:hidden;word-wrap:break-word}.readme h1,.readme h2{padding-bottom:6px;border-bottom:1px solid #d8dee4}.readme img,.release img{max-width:100%}.readme img[width],.release img[width]{max-width:100%}.readme .align-center,.release .align-center{text-align:center}.readme table.align-center,.release table.align-center{margin-left:auto;margin-right:auto}.table-scroll{max-width:100%;overflow-x:auto}.readme table,.release table{border-collapse:collapse;max-width:100%;table-layout:auto}.readme td,.readme th{vertical-align:middle}.readme table img{max-width:100%}.readme td,.readme th,.release td,.release th{border:1px solid #d8dee4;padding:5px 8px}.readme tr:nth-child(even){background:#f6f8fa}pre{overflow:auto;white-space:pre-wrap;word-wrap:break-word;background:#f6f8fa;border:1px solid #d8dee4;padding:10px;font:12px monospace}.small{color:#57606a;font-size:12px}.release{padding:12px 0;border-bottom:1px solid #d8dee4;overflow:hidden;word-wrap:break-word}.release img{max-width:100%}blockquote{border-left:4px solid #d8dee4;padding-left:12px;color:#57606a;margin-left:0}footer{max-width:920px;margin:18px auto;color:#57606a;font-size:12px;text-align:center}@media(max-width:960px){main{margin:0;padding:10px;border:0}.readme{padding:9px}header{padding:8px}}''', encoding="utf-8")
+    (OUT / "style.css").write_text('''*{box-sizing:border-box}body{margin:0;color:#24292f;background:#f6f8fa;font:15px Arial,Helvetica,sans-serif;line-height:1.5}header{background:#24292f;color:white;padding:12px 16px}header a{color:white;text-decoration:none;font-size:19px}header span{color:#c9d1d9}main{max-width:920px;margin:14px auto;background:white;padding:18px;border:1px solid #d0d7de}a{color:#0969da;text-decoration:none}a:hover{text-decoration:underline}h1{font-size:26px;margin:12px 0}h2{font-size:21px}h3{font-size:17px}.tabs,.crumb{padding:10px 0;border-bottom:1px solid #d8dee4;margin-bottom:14px}.tabs a{font-weight:bold}.files{width:100%;border-collapse:collapse;font-size:14px}.files td,.files th{padding:7px 6px;border-bottom:1px solid #d8dee4;text-align:left;word-break:break-word}.files th{background:#f6f8fa}.files td:first-child{width:44px;font-size:11px;color:#57606a}.files td:last-child{width:65px;color:#57606a}.readme{margin-top:18px;border:1px solid #d8dee4;padding:14px;overflow:hidden;word-wrap:break-word}.readme h1,.readme h2{padding-bottom:6px;border-bottom:1px solid #d8dee4}.vita-badge{display:inline-block;white-space:nowrap;vertical-align:middle;margin:2px 3px;font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:bold;line-height:24px}.vita-badge-label,.vita-badge-value{display:inline-block;color:#fff;padding:0 8px;letter-spacing:.3px}.vita-badge-label{background-color:#555}.readme img,.release img{max-width:100%}.readme img[width],.release img[width]{max-width:100%}.readme .align-center,.release .align-center{text-align:center}.readme table.align-center,.release table.align-center{margin-left:auto;margin-right:auto}.table-scroll{max-width:100%;overflow-x:auto}.readme table,.release table{border-collapse:collapse;max-width:100%;table-layout:auto}.readme td,.readme th{vertical-align:middle}.readme table img{max-width:100%}.readme td,.readme th,.release td,.release th{border:1px solid #d8dee4;padding:5px 8px}.readme tr:nth-child(even){background:#f6f8fa}pre{overflow:auto;white-space:pre-wrap;word-wrap:break-word;background:#f6f8fa;border:1px solid #d8dee4;padding:10px;font:12px monospace}.small{color:#57606a;font-size:12px}.release{padding:12px 0;border-bottom:1px solid #d8dee4;overflow:hidden;word-wrap:break-word}.release img{max-width:100%}blockquote{border-left:4px solid #d8dee4;padding-left:12px;color:#57606a;margin-left:0}footer{max-width:920px;margin:18px auto;color:#57606a;font-size:12px;text-align:center}@media(max-width:960px){main{margin:0;padding:10px;border:0}.readme{padding:9px}header{padding:8px}}''', encoding="utf-8")
     links = []
     for owner, repo in REPOS:
         links.append('<li><a href="' + link(OUT / "index.html", repo_page(owner, repo)) + '">' + esc(owner + "/" + repo) + '</a></li>')
