@@ -34,6 +34,12 @@ static volatile int audio_run;
 static vita2d_texture *frame_tex;
 static int frame_w, frame_h;
 
+static unsigned url_hash(const char *s) {
+    unsigned h = 2166136261u;
+    while (*s) { h ^= (unsigned char)*s++; h *= 16777619u; }
+    return h;
+}
+
 /* ------------------------------------------------------------------ memória dos quadros (GPU) */
 
 #define MAX_BLOCKS 16
@@ -118,15 +124,16 @@ static void start_player(void) {
     in.memoryReplacement.deallocate = mem_free;
     in.memoryReplacement.allocateTexture = gpu_alloc;
     in.memoryReplacement.deallocateTexture = gpu_free;
-    in.basePriority = 0xA0;
-    in.numOutputVideoFrameBuffers = 2;
-    in.autoStart = 1;
+    in.basePriority = 0x10000100;
+    in.numOutputVideoFrameBuffers = 16;
+    in.autoStart = SCE_TRUE;
     player = sceAvPlayerInit(&in);
-    if (player <= 0 || sceAvPlayerAddSource(player, path) < 0) {
+    int add = player > 0 ? sceAvPlayerAddSource(player, path) : (int)player;
+    if (player <= 0 || add < 0) {
         if (player > 0) sceAvPlayerClose(player);
         player = 0;
         snprintf(err, sizeof(err), "O Vita não conseguiu abrir o vídeo (use MP4 H.264 + AAC, até 960x544).");
-        ws_log("video: %s (%s)", err, url_);
+        ws_log("video: init/add 0x%08X, path=%s, url=%s", add, path, url_);
         state = VID_ERROR;
         return;
     }
@@ -165,8 +172,8 @@ void video_open(const char *url, const char *slug) {
     err[0] = 0;
     memset(&pr, 0, sizeof(pr));
     fs_mkdir_p(VID_DIR);
-    snprintf(path, sizeof(path), VID_DIR "/%s.mp4", slug);
     snprintf(url_, sizeof(url_), "%s", url);
+    snprintf(path, sizeof(path), VID_DIR "/%s-%08X.mp4", slug, url_hash(url_));
     if (mod < 0) {
         snprintf(err, sizeof(err), "Módulo de vídeo do sistema indisponível.");
         ws_log("video: %s (%s)", err, url_);

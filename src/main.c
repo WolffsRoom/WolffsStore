@@ -29,7 +29,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "0.5"
+#define WS_VERSION "0.6"
 #endif
 
 /* ================================================================ textos */
@@ -2640,14 +2640,16 @@ static void title_cues(void) {
 /* Primeira execução: sincroniza antes da pergunta da intro. A pata e o logo
  * continuam vivos enquanto o catálogo e as imagens são preparados. */
 static void draw_first_sync(void) {
-    paw_draw(SCR_W / 2 - 36, SCR_H / 2 - 116, 1, 1);
-    float lw = title_width(LOGO, LOGO_SC);
+    const int sc = 5, step = 8 * sc;
+    paw_draw(SCR_W / 2 - 36, SCR_H / 2 - 132, 1, 1);
+    float lw = title_width(LOGO, sc);
     for (int i = 0; LOGO[i]; i++) {
         char ch[2] = {LOGO[i], 0};
-        float hop = sin(now_s * 5 - i * .45) * 4;
-        float x = (SCR_W - lw) / 2 + i * LOGO_STEP;
-        title_draw(ch, x + 4, SCR_H / 2 - 34 + hop, LOGO_SC, C_SHADOW);
-        title_draw(ch, x, SCR_H / 2 - 38 + hop, LOGO_SC, C_WHITE);
+        double e = now_s - letter_hop[i];
+        float hop = e >= 0 && e < .16 ? -10 : 0;
+        float x = (SCR_W - lw) / 2 + i * step;
+        title_draw(ch, x + 5, SCR_H / 2 - 38 + 5 + hop, sc, C_SHADOW);
+        title_draw(ch, x, SCR_H / 2 - 38 + hop, sc, C_WHITE);
     }
     const char *msg = TXT(S_SYNCING);
     body_draw(msg, (SCR_W - body_width(msg)) / 2, SCR_H / 2 + 34, C_SOFT);
@@ -3166,10 +3168,13 @@ int main(void) {
                 dragged = 1;
             }
             /* passar o dedo no logo: as letras pulam com a nota (como o hover no PC) */
-            if (started && !vid_open && !settings_open) {
+            if ((started || first_sync) && !vid_open && !settings_open) {
                 float wy = ty + cam;
-                if (wy >= 30 && wy < 30 + 40 && tx >= LOGO_X && tx < LOGO_X + 13 * LOGO_STEP) {
-                    int li = (int)((tx - LOGO_X) / LOGO_STEP);
+                float logo_x = first_sync ? (SCR_W - title_width(LOGO, 5)) / 2 : LOGO_X;
+                float logo_y = first_sync ? SCR_H / 2 - 52 : 30;
+                float logo_step = first_sync ? 40 : LOGO_STEP;
+                if (wy >= logo_y && wy < logo_y + 56 && tx >= logo_x && tx < logo_x + 13 * logo_step) {
+                    int li = (int)((tx - logo_x) / logo_step);
                     if (li >= 0 && li < 13 && LOGO[li] != ' ' && now_s - letter_hop[li] > .2) {
                         letter_hop[li] = now_s;
                         sfx_letter(li);
