@@ -27,8 +27,8 @@ CONFIG = json.loads((HERE / "repos.json").read_text(encoding="utf-8"))
 REPOS = []  # Filled exclusively from the public GitHub API, with explicit exclusions.
 SESSION = requests.Session()
 SESSION.headers.update({"User-Agent": "WolffsStore-Vita-GitHub-Lite/1.0", "Accept": "application/vnd.github+json"})
-if os.getenv("GH_TOKEN"):
-    SESSION.headers["Authorization"] = "Bearer " + os.environ["GH_TOKEN"]
+# Never attach the Actions token to raw files, images, badges or external GIF hosts.
+API_AUTH = {"Authorization": "Bearer " + os.environ["GH_TOKEN"]} if os.getenv("GH_TOKEN") else {}
 IMAGES = {}
 IMAGE_COUNTS = defaultdict(int)
 ALLOWED_IMG = {"github.com", "raw.githubusercontent.com", "img.shields.io", "avatars.githubusercontent.com", "user-images.githubusercontent.com", "user-attachments.githubusercontent.com", "deltarune.com", "www.deltarune.com", "media.giphy.com", "media.tenor.com", "i.imgur.com", "cdn.discordapp.com"}
@@ -42,7 +42,7 @@ MAX_GIF_FRAMES = 100
 
 def get_json(path):
     url = "https://api.github.com/" + path.lstrip("/")
-    r = SESSION.get(url, timeout=35)
+    r = SESSION.get(url, timeout=35, headers=API_AUTH)
     r.raise_for_status()
     return r.json()
 
