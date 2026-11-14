@@ -1,0 +1,64 @@
+name: Vita GitHub Lite - Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'vita-github/**'
+      - '.github/workflows/vita-github-pages.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '17 */12 * * *'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: vita-github-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout WolffsStore
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: vita-github/requirements.txt
+      - name: Install generator dependencies
+        run: pip install -r vita-github/requirements.txt
+      - name: Generate PS Vita-compatible static pages
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python vita-github/generate.py _site
+      - name: Smoke test generated pages
+        run: |
+          test -s _site/index.html
+          test -s _site/style.css
+          test -s _site/WolffsRoom/WolffsStore/index.html
+          test -s _site/WolffsRoom/DeltaruneVita/index.html
+          test -s _site/WolffsRoom/DeltaruneVita/releases/index.html
+          if grep -Rqi '<script' _site --include='*.html'; then echo 'Unexpected script tag'; exit 1; fi
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
