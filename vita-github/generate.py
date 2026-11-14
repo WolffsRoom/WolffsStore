@@ -125,7 +125,7 @@ def render_page(path, title, content, nav=None):
         owner, repo = nav
         base = repo_page(owner, repo)
         nav_html = '<div class="tabs"><a href="' + link(path, base) + '">Code / README</a> | <a href="' + link(path, section_page(owner, repo, "releases")) + '">Releases</a> | <a href="' + link(path, section_page(owner, repo, "issues")) + '">Issues</a></div>'
-    page = '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + esc(title) + ' - GitHub Vita Lite</title><link rel="stylesheet" href="' + css + '"></head><body>'
+    page = '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Cache-Control" content="no-cache"><title>' + esc(title) + ' - GitHub Vita Lite</title><link rel="stylesheet" href="' + css + '?v=dark3"></head><body>'
     page += '<header><a href="' + home + '"><strong>GitHub Vita Lite</strong></a><span> - Wolff&#39;s Store</span></header>'
     page += '<main>' + nav_html + content + '</main><footer>Lightweight pages built by GitHub Actions. No JavaScript. Content from public GitHub repositories.</footer></body></html>'
     path.write_text(page, encoding="utf-8")
@@ -235,10 +235,21 @@ def replace_shields_image(soup, tag):
     if not badge:
         return False
     label, value, color = badge
-    container = soup.new_tag("span", attrs={"class": "vita-badge", "title": str(tag.get("alt", ""))})
-    left = soup.new_tag("span", attrs={"class": "vita-badge-label"})
+    container = soup.new_tag("span", attrs={
+        "class": "vita-badge",
+        "title": str(tag.get("alt", "")),
+        "style": "display:inline-block;vertical-align:middle;white-space:nowrap;margin:4px 3px;"
+                 "font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:bold;line-height:30px"
+    })
+    left = soup.new_tag("span", attrs={
+        "class": "vita-badge-label",
+        "style": "display:inline-block;background-color:#444;color:white;padding:0 10px;"
+    })
     left.string = label.upper()
-    right = soup.new_tag("span", attrs={"class": "vita-badge-value", "style": "background-color:" + color})
+    right = soup.new_tag("span", attrs={
+        "class": "vita-badge-value",
+        "style": "display:inline-block;background-color:" + color + ";color:white;padding:0 10px;"
+    })
     right.string = value.upper()
     container.append(left)
     container.append(right)
@@ -368,13 +379,45 @@ def github_link(href, owner, repo, branch, current_dir, page, entries):
     return link(page, dest) + ("#" + quote(parsed.fragment) if parsed.fragment else "")
 
 
+def github_theme_marker(url):
+    """GitHub README fragment markers: old Vita browser defaults to dark assets."""
+    fragment = urlparse(html.unescape(str(url or ""))).fragment.lower()
+    if fragment == "gh-light-mode-only":
+        return "light"
+    if fragment == "gh-dark-mode-only":
+        return "dark"
+    return ""
+
+
+def select_vita_dark_images(soup):
+    """Keep only dark-mode images; resolve <picture> dark sources without JS/CSS media."""
+    for picture in list(soup.find_all("picture")):
+        img = picture.find("img")
+        if img is None:
+            picture.decompose()
+            continue
+        dark_src = ""
+        for source in picture.find_all("source"):
+            media = str(source.get("media", "")).lower()
+            srcset = html.unescape(str(source.get("srcset", "")).strip())
+            if "(prefers-color-scheme: dark)" in media and srcset:
+                # Prefer the first candidate from srcset; mirrored directly to static HTML.
+                dark_src = srcset.split(",", 1)[0].strip().split(" ", 1)[0]
+                break
+        if dark_src:
+            img["src"] = dark_src
+        picture.unwrap()
+    for img in list(soup.find_all("img")):
+        if github_theme_marker(img.get("src", "")) == "light":
+            img.decompose()
+
+
 def markdown_html(text, owner, repo, branch, current_dir, page, entries):
     html_text = markdown.markdown(text or "", extensions=["extra", "sane_lists", "toc"], output_format="html")
     soup = BeautifulSoup(html_text, "html.parser")
+    select_vita_dark_images(soup)
     for tag in list(soup.find_all(["script", "style", "iframe", "form", "object", "embed", "video", "audio", "svg", "source"])):
         tag.decompose()
-    for picture in list(soup.find_all("picture")):
-        picture.unwrap()
     for tag in soup.find_all(True):
         for attribute in list(tag.attrs):
             if attribute.lower().startswith("on") or attribute.lower() not in {"href", "src", "alt", "width", "height", "title", "id", "class", "align", "colspan", "rowspan"}:
@@ -527,7 +570,7 @@ def main():
     REPOS[:] = public_repositories()
     print("Selected public repos:", len(REPOS), [repo for _, repo in REPOS], flush=True)
     (OUT / ".nojekyll").write_text("", encoding="utf-8")
-    (OUT / "style.css").write_text('''*{box-sizing:border-box}body{margin:0;color:#24292f;background:#f6f8fa;font:15px Arial,Helvetica,sans-serif;line-height:1.5}header{background:#24292f;color:white;padding:12px 16px}header a{color:white;text-decoration:none;font-size:19px}header span{color:#c9d1d9}main{max-width:920px;margin:14px auto;background:white;padding:18px;border:1px solid #d0d7de}a{color:#0969da;text-decoration:none}a:hover{text-decoration:underline}h1{font-size:26px;margin:12px 0}h2{font-size:21px}h3{font-size:17px}.tabs,.crumb{padding:10px 0;border-bottom:1px solid #d8dee4;margin-bottom:14px}.tabs a{font-weight:bold}.files{width:100%;border-collapse:collapse;font-size:14px}.files td,.files th{padding:7px 6px;border-bottom:1px solid #d8dee4;text-align:left;word-break:break-word}.files th{background:#f6f8fa}.files td:first-child{width:44px;font-size:11px;color:#57606a}.files td:last-child{width:65px;color:#57606a}.readme{margin-top:18px;border:1px solid #d8dee4;padding:14px;overflow:hidden;word-wrap:break-word}.readme h1,.readme h2{padding-bottom:6px;border-bottom:1px solid #d8dee4}.vita-badge{display:inline-block;white-space:nowrap;vertical-align:middle;margin:2px 3px;font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:bold;line-height:24px}.vita-badge-label,.vita-badge-value{display:inline-block;color:#fff;padding:0 8px;letter-spacing:.3px}.vita-badge-label{background-color:#555}.readme img,.release img{max-width:100%}.readme img[width],.release img[width]{max-width:100%}.readme .align-center,.release .align-center{text-align:center}.readme table.align-center,.release table.align-center{margin-left:auto;margin-right:auto}.table-scroll{max-width:100%;overflow-x:auto}.readme table,.release table{border-collapse:collapse;max-width:100%;table-layout:auto}.readme td,.readme th{vertical-align:middle}.readme table img{max-width:100%}.readme td,.readme th,.release td,.release th{border:1px solid #d8dee4;padding:5px 8px}.readme tr:nth-child(even){background:#f6f8fa}pre{overflow:auto;white-space:pre-wrap;word-wrap:break-word;background:#f6f8fa;border:1px solid #d8dee4;padding:10px;font:12px monospace}.small{color:#57606a;font-size:12px}.release{padding:12px 0;border-bottom:1px solid #d8dee4;overflow:hidden;word-wrap:break-word}.release img{max-width:100%}blockquote{border-left:4px solid #d8dee4;padding-left:12px;color:#57606a;margin-left:0}footer{max-width:920px;margin:18px auto;color:#57606a;font-size:12px;text-align:center}@media(max-width:960px){main{margin:0;padding:10px;border:0}.readme{padding:9px}header{padding:8px}}''', encoding="utf-8")
+    (OUT / "style.css").write_text('''*{box-sizing:border-box}body{margin:0;color:#24292f;background:#f6f8fa;font:15px Arial,Helvetica,sans-serif;line-height:1.5}header{background:#24292f;color:white;padding:12px 16px}header a{color:white;text-decoration:none;font-size:19px}header span{color:#c9d1d9}main{max-width:920px;margin:14px auto;background:white;padding:18px;border:1px solid #d0d7de}a{color:#0969da;text-decoration:none}a:hover{text-decoration:underline}h1{font-size:26px;margin:12px 0}h2{font-size:21px}h3{font-size:17px}.tabs,.crumb{padding:10px 0;border-bottom:1px solid #d8dee4;margin-bottom:14px}.tabs a{font-weight:bold}.files{width:100%;border-collapse:collapse;font-size:14px}.files td,.files th{padding:7px 6px;border-bottom:1px solid #d8dee4;text-align:left;word-break:break-word}.files th{background:#f6f8fa}.files td:first-child{width:44px;font-size:11px;color:#57606a}.files td:last-child{width:65px;color:#57606a}.readme{margin-top:18px;border:1px solid #d8dee4;padding:14px;overflow:hidden;word-wrap:break-word}.readme h1,.readme h2{padding-bottom:6px;border-bottom:1px solid #d8dee4}.vita-badge{display:inline-block;white-space:nowrap;vertical-align:middle;margin:4px 3px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:bold;line-height:30px}.vita-badge-label,.vita-badge-value{display:inline-block;color:white;padding:0 10px}.vita-badge-label{background-color:#444}.readme img,.release img{max-width:100%}.readme img[width],.release img[width]{max-width:100%}.readme .align-center,.release .align-center{text-align:center}.readme table.align-center,.release table.align-center{margin-left:auto;margin-right:auto}.table-scroll{max-width:100%;overflow-x:auto}.readme table,.release table{border-collapse:collapse;max-width:100%;table-layout:auto}.readme td,.readme th{vertical-align:middle}.readme table img{max-width:100%}.readme td,.readme th,.release td,.release th{border:1px solid #d8dee4;padding:5px 8px}.readme tr:nth-child(even){background:#f6f8fa}pre{overflow:auto;white-space:pre-wrap;word-wrap:break-word;background:#f6f8fa;border:1px solid #d8dee4;padding:10px;font:12px monospace}.small{color:#57606a;font-size:12px}.release{padding:12px 0;border-bottom:1px solid #d8dee4;overflow:hidden;word-wrap:break-word}.release img{max-width:100%}blockquote{border-left:4px solid #d8dee4;padding-left:12px;color:#57606a;margin-left:0}footer{max-width:920px;margin:18px auto;color:#57606a;font-size:12px;text-align:center}@media(max-width:960px){main{margin:0;padding:10px;border:0}.readme{padding:9px}header{padding:8px}}body{background:#0d1117;color:#e6edf3}header{background:#161b22;color:#f0f6fc}main{background:#0d1117;border-color:#30363d}a{color:#79c0ff}.tabs,.crumb,.release{border-color:#30363d}.files td,.files th{border-color:#30363d}.files th,.readme tr:nth-child(even),pre{background:#161b22}.readme,.readme h1,.readme h2,pre{border-color:#30363d}.readme td,.readme th,.release td,.release th{border-color:#30363d}blockquote{color:#9baac0;border-color:#3b4657}.small,.files td:first-child,.files td:last-child,footer{color:#a4b1c2}.readme img,.release img{vertical-align:middle}.align-center{text-align:center}''', encoding="utf-8")
     links = []
     for owner, repo in REPOS:
         links.append('<li><a href="' + link(OUT / "index.html", repo_page(owner, repo)) + '">' + esc(owner + "/" + repo) + '</a></li>')

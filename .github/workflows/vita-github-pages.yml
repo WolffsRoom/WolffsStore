@@ -49,6 +49,21 @@ jobs:
           test -s _site/WolffsRoom/FileManager/index.html
           grep -q 'vita-badge' _site/WolffsRoom/FileManager/index.html
           if grep -Rqi '<script' _site --include='*.html'; then echo 'Unexpected script tag'; exit 1; fi
+      - name: Verify FileManager dark logo and badge readability
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from bs4 import BeautifulSoup
+          content = Path("_site/WolffsRoom/FileManager/index.html").read_text("utf-8")
+          soup = BeautifulSoup(content, "html.parser")
+          logos = soup.select('img[alt="File Manager for PlayStation Vita"]')
+          assert len(logos) == 1, "Expected exactly one FileManager logo"
+          assert "preta" not in logos[0]["src"].lower(), "Light-theme logo must be excluded"
+          assert len(soup.select("span.vita-badge")) >= 4, "Expected HTML-rendered badges"
+          assert all("font-size:15px" in item.get("style","") for item in soup.select("span.vita-badge"))
+          assert "dark3" in content, "Dark CSS revision missing"
+          print("Dark logo and readable badges verified")
+          PY
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload Pages artifact
