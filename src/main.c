@@ -29,7 +29,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "0.7"
+#define WS_VERSION "0.8"
 #endif
 
 /* ================================================================ textos */
@@ -2121,6 +2121,8 @@ static void draw_settings(void) {
     upper_latin1(t);
     icon8(ICON_GEAR, x + 32, y + 28, 3, col_alpha(C_WHITE, k));
     title_draw_shadow(t, x + 72, y + 32, 2, col_alpha(C_WHITE, k), col_alpha(C_SHADOW, k));
+    const char *ver = "Wolff's Store v" WS_VERSION;
+    body_draw(ver, x + w - 28 - body_width(ver), y + 34, col_alpha(C_SOFT, k));
     vita2d_draw_rectangle(x + 24, y + 72, w - 48, 4, col_alpha(C_LINE, k));
     for (int r = 0; r < SET_COUNT; r++) {
         float ry = y + 92 + r * rh, rx = x + 24, rw = w - 48;
@@ -3027,6 +3029,12 @@ int main(void) {
     feat = catalog_featured();
     load_covers();
     make_mosaic();
+    /* O mini-atualizador já terminou e fechou antes de reabrir a Store.
+     * Removê-lo aqui também limpa bubbles deixadas por versões anteriores. */
+    if (fs_exists("ux0:app/WOLF00002/sce_sys/param.sfo")) {
+        int cleanup = inst_delete("WOLF00002");
+        ws_log("cleanup updater: resultado 0x%08X", cleanup);
+    }
     /* sobras de uma atualização do próprio app */
     fs_rm_rf(WS_PKG_SELF);
     fs_rm_rf(WS_PKG_UPD);
@@ -3192,7 +3200,7 @@ int main(void) {
                     }
                 }
             }
-            if (dragged && viewer < 0 && !vid_open) {
+            if (dragged && viewer < 0 && !vid_open && !settings_open && !snd_menu) {
                 cam_target = t_cam0 - (ty - t_y0);
                 cam_clamp();
                 cam = cam_target;
@@ -3209,8 +3217,11 @@ int main(void) {
                 else if (vid_open) video_toggle_pause();
                 else if (snd_menu_touch(t_x0, t_y0)) {
                 } else if (t_x0 >= 24 && t_x0 < 24 + 72 && t_y0 + cam >= 12 && t_y0 + cam < 12 + 76 && !settings_open) {
-                    bark_t0 = now_s; /* tocar na pata: latido */
-                    sfx("bark");
+                    if (view != V_HOME) go(V_HOME, 0);
+                    else {
+                        bark_t0 = now_s; /* na Home, tocar na pata: latido */
+                        sfx("bark");
+                    }
                 } else if (ime_open) {
                 } else if (settings_open) {
                     float w = 600, rh = 60, h = 96 + SET_COUNT * rh + 100, x = (SCR_W - w) / 2, y = (SCR_H - h) / 2;

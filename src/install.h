@@ -12,6 +12,7 @@
 int inst_extract(const char *zip, const char *dst, const char **strip, int nstrip, NetProgress *pr);
 int inst_make_head_bin(const char *pkg_dir);
 int inst_promote(const char *pkg_dir);
+int inst_delete(const char *titleid);
 /* VPK completo: extrai em WS_PKG_TMP, cria o head.bin e instala com o promoter. */
 int inst_install_vpk(const char *vpk, NetProgress *pr, volatile int *phase);
 const char *inst_error(void);

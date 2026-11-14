@@ -245,6 +245,26 @@ fail:
     return r;
 }
 
+int inst_delete(const char *titleid) {
+    int r = load_paf();
+    ws_log("cleanup updater: PAF -> 0x%08X", r);
+    if (r < 0) return r;
+    r = sceSysmoduleLoadModuleInternal(SCE_SYSMODULE_INTERNAL_PROMOTER_UTIL);
+    if (r < 0) {
+        unload_paf();
+        return r;
+    }
+    r = scePromoterUtilityInit();
+    if (r >= 0) {
+        r = scePromoterUtilityDeletePkg(titleid);
+        ws_log("cleanup updater: DeletePkg(%s) -> 0x%08X", titleid, r);
+        scePromoterUtilityExit();
+    }
+    sceSysmoduleUnloadModuleInternal(SCE_SYSMODULE_INTERNAL_PROMOTER_UTIL);
+    unload_paf();
+    return r;
+}
+
 int inst_install_vpk(const char *vpk, NetProgress *pr, volatile int *phase) {
     fs_rm_rf(WS_PKG_TMP);
     fs_mkdir_p(WS_PKG_TMP);
