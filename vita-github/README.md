@@ -20,6 +20,15 @@ Every GitHub Actions run discovers **all public repositories owned by WolffsRoom
 
 The two pinned repositories (DeltaruneVita and WolffsStore) are displayed first. Newly public repositories are added on the next build, and repositories that become private disappear from the next generated snapshot. For urgent removal, manually rerun the workflow rather than waiting for its scheduled build.
 
+## Selected external ports
+
+Public repositories from other developers can be explicitly allowed through `external` in repos.json. The generator confirms that each repository is public before including it.
+
+- `Federicoilgrandebardo/vampire-survivors-vita` — original port by Federicoilgrandebardo, also featured in Wolff's Room with creator credit.
+- Mirror URL: https://wolffsroom.github.io/WolffsStore/Federicoilgrandebardo/vampire-survivors-vita/
+
+The external list does not bypass the owner-specific exclusion list or expose private repositories.
+
 ## GitHub Pages deployment
 
 The GitHub Actions workflow is at .github/workflows/vita-github-pages.yml and publishes from the Actions artifact. If not yet enabled, go to repository Settings > Pages and set **Source: GitHub Actions**. Run the workflow manually from the Actions tab to publish now.

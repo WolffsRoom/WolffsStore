@@ -71,6 +71,19 @@ def public_repositories():
             raise RuntimeError("Repository listing pagination limit reached")
     pins = {name.lower(): i for i, name in enumerate(CONFIG.get("pinned", []))}
     found.sort(key=lambda item: (pins.get(item[1].lower(), len(pins)), item[1].lower()))
+    # Explicitly allow selected external developers without mirroring their private work.
+    for item in CONFIG.get("external", []):
+        ext_owner = str(item.get("owner", "")).strip()
+        ext_repo = str(item.get("repo", "")).strip()
+        if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9-]{0,38}", ext_owner) or not re.fullmatch(r"[A-Za-z0-9_.-]{1,100}", ext_repo):
+            raise ValueError("Invalid external repository configuration")
+        info = get_json("repos/" + quote(ext_owner, safe="") + "/" + quote(ext_repo, safe=""))
+        if info.get("private", True) or info.get("visibility", "public") != "public":
+            print("External repository skipped (not public):", ext_owner, ext_repo, flush=True)
+            continue
+        resolved = (info.get("owner", {}).get("login", ext_owner), info.get("name", ext_repo))
+        if resolved not in found:
+            found.append(resolved)
     if not found:
         raise RuntimeError("No public repositories found")
     return found

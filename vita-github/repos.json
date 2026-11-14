@@ -10,5 +10,11 @@
     "registro_frequencia",
     "MTH-Vita",
     "InfinityBladeVita"
+  ],
+  "external": [
+    {
+      "owner": "Federicoilgrandebardo",
+      "repo": "vampire-survivors-vita"
+    }
   ]
 }
