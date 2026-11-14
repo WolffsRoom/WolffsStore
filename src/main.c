@@ -29,7 +29,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "0.97"
+#define WS_VERSION "0.98"
 #endif
 
 /* ================================================================ textos */
@@ -494,8 +494,6 @@ static void card(int pi, float x, float y, float h, double pop) {
         Op *t = body(c, x + 22, y + 13, C_WHITE);
         t->bold = 1;
     }
-    if (p->news_kind)
-        news_word(p->news_kind, x + 20, y + COVER_H - 20, 1, pop);
     if (p->trophies) { /* só o troféu em pixel art no canto da capa (troféus nativos, NoTrpDrm) */
         Op *o = op(OP_TROPHY, x + 4 + COVER_W - 12 - 30, y + 12, 30, 30);
         o->scale = 3;
@@ -922,10 +920,6 @@ static void build_post(int pi) {
     snprintf(line, sizeof(line), "%s \xb7 %s", t->tag, t->status);
     upper_latin1(line);
     y += para(line, 24, y, 912, C_MUTED, 1, 2, 0) + 16;
-    if (p->news_kind) {
-        news_word(p->news_kind, 38, y + 10, 2, view_t0 + .08);
-        y += 34;
-    }
     rect(24, y, 912, 4, C_LINE);
     y += 4 + 28;
 
@@ -2850,7 +2844,7 @@ static void load_covers(void) {
 /* Verify the installed helper artwork byte-for-byte, not only filenames. */
 static int updater_asset_matches(const char *relative) {
     char src[240], installed[240];
-    snprintf(src, sizeof(src), "app0:updater/sce_sys/%s", relative);
+    snprintf(src, sizeof(src), WS_PKG_SELF "/updater/sce_sys/%s", relative);
     snprintf(installed, sizeof(installed), "ux0:app/WOLF00002/sce_sys/%s", relative);
     int a_len = 0, b_len = 0;
     char *a = fs_read(src, &a_len);
@@ -2863,20 +2857,32 @@ static int updater_asset_matches(const char *relative) {
     return match;
 }
 
+/* The self-update worker extracted the NEXT release into WS_PKG_SELF.
+ * Never use app0:updater: it would install the old version's LiveArea assets,
+ * which is exactly why the user kept seeing an outdated updater bubble. */
+static int copy_new_updater_file(const char *relative, const char *dst) {
+    char src[512];
+    snprintf(src, sizeof(src), WS_PKG_SELF "/updater/%s", relative);
+    int r = fs_copy(src, dst);
+    if (r < 0) ws_log("updater: NEW VPK missing %s (0x%08X)", src, r);
+    return r == 0;
+}
+
 static void launch_updater(void) {
     /* instala o updater (WOLF00002) a partir do que veio no VPK e passa a vez para ele */
     fs_rm_rf(WS_PKG_UPD);
     fs_mkdir_p(WS_PKG_UPD "/sce_sys");
     fs_mkdir_p(WS_PKG_UPD "/sce_sys/livearea/contents");
     fs_mkdir_p(WS_PKG_UPD "/data/tex");
-    int ok = fs_copy("app0:updater/eboot.bin", WS_PKG_UPD "/eboot.bin") == 0 &&
-             fs_copy("app0:updater/sce_sys/param.sfo", WS_PKG_UPD "/sce_sys/param.sfo") == 0 &&
-             fs_copy("app0:updater/data/tex/paw4.wrt", WS_PKG_UPD "/data/tex/paw4.wrt") == 0 &&
-             fs_copy("app0:updater/data/tex/font_title.wrt", WS_PKG_UPD "/data/tex/font_title.wrt") == 0 &&
-             fs_copy("app0:updater/sce_sys/icon0.png", WS_PKG_UPD "/sce_sys/icon0.png") == 0 &&
-             fs_copy("app0:updater/sce_sys/livearea/contents/bg0.png", WS_PKG_UPD "/sce_sys/livearea/contents/bg0.png") == 0 &&
-             fs_copy("app0:updater/sce_sys/livearea/contents/startup.png", WS_PKG_UPD "/sce_sys/livearea/contents/startup.png") == 0 &&
-             fs_copy("app0:updater/sce_sys/livearea/contents/template.xml", WS_PKG_UPD "/sce_sys/livearea/contents/template.xml") == 0;
+    /* All files, including icon and LiveArea, MUST come from NEW release. */
+    int ok = copy_new_updater_file("eboot.bin", WS_PKG_UPD "/eboot.bin") &&
+             copy_new_updater_file("sce_sys/param.sfo", WS_PKG_UPD "/sce_sys/param.sfo") &&
+             copy_new_updater_file("data/tex/paw4.wrt", WS_PKG_UPD "/data/tex/paw4.wrt") &&
+             copy_new_updater_file("data/tex/font_title.wrt", WS_PKG_UPD "/data/tex/font_title.wrt") &&
+             copy_new_updater_file("sce_sys/icon0.png", WS_PKG_UPD "/sce_sys/icon0.png") &&
+             copy_new_updater_file("sce_sys/livearea/contents/bg0.png", WS_PKG_UPD "/sce_sys/livearea/contents/bg0.png") &&
+             copy_new_updater_file("sce_sys/livearea/contents/startup.png", WS_PKG_UPD "/sce_sys/livearea/contents/startup.png") &&
+             copy_new_updater_file("sce_sys/livearea/contents/template.xml", WS_PKG_UPD "/sce_sys/livearea/contents/template.xml");
     if (ok) ok = inst_make_head_bin(WS_PKG_UPD) == 0;
     /* Delete the OLD helper while Store is foreground, BEFORE the new helper
      * starts. This refreshes icon0 and the LiveArea on every upgrade. */
@@ -2907,10 +2913,10 @@ static void launch_updater(void) {
         if (!ok) ws_log("updater: installed bubble missing custom LiveArea files or stale asset bytes");
     }
     if (!ok) {
-        char t[256];
-        snprintf(t, sizeof(t), "%s: %s", TXT(S_T_FAILED), inst_error());
-        toast(t);
+        ws_log("updater: required files from downloaded release could not be installed/validated");
+        toast("Nao foi possivel instalar o updater da nova versao.");
         upd_job = -1;
+        upd_skipped = 1; /* no repeated destructive install attempts */
         return;
     }
     /* VitaShell-style shell handoff. 0x20000 requested the second game while

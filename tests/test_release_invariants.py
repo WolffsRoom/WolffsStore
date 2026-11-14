@@ -1,4 +1,4 @@
-﻿from pathlib import Path
+from pathlib import Path
 import re
 import unittest
 
@@ -14,9 +14,9 @@ class ReleaseInvariants(unittest.TestCase):
         cls.video = (ROOT / "src/video.c").read_text(encoding="utf-8")
         cls.updater = (ROOT / "updater/main.c").read_text(encoding="utf-8")
 
-    def test_release_is_v097(self):
-        self.assertIn('set(WS_SFO_VERSION "00.97")', self.cmake)
-        self.assertIn('set(WS_FILE_VERSION "0.97")', self.cmake)
+    def test_release_is_v098(self):
+        self.assertIn('set(WS_SFO_VERSION "00.98")', self.cmake)
+        self.assertIn('set(WS_FILE_VERSION "0.98")', self.cmake)
 
     def test_third_party_author_badge_is_optional(self):
         catalog=(ROOT / "src/catalog.h").read_text(encoding="utf-8")
@@ -38,7 +38,8 @@ class ReleaseInvariants(unittest.TestCase):
             self.assertIn(f"assets/livearea_autoupdater/{name}",self.cmake)
             partial="updater/sce_sys/icon0.png" if name=="icon0.png" else "updater/sce_sys/livearea/contents/"+name
             self.assertIn(partial,self.cmake)
-            self.assertIn("app0:"+partial,self.main)
+            self.assertIn("copy_new_updater_file(",self.main)
+            self.assertNotIn("app0:"+partial,self.main)
         self.assertIn("updater/sce_sys/livearea/contents/template.xml",self.cmake)
         self.assertIn('fs_mkdir_p(WS_PKG_UPD "/sce_sys/livearea/contents")',self.main)
 
@@ -46,7 +47,7 @@ class ReleaseInvariants(unittest.TestCase):
         import xml.etree.ElementTree as ET
         tmpl = ROOT / "assets/livearea_autoupdater/template.xml"
         xml = ET.parse(tmpl).getroot()
-        self.assertEqual(xml.attrib.get("content-rev"), "97")
+        self.assertEqual(xml.attrib.get("content-rev"), "98")
         self.assertEqual(xml.findtext("livearea-background/image"), "bg0.png")
         self.assertEqual(xml.findtext("gate/startup-image"), "startup.png")
         self.assertIn("assets/livearea_autoupdater/template.xml",self.cmake)
@@ -71,6 +72,33 @@ class ReleaseInvariants(unittest.TestCase):
         self.assertIn("C_GOLD",self.main)
         self.assertIn("y - i * 1.1f * scale",self.main)
         self.assertIn("p->news_kind",self.main)
+
+    def test_self_update_installs_livearea_from_downloaded_new_vpk(self):
+        self.assertIn('WS_PKG_SELF "/updater/%s"', self.main)
+        self.assertIn('WS_PKG_SELF "/updater/sce_sys/%s"', self.main)
+        self.assertIn("static int copy_new_updater_file(", self.main)
+        launch=self.main[self.main.index("static void launch_updater("):
+                         self.main.index("static void maybe_self_update(")]
+        for name in ("icon0.png", "bg0.png", "startup.png", "template.xml"):
+            self.assertIn('copy_new_updater_file("sce_sys/',launch)
+            self.assertIn(name,launch)
+        self.assertIn("updater_asset_matches(", launch)
+        self.assertNotIn('fs_copy("app0:updater/',launch)
+        self.assertLess(launch.index('copy_new_updater_file("eboot.bin"'),
+                        launch.index("inst_promote(WS_PKG_UPD)"))
+        jobs=(ROOT/"src/jobs.c").read_text(encoding="utf-8")
+        self.assertIn("inst_extract(path, WS_PKG_SELF, NULL, 0, &j->pr)",jobs)
+
+    def test_update_label_only_featured_on_vita_not_cards_or_post_details(self):
+        hero=self.main[self.main.index("static void build_home("):
+                       self.main.index("static void build_cat(")]
+        self.assertIn("news_word(p->news_kind",hero)
+        card=self.main[self.main.index("static void card("):
+                       self.main.index("static float header(")]
+        post=self.main[self.main.index("static void build_post("):
+                       self.main.index("/* barra de rolagem",self.main.index("static void build_post("))]
+        self.assertNotIn("news_word(",card)
+        self.assertNotIn("news_word(",post)
 
     def test_home_featured_github_prefers_source_and_mirrors_lite(self):
         home=self.main[self.main.index("static void build_home("):self.main.index("static void build_cat(")]
