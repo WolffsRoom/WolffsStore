@@ -29,7 +29,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "0.95"
+#define WS_VERSION "0.96"
 #endif
 
 /* ================================================================ textos */
@@ -2921,8 +2921,7 @@ static void tick_store(void) {
     int intro_done = started && now_s - intro_t0 >= T_DONE;
     /* Once the new Store is running normally, the helper process has had
      * time to exit. Uninstall its bubble without requiring a second boot. */
-    if (updater_cleanup_pending && now_s >= 9.0 && intro_done &&
-        jobs_active() == 0) {
+    if (updater_cleanup_pending && now_s >= 9.0 && jobs_active() == 0) {
         updater_cleanup_pending = 0;
         int r = inst_delete("WOLF00002");
         ws_log("updater: cleanup after successful update -> 0x%08X", r);

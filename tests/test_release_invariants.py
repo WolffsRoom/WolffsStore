@@ -14,9 +14,9 @@ class ReleaseInvariants(unittest.TestCase):
         cls.video = (ROOT / "src/video.c").read_text(encoding="utf-8")
         cls.updater = (ROOT / "updater/main.c").read_text(encoding="utf-8")
 
-    def test_release_is_v095(self):
-        self.assertIn('set(WS_SFO_VERSION "00.95")', self.cmake)
-        self.assertIn('set(WS_FILE_VERSION "0.95")', self.cmake)
+    def test_release_is_v096(self):
+        self.assertIn('set(WS_SFO_VERSION "00.96")', self.cmake)
+        self.assertIn('set(WS_FILE_VERSION "0.96")', self.cmake)
 
     def test_third_party_author_badge_is_optional(self):
         catalog=(ROOT / "src/catalog.h").read_text(encoding="utf-8")
@@ -103,6 +103,8 @@ class ReleaseInvariants(unittest.TestCase):
         tick=self.main[self.main.index("static void tick_store("):
                        self.main.index("/* ================================================================ main */")]
         self.assertIn("now_s >= 9.0",tick)
+        self.assertNotIn("now_s >= 9.0 && intro_done",tick)
+        self.assertIn("updater_cleanup_pending && now_s >= 9.0 && jobs_active() == 0",tick)
         self.assertIn('inst_delete("WOLF00002")',tick)
         self.assertIn("updater_cleanup_pending = 0;",tick)
         self.assertIn("fs_rm_rf(WS_DATA",tick)
