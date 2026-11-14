@@ -11,6 +11,7 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 from urllib.parse import quote, unquote, urlparse
+from xml.etree import ElementTree
 
 import cairosvg
 import markdown
@@ -135,7 +136,15 @@ def mirror_image(src, owner, repo, branch, context, page):
             source = bytes(raw)
             kind = r.headers.get("Content-Type", "").split(";")[0].lower()
         if "svg" in kind or source.lstrip().startswith(b"<svg") or urlparse(url).path.lower().endswith(".svg"):
-            source = cairosvg.svg2png(bytestring=source, output_width=None)
+            # Large GitHub SVG headings may have a 19000px viewBox: scale BEFORE rasterizing.
+            svg_root = ElementTree.fromstring(source)
+            view_box = svg_root.attrib.get("viewBox", "")
+            try:
+                native_width = float(re.split(r"[ ,]+", view_box.strip())[2]) if view_box else float(re.match(r"[0-9.]+", svg_root.attrib.get("width", "900")).group())
+            except (IndexError, ValueError, AttributeError):
+                native_width = 900
+            render_width = min(900, max(24, int(native_width)))
+            source = cairosvg.svg2png(bytestring=source, output_width=render_width)
         with Image.open(io.BytesIO(source)) as im:
             im = ImageOps.exif_transpose(im)
             im.thumbnail((900, 1800), Image.Resampling.LANCZOS)
