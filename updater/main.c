@@ -12,6 +12,7 @@
 #include <vita2d.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <psp2/io/fcntl.h>
 #include <psp2/io/stat.h>
 #include <stdio.h>
@@ -21,45 +22,46 @@
 #define MAIN_TITLE "WOLF00001"
 
 static volatile int busy = 1;
+static vita2d_texture *brand_paw, *brand_font;
 
-static const uint8_t *glyph5(char c) {
-    static const uint8_t A[7]={14,17,17,31,17,17,17}, D[7]={30,17,17,17,17,17,30};
-    static const uint8_t F[7]={31,16,16,30,16,16,16}, G[7]={14,17,16,23,17,17,14};
-    static const uint8_t I[7]={31,4,4,4,4,4,31}, L[7]={16,16,16,16,16,16,31};
-    static const uint8_t M[7]={17,27,21,21,17,17,17};
-    static const uint8_t N[7]={17,25,25,21,19,19,17}, O[7]={14,17,17,17,17,17,14};
-    static const uint8_t R[7]={30,17,17,30,20,18,17}, S[7]={15,16,16,14,1,1,30};
-    static const uint8_t T[7]={31,4,4,4,4,4,4}, W[7]={17,17,17,21,21,27,17};
-    static const uint8_t AP[7]={4,4,8,0,0,0,0}, BL[7]={0,0,0,0,0,0,0};
-    switch (c) {
-    case 'A': return A; case 'D': return D; case 'F': return F; case 'G': return G;
-    case 'I': return I; case 'L': return L; case 'M': return M; case 'N': return N; case 'O': return O;
-    case 'R': return R; case 'S': return S; case 'T': return T; case 'W': return W;
-    case '\'': return AP; default: return BL;
+static vita2d_texture *load_wrt(const char *path) {
+    FILE *f = fopen(path, "rb");
+    if (!f) return NULL;
+    unsigned char hd[8];
+    if (fread(hd, 1, 8, f) != 8 || memcmp(hd, "WRT1", 4)) { fclose(f); return NULL; }
+    int w = hd[4] | hd[5] << 8, h = hd[6] | hd[7] << 8;
+    size_t n = (size_t)w * h * 4;
+    unsigned char *px = malloc(n);
+    if (!px || fread(px, 1, n, f) != n) { free(px); fclose(f); return NULL; }
+    fclose(f);
+    vita2d_texture *t = vita2d_create_empty_texture_format(w, h, SCE_GXM_TEXTURE_FORMAT_U8U8U8U8_ABGR);
+    if (t) {
+        unsigned char *dst = vita2d_texture_get_datap(t);
+        unsigned stride = vita2d_texture_get_stride(t);
+        for (int y = 0; y < h; y++) memcpy(dst + y * stride, px + (size_t)y * w * 4, (size_t)w * 4);
+        vita2d_texture_set_filters(t, SCE_GXM_TEXTURE_FILTER_POINT, SCE_GXM_TEXTURE_FILTER_POINT);
     }
+    free(px);
+    return t;
 }
 
-static void pixel_char(char c, float x, float y, int s, uint32_t color) {
-    const uint8_t *g = glyph5(c);
-    for (int r = 0; r < 7; r++)
-        for (int k = 0; k < 5; k++)
-            if (g[r] & (1 << (4 - k))) vita2d_draw_rectangle(x + k * s, y + r * s, s, s, color);
+static float brand_width(const char *s, int scale) { return strlen(s) * 8 * scale; }
+
+static void brand_char(char c, float x, float y, int scale, uint32_t color) {
+    if (!brand_font || c == ' ') return;
+    int g = (unsigned char)c - 32;
+    vita2d_draw_texture_tint_part_scale(brand_font, x, y - 3 * scale,
+        (g % 16) * 8, (g / 16) * 11, 8, 11, scale, scale, color);
 }
 
-static float pixel_text_width(const char *s, int scale) { return strlen(s) * 6 * scale - scale; }
-
-static void pixel_text(const char *s, float x, float y, int scale, uint32_t color) {
-    for (int i = 0; s[i]; i++) pixel_char(s[i], x + i * 6 * scale, y, scale, color);
+static void brand_text(const char *s, float x, float y, int scale, uint32_t color) {
+    for (int i = 0; s[i]; i++) brand_char(s[i], x + i * 8 * scale, y, scale, color);
 }
 
-static void draw_paw(float x, float y, int scale) {
-    static const char *paw[] = {
-        "...##..##...", "...##..##...", ".#........#.", ".#..####..#.",
-        "...######...", "..########..", "..########..", "...##..##...",
-    };
-    for (int r = 0; r < 8; r++)
-        for (int k = 0; k < 12; k++)
-            if (paw[r][k] == '#') vita2d_draw_rectangle(x + k * scale, y + r * scale, scale, scale, RGBA8(255, 255, 255, 255));
+static void draw_paw(float x, float y, float scale) {
+    if (!brand_paw) return;
+    float w = vita2d_texture_get_width(brand_paw), h = vita2d_texture_get_height(brand_paw);
+    vita2d_draw_texture_tint_part_scale(brand_paw, x, y, 0, 0, w, h, scale, scale, RGBA8(255, 255, 255, 255));
 }
 
 static int load_paf(void) {
@@ -104,18 +106,21 @@ static int anim(SceSize a, void *b) {
     while (busy) {
         vita2d_start_drawing();
         vita2d_clear_screen();
-        draw_paw(426, 72, 9);
+        draw_paw(412, 62, 2);
         const char *brand = "WOLFF'S ROOM";
-        float bx = (960 - pixel_text_width(brand, 6)) / 2;
+        int scale = 4;
+        float bx = (960 - brand_width(brand, scale)) / 2;
         for (int i = 0; brand[i]; i++) {
             int phase = (f / 3 - i * 2) % 36;
             if (phase < 0) phase += 36;
             float bounce = phase < 9 ? -(phase < 5 ? phase : 9 - phase) * 3 : 0;
-            pixel_char(brand[i], bx + i * 36 + 4, 190 + bounce + 4, 6, RGBA8(46, 46, 46, 255));
-            pixel_char(brand[i], bx + i * 36, 190 + bounce, 6, RGBA8(255, 255, 255, 255));
+            float cx = bx + i * 8 * scale;
+            brand_char(brand[i], cx + 8, 214 + bounce + 8, scale, RGBA8(34, 34, 34, 255));
+            brand_char(brand[i], cx + 4, 214 + bounce + 4, scale, RGBA8(74, 74, 74, 255));
+            brand_char(brand[i], cx, 214 + bounce, scale, RGBA8(255, 255, 255, 255));
         }
         const char *status = "INSTALANDO";
-        pixel_text(status, (960 - pixel_text_width(status, 3)) / 2, 286, 3, RGBA8(190, 190, 190, 255));
+        brand_text(status, (960 - brand_width(status, 2)) / 2, 294, 2, RGBA8(190, 190, 190, 255));
         vita2d_draw_rectangle(198, 354, 564, 36, RGBA8(255, 255, 255, 255));
         vita2d_draw_rectangle(204, 360, 552, 24, RGBA8(28, 28, 28, 255));
         int head = (f / 4) % 23;
@@ -137,6 +142,8 @@ int main(void) {
     sceAppMgrDestroyOtherApp();
     vita2d_init();
     vita2d_set_clear_color(RGBA8(6, 6, 6, 255));
+    brand_paw = load_wrt("app0:data/tex/paw4.wrt");
+    brand_font = load_wrt("app0:data/tex/font_title.wrt");
     SceUID th = sceKernelCreateThread("anim", anim, 0x10000100, 0x4000, 0, 0, NULL);
     if (th >= 0) sceKernelStartThread(th, 0, NULL);
     sceKernelDelayThread(300 * 1000);

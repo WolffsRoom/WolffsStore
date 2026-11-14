@@ -29,7 +29,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "0.8"
+#define WS_VERSION "0.9"
 #endif
 
 /* ================================================================ textos */
@@ -2763,8 +2763,11 @@ static void launch_updater(void) {
     /* instala o updater (WOLF00002) a partir do que veio no VPK e passa a vez para ele */
     fs_rm_rf(WS_PKG_UPD);
     fs_mkdir_p(WS_PKG_UPD "/sce_sys");
+    fs_mkdir_p(WS_PKG_UPD "/data/tex");
     int ok = fs_copy("app0:updater/eboot.bin", WS_PKG_UPD "/eboot.bin") == 0 &&
-             fs_copy("app0:updater/sce_sys/param.sfo", WS_PKG_UPD "/sce_sys/param.sfo") == 0;
+             fs_copy("app0:updater/sce_sys/param.sfo", WS_PKG_UPD "/sce_sys/param.sfo") == 0 &&
+             fs_copy("app0:updater/data/tex/paw4.wrt", WS_PKG_UPD "/data/tex/paw4.wrt") == 0 &&
+             fs_copy("app0:updater/data/tex/font_title.wrt", WS_PKG_UPD "/data/tex/font_title.wrt") == 0;
     fs_copy("app0:updater/sce_sys/icon0.png", WS_PKG_UPD "/sce_sys/icon0.png");
     if (ok) ok = inst_make_head_bin(WS_PKG_UPD) == 0 && inst_promote(WS_PKG_UPD) == 0;
     if (!ok) {
@@ -2965,7 +2968,6 @@ static void draw_update(void) {
     halo_draw(x - 28, y - 28, w + 56, h + 56, 1, 1);
     vita2d_draw_rectangle(x, y, w, h, C_PANEL);
     frame_rect(x, y, w, h, 4, C_WHITE);
-    paw_draw(x + 38, y + 26, 1, 1);
     const char *brand = "WOLFF'S ROOM";
     float brand_x = x + (w - title_width(brand, 3)) / 2;
     for (int i = 0; brand[i]; i++) {
@@ -3302,8 +3304,7 @@ int main(void) {
         vita2d_end_drawing();
         if (ime_open) vita2d_common_dialog_update(); /* teclado do sistema por cima */
         vita2d_swap_buffers();
-        /* A primeira sincronização exibe uma tela de carregamento.
-         * Aguarde o título real ser apresentado antes de iniciar o BGM. */
+        /* Wait until the title has actually been displayed (not first-sync loading). */
         if (!music_started_after_frame && !first_sync) {
             audio_start_music_after_first_frame();
             music_started_after_frame = 1;
