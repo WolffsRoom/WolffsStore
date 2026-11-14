@@ -14,9 +14,9 @@ class ReleaseInvariants(unittest.TestCase):
         cls.video = (ROOT / "src/video.c").read_text(encoding="utf-8")
         cls.updater = (ROOT / "updater/main.c").read_text(encoding="utf-8")
 
-    def test_release_is_v092(self):
-        self.assertIn('set(WS_SFO_VERSION "00.92")', self.cmake)
-        self.assertIn('set(WS_FILE_VERSION "0.92")', self.cmake)
+    def test_release_is_v093(self):
+        self.assertIn('set(WS_SFO_VERSION "00.93")', self.cmake)
+        self.assertIn('set(WS_FILE_VERSION "0.93")', self.cmake)
 
     def test_third_party_author_badge_is_optional(self):
         catalog=(ROOT / "src/catalog.h").read_text(encoding="utf-8")
@@ -26,6 +26,28 @@ class ReleaseInvariants(unittest.TestCase):
         self.assertIn('snprintf(by, sizeof(by), "by: %s", p->author)', self.main)
         self.assertIn("p->author && p->author[0]", self.main)
         self.assertIn('snprintf(by, sizeof(by), "by: %s", g_posts[pi].author)', self.main)
+
+    def test_author_is_only_in_cards_and_details_not_post_header(self):
+        area = self.main[self.main.index("static void build_post("):self.main.index("/* barra de rolagem", self.main.index("static void build_post("))]
+        header = area[:area.index("rect(24, y, 912, 4, C_LINE);")]
+        self.assertNotIn('snprintf(by, sizeof(by), "by: %s"', header)
+        card = self.main[self.main.index("static void card("):self.main.index("static float header(")]
+        self.assertIn('snprintf(by, sizeof(by), "by: %s", p->author)', card)
+        self.assertIn("if (t->ninfo)", area)
+
+    def test_vita_github_lite_redirect_preserves_direct_download_assets(self):
+        nav = self.main[self.main.index("static const char *vita_github_url("):self.main.index("/* ---------------------------------------------------------------- avisos (toasts) */")]
+        self.assertIn("https://wolffsroom.github.io/WolffsStore/", nav)
+        self.assertIn('strstr(path, "/releases/download/")', nav)
+        self.assertIn('const char *target = vita_github_url(url, mapped, sizeof(mapped));', nav)
+
+    def test_status_is_inside_hint_footer_not_separate_row(self):
+        self.assertIn("static float draw_hints(void)", self.main)
+        self.assertIn("static void draw_strip(float hint_right)", self.main)
+        self.assertIn("float nh = 36; /* notifications reuse unused right side of hints */", self.main)
+        self.assertIn("draw_strip(hint_right)", self.main)
+        self.assertIn("int offset = ((int)(now_s * 9.0)) % len;", self.main)
+        self.assertNotIn("float nh = 36 + (strip_visible() ? 32 : 0);", self.main)
 
     def test_launches_updater_and_store_directly(self):
         self.assertIn('sceAppMgrLaunchAppByUri(0x20000, "psgm:play?titleid=WOLF00002")', self.main)

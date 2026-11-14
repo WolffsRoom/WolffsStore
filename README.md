@@ -103,7 +103,7 @@ git push origin v0.1
 
 1. Suba `WS_FILE_VERSION`/`WS_SFO_VERSION` no `CMakeLists.txt`.
 2. Crie e envie a tag correspondente, no formato `v0.8`, `v0.9`… ou `v1.0`:
-   `git tag v0.92 && git push origin v0.92`
+   `git tag v0.93 && git push origin v0.93`
 3. O workflow publica a release em `WolffsRoom/WolffsStore` com o asset fixo `WolffsStore.vpk`.
    A URL permanente da versão mais recente é
    `https://github.com/WolffsRoom/WolffsStore/releases/latest/download/WolffsStore.vpk`.

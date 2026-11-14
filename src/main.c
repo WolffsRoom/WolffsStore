@@ -29,7 +29,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "0.92"
+#define WS_VERSION "0.93"
 #endif
 
 /* ================================================================ textos */
@@ -887,16 +887,6 @@ static void build_post(int pi) {
     snprintf(line, sizeof(line), "%s \xb7 %s", t->tag, t->status);
     upper_latin1(line);
     y += para(line, 24, y, 912, C_MUTED, 1, 2, 0) + 16;
-    if (p->author && p->author[0]) {
-        char by[128];
-        snprintf(by, sizeof(by), "by: %s", p->author);
-        float bw = body_width(by) + 28;
-        if (bw > 912) bw = 912;
-        rect(24, y, bw, 34, RGBA8(0x19, 0x19, 0x19, 0xFF));
-        frame(24, y, bw, 34, C_BORDER, C_WHITE, -1);
-        body(keep(by), 38, y + 5, C_WHITE);
-        y += 34 + 14;
-    }
     rect(24, y, 912, 4, C_LINE);
     y += 4 + 28;
 
@@ -1893,31 +1883,32 @@ static float hint(float x, int icon, const char *label, const char *key) {
     return x + body_width(label) + 24;
 }
 
-static void draw_hints(void) {
+static float draw_hints(void) {
     vita2d_draw_rectangle(0, SCR_H - 36 + hint_slide, SCR_W, 36, RGBA8(0x06, 0x06, 0x06, 0xE6));
     vita2d_draw_rectangle(0, SCR_H - 36 + hint_slide, SCR_W, 4, C_LINE);
     float x = 24;
     if (viewer >= 0) {
         x = hint(x, 1, TXT(S_H_CLOSE), NULL);
-        hint(x, 0, TXT(S_H_NEXT), "L/R");
-        return;
+        x = hint(x, 0, TXT(S_H_NEXT), "L/R");
+        return x;
     }
     if (snd_menu) {
         x = hint(x, 4, TXT(S_H_MOVE), NULL);
         x = hint(x, 0, TXT(S_H_SELECT), NULL);
-        hint(x, 1, TXT(S_H_CLOSE), NULL);
-        return;
+        x = hint(x, 1, TXT(S_H_CLOSE), NULL);
+        return x;
     }
     if (settings_open) {
         x = hint(x, 4, TXT(S_H_MOVE), NULL);
         x = hint(x, 0, TXT(S_H_SELECT), NULL);
-        hint(x, 1, TXT(S_H_CLOSE), NULL);
-        return;
+        x = hint(x, 1, TXT(S_H_CLOSE), NULL);
+        return x;
     }
     x = hint(x, 4, TXT(S_H_MOVE), NULL);
     x = hint(x, 0, TXT(S_H_SELECT), NULL);
     x = hint(x, 1, TXT(S_H_BACK), NULL);
-    hint(x, 0, TXT(S_H_SCROLL), "L/R");
+    x = hint(x, 0, TXT(S_H_SCROLL), "L/R");
+    return x;
 }
 
 /* barra de rolagem em pixels, na borda direita */
@@ -2052,10 +2043,36 @@ static void go(int v, int arg) {
     cam_clamp();
 }
 
+/* On Vita, the browser cannot render modern GitHub: use the static GitHub Vita
+ * Lite mirror instead. The public website keeps its original github.com links.
+ * Release asset downloads must retain their direct URL. */
+static const char *vita_github_url(const char *url, char *out, size_t cap) {
+    static const char *prefix = "https://github.com/";
+    if (!url || strncmp(url, prefix, strlen(prefix)) != 0) return url;
+    const char *path = url + strlen(prefix);
+    if (!strncmp(path, "WolffsRoom", 10) &&
+        (path[10] == 0 || path[10] == '?' || path[10] == '#')) {
+        snprintf(out, cap, "https://wolffsroom.github.io/WolffsStore/");
+        return out;
+    }
+    char owner[80] = "", repo[112] = "";
+    if (sscanf(path, "%79[^/]/%111[^/?#]", owner, repo) != 2) return url;
+    if (strstr(path, "/releases/download/")) return url; /* actual asset */
+    const char *after = strchr(path, '/');
+    if (!after) return url;
+    after = strchr(after + 1, '/');
+    const char *section = "";
+    if (after && !strncmp(after, "/releases", 9)) section = "releases/";
+    else if (after && !strncmp(after, "/issues", 7)) section = "issues/";
+    snprintf(out, cap, "https://wolffsroom.github.io/WolffsStore/%s/%s/%s", owner, repo, section);
+    return out;
+}
+
 static void open_url(const char *url) {
     if (!url) return;
-    char uri[600];
-    snprintf(uri, sizeof(uri), "webmodal: %s", url);
+    char mapped[520], uri[620];
+    const char *target = vita_github_url(url, mapped, sizeof(mapped));
+    snprintf(uri, sizeof(uri), "webmodal: %s", target);
     sceAppMgrLaunchAppByUri(0xFFFFF, uri);
 }
 
@@ -2953,47 +2970,56 @@ static int strip_visible(void) {
     return current_job() != NULL;
 }
 
-static void draw_strip(void) {
+/* Status/toasts live INSIDE the existing shortcut bar, not in an extra row.
+ * Long messages cycle through visible characters as a pixel-text marquee. */
+static void draw_strip(float hint_right) {
     if (!strip_visible()) return;
-    float h = 32, y = SCR_H - 36 - h + hint_slide;
-    vita2d_draw_rectangle(0, y, SCR_W, h, RGBA8(0x0E, 0x0E, 0x0E, 0xF2));
-    vita2d_draw_rectangle(0, y, SCR_W, 4, C_LINE);
+    float x = hint_right + 6, avail = SCR_W - x - 16;
+    if (avail < 100) return; /* shortcuts always take priority */
+    char msg[512] = "";
     Toast *t = &toasts[0];
     double e = now_s - t->t0;
-    char *lines[1];
-    static char buf[512];
     if (t->text[0] && e < 4.0) {
-        /* aviso: entra subindo em 4 passos */
-        float dy = e < .16 ? 8 * (1 - ((int)(e / .04) + 1) / 4.f) : 0;
-        draw_warn(24, y + 8 + dy, 1);
-        if (wrap_body(t->text, SCR_W - 48 - 32, lines, 1, buf, sizeof(buf))) body_draw(lines[0], 56, y + 3 + dy, C_WHITE);
+        snprintf(msg, sizeof(msg), "! %s", t->text);
+    } else {
+        Job *j = current_job();
+        if (!j) return;
+        float k = job_frac(j);
+        if (j->state == J_DOWNLOAD) {
+            char size[24] = "";
+            fmt_size((long long)j->pr.speed, size, sizeof(size));
+            snprintf(msg, sizeof(msg), "%s - %s %d%% %s/s",
+                     j->name, job_state_text(j), (int)(k * 100), size);
+        } else {
+            snprintf(msg, sizeof(msg), "%s - %s", j->name, job_state_text(j));
+        }
+        int n = jobs_active();
+        if (n > 1) {
+            size_t off = strlen(msg);
+            snprintf(msg + off, sizeof(msg) - off, " (+%d)", n - 1);
+        }
+    }
+    float y = SCR_H - 30 + hint_slide;
+    vita2d_draw_rectangle(x - 4, SCR_H - 32 + hint_slide, SCR_W - x - 12, 30,
+                          RGBA8(0x06, 0x06, 0x06, 0xFF));
+    if (body_width(msg) <= avail) {
+        body_draw(msg, x + avail - body_width(msg), y, C_SOFT);
         return;
     }
-    Job *j = current_job();
-    if (!j) return;
-    float k = job_frac(j);
-    char s[96], sp[24] = "";
-    if (j->state == J_DOWNLOAD) {
-        char v[24];
-        fmt_size((long long)j->pr.speed, v, sizeof(v));
-        if (v[0]) snprintf(sp, sizeof(sp), " \xb7 %s/s", v);
-        snprintf(s, sizeof(s), "%s %d%%%s", job_state_text(j), (int)(k * 100), sp);
-    } else {
-        snprintf(s, sizeof(s), "%s", job_state_text(j));
+    /* Character-stepped loop avoids drawing outside the free space (no clip API). */
+    static char cycle[600];
+    snprintf(cycle, sizeof(cycle), "%s     *     ", msg);
+    int len = (int)strlen(cycle);
+    if (!len) return;
+    int offset = ((int)(now_s * 9.0)) % len;
+    char visible[256] = "";
+    for (int i = 0; i < len && i < (int)sizeof(visible) - 1; i++) {
+        int n = (int)strlen(visible);
+        visible[n] = cycle[(offset + i) % len];
+        visible[n + 1] = 0;
+        if (body_width(visible) > avail) { visible[n] = 0; break; }
     }
-    int n = jobs_active();
-    if (n > 1) snprintf(s + strlen(s), sizeof(s) - strlen(s), "  (+%d)", n - 1);
-    float bw = 220, bx = SCR_W - 24 - bw;
-    float sw = body_width(s);
-    body_draw(s, bx - 16 - sw, y + 3, C_SOFT);
-    if (wrap_body(j->name, (int)(bx - 16 - sw - 24 - 24), lines, 1, buf, sizeof(buf))) body_draw_bold(lines[0], 24, y + 3, C_WHITE);
-    if ((j->state == J_EXTRACT && j->phase) || j->state == J_INSTALL) {
-        int off = (int)(now_s * 24) % 24;
-        for (float x = -24 + off; x < bw; x += 24)
-            if (x >= 0) vita2d_draw_rectangle(bx + x, y + 14, 12, 8, C_SOFT);
-    } else {
-        seg_bar(bx, y + 14, bw, 8, k, C_WHITE, RGBA8(0x24, 0x24, 0x24, 0xFF));
-    }
+    body_draw(visible, x, y, C_SOFT);
 }
 
 /* tela da atualização do próprio app */
@@ -3309,7 +3335,7 @@ int main(void) {
         run_cues();
         tick_store();
         {
-            float nh = 36 + (strip_visible() ? 32 : 0);
+            float nh = 36; /* notifications reuse unused right side of hints */
             if (nh != hint_h) {
                 hint_h = nh;
                 cam_follow();
@@ -3337,7 +3363,6 @@ int main(void) {
             if (t < .3) draw_title_screen(now_s - title_t0, ((int)(t / .06) + 1) / 5.f);
             if (viewer >= 0) draw_viewer();
             if (now_s - intro_t0 >= T_DONE) {
-                draw_strip();
                 draw_update();
             }
             draw_snd_menu();
@@ -3346,7 +3371,8 @@ int main(void) {
             if (pop_state(intro_t0 + T_UI, &dy, &al)) {
                 if (viewer < 0) draw_scrollbar(al);
                 hint_slide = 36 * (1 - al);
-                draw_hints();
+                float hint_right = draw_hints();
+                if (now_s - intro_t0 >= T_DONE) draw_strip(hint_right);
             }
         }
         draw_video();
