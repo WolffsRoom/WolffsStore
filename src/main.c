@@ -29,7 +29,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "0.94"
+#define WS_VERSION "0.95"
 #endif
 
 /* ================================================================ textos */
@@ -135,6 +135,7 @@ static int ime_open = 0;
 static int sync_manual = 0, sync_reported = 1;
 static AppRelease app_rel;
 static int upd_job = -1, upd_skipped = 0; /* atualização do próprio app */
+static int updater_cleanup_pending = 0;
 static double letter_hop[16] = {-100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100};
 static double bark_t0 = -100, sync_done_t = -100;
 static int snd_menu = 0, snd_row = 0, vid_open = 0, vid_music = 0;
@@ -2838,7 +2839,28 @@ static void launch_updater(void) {
              fs_copy("app0:updater/sce_sys/livearea/contents/bg0.png", WS_PKG_UPD "/sce_sys/livearea/contents/bg0.png") == 0 &&
              fs_copy("app0:updater/sce_sys/livearea/contents/startup.png", WS_PKG_UPD "/sce_sys/livearea/contents/startup.png") == 0 &&
              fs_copy("app0:updater/sce_sys/livearea/contents/template.xml", WS_PKG_UPD "/sce_sys/livearea/contents/template.xml") == 0;
-    if (ok) ok = inst_make_head_bin(WS_PKG_UPD) == 0 && inst_promote(WS_PKG_UPD) == 0;
+    if (ok) ok = inst_make_head_bin(WS_PKG_UPD) == 0;
+    /* Delete the OLD helper while Store is foreground, BEFORE the new helper
+     * starts. This refreshes icon0 and the LiveArea on every upgrade. */
+    if (ok && fs_exists("ux0:app/WOLF00002/sce_sys/param.sfo")) {
+        int remove_old = inst_delete("WOLF00002");
+        ws_log("updater: remove previous LiveArea/bubble -> 0x%08X", remove_old);
+        if (remove_old < 0) {
+            toast("Nao foi possivel substituir o Auto Updater antigo.");
+            upd_job = -1;
+            upd_skipped = 1;
+            return;
+        }
+    }
+    if (ok) ok = inst_promote(WS_PKG_UPD) == 0;
+    if (ok) {
+        /* Refuse handoff to a helper whose LiveArea was not installed. */
+        ok = fs_exists("ux0:app/WOLF00002/sce_sys/icon0.png") &&
+             fs_exists("ux0:app/WOLF00002/sce_sys/livearea/contents/bg0.png") &&
+             fs_exists("ux0:app/WOLF00002/sce_sys/livearea/contents/startup.png") &&
+             fs_exists("ux0:app/WOLF00002/sce_sys/livearea/contents/template.xml");
+        if (!ok) ws_log("updater: installed bubble missing custom LiveArea files");
+    }
     if (!ok) {
         char t[256];
         snprintf(t, sizeof(t), "%s: %s", TXT(S_T_FAILED), inst_error());
@@ -2846,14 +2868,13 @@ static void launch_updater(void) {
         upd_job = -1;
         return;
     }
+    /* VitaShell-style shell handoff. 0x20000 requested the second game while
+     * Store was still foreground and made the user confirm closing Store.
+     * Queue a shell launch once, then exit immediately. No second launch:
+     * repeated requests provoke another "close the updater?" dialog. */
     vita2d_wait_rendering_done();
-    int launch_r = sceAppMgrLaunchAppByUri(0x20000, "psgm:play?titleid=WOLF00002");
-    ws_log("launch updater directly: 0x%08X", launch_r);
-    if (launch_r < 0) {
-        launch_r = sceAppMgrLaunchAppByName(0x60000, "WOLF00002", NULL);
-        ws_log("launch updater fallback by titleid: 0x%08X", launch_r);
-    }
-    sceKernelDelayThread(100 * 1000);
+    ws_log("updater: VitaShell-style handoff to WOLF00002");
+    sceAppMgrLaunchAppByUri(0xFFFFF, "psgm:play?titleid=WOLF00002");
     sceKernelExitProcess(0);
 }
 
@@ -2898,6 +2919,18 @@ static unsigned jobs_seen_version;
 
 static void tick_store(void) {
     int intro_done = started && now_s - intro_t0 >= T_DONE;
+    /* Once the new Store is running normally, the helper process has had
+     * time to exit. Uninstall its bubble without requiring a second boot. */
+    if (updater_cleanup_pending && now_s >= 9.0 && intro_done &&
+        jobs_active() == 0) {
+        updater_cleanup_pending = 0;
+        int r = inst_delete("WOLF00002");
+        ws_log("updater: cleanup after successful update -> 0x%08X", r);
+        if (r >= 0 || !fs_exists("ux0:app/WOLF00002/sce_sys/param.sfo"))
+            fs_rm_rf(WS_DATA "/updater_cleanup.pending");
+        else
+            ws_log("updater: cleanup failed; pending marker kept for next startup");
+    }
     int st = sync_state();
     if (first_sync && st == SYNC_READY) {
         apply_sync();
@@ -3114,10 +3147,8 @@ int main(void) {
     feat = catalog_featured();
     load_covers();
     make_mosaic();
-    /* On the first boot after an upgrade, the updater may still be closing.
-     * Uninstalling its running title here can abruptly terminate the Store.
-     * Leave the temporary bubble only until the NEXT Store launch. This also
-     * protects upgrades from older updater binaries (v0.91 and earlier). */
+    /* Defer helper removal only until it has finished exiting, not until a
+     * SECOND launch of Store. The updater writes the marker after promotion. */
     fs_mkdir_p(WS_DATA);
     int upgraded_this_boot = 1;
     {
@@ -3129,14 +3160,11 @@ int main(void) {
         }
         fs_write(WS_DATA "/last_started_version.txt", WS_VERSION, (int)strlen(WS_VERSION));
     }
-    if (fs_exists("ux0:app/WOLF00002/sce_sys/param.sfo")) {
-        if (upgraded_this_boot) {
-            ws_log("updater cleanup deferred: first boot of %s", WS_VERSION);
-        } else {
-            int cleanup = inst_delete("WOLF00002");
-            ws_log("cleanup updater on next launch: 0x%08X", cleanup);
-        }
-    }
+    updater_cleanup_pending =
+        fs_exists("ux0:app/WOLF00002/sce_sys/param.sfo") &&
+        (upgraded_this_boot || fs_exists(WS_DATA "/updater_cleanup.pending"));
+    if (updater_cleanup_pending)
+        ws_log("updater: deferred cleanup scheduled in THIS Store session");
     /* sobras de uma atualização do próprio app */
     fs_rm_rf(WS_PKG_SELF);
     fs_rm_rf(WS_PKG_UPD);

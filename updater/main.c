@@ -160,22 +160,42 @@ int main(void) {
     }
     busy = 0;
     sceKernelDelayThread(100 * 1000);
-    /* 0x20000 starts the installed app directly; 0xFFFFF only opens LiveArea.
-     * Give the installation and shell a moment to settle before relaunch. */
-    sceKernelDelayThread(350 * 1000);
-    int launch_r = sceAppMgrLaunchAppByUri(0x20000, "psgm:play?titleid=" MAIN_TITLE);
-    if (launch_r < 0) {
-        launch_r = sceAppMgrLaunchAppByName(0x60000, MAIN_TITLE, NULL);
+    if (r < 0) {
+        /* A failed promotion must never be advertised as an updated Store. */
+        vita2d_start_drawing();
+        vita2d_clear_screen();
+        brand_text("FALHA AO INSTALAR", 210, 240, 3,
+                   RGBA8(255, 125, 125, 255));
+        vita2d_end_drawing();
+        vita2d_swap_buffers();
+        sceKernelDelayThread(3500 * 1000);
+        sceKernelExitProcess(1);
     }
+    /* This marker is consumed only AFTER the new Store has started.
+     * Never uninstall WOLF00002 from inside its own updater process. */
+    sceIoMkdir("ux0:data/WolffsStore", 0777);
     {
-        char line[96];
-        int n = snprintf(line, sizeof(line), "updater: relaunch Store -> 0x%08X\r\n", launch_r);
-        sceIoMkdir("ux0:data/WolffsStore/logs", 0777);
+        SceUID fd = sceIoOpen("ux0:data/WolffsStore/updater_cleanup.pending",
+                            SCE_O_WRONLY | SCE_O_CREAT | SCE_O_TRUNC, 0777);
+        if (fd >= 0) {
+            sceIoWrite(fd, "1", 1);
+            sceIoClose(fd);
+        }
+    }
+    /* Wait for shell registration. VitaShell and PSVitaAlive use this single
+     * queued URI + immediate process exit to avoid the "close Updater?"
+     * prompt caused by switching games while the helper is still active. */
+    sceKernelDelayThread(1600 * 1000);
+    vita2d_wait_rendering_done();
+    {
+        char line[112];
+        int n = snprintf(line, sizeof(line),
+                         "updater: handing off to Store with shell URI\r\n");
         SceUID fd = sceIoOpen("ux0:data/WolffsStore/logs/wolffsstore.log",
                             SCE_O_WRONLY | SCE_O_CREAT | SCE_O_APPEND, 0777);
         if (fd >= 0) { sceIoWrite(fd, line, n); sceIoClose(fd); }
     }
-    sceKernelDelayThread(350 * 1000);
+    sceAppMgrLaunchAppByUri(0xFFFFF, "psgm:play?titleid=" MAIN_TITLE);
     sceKernelExitProcess(0);
     return 0;
 }

@@ -1,4 +1,4 @@
-from pathlib import Path
+﻿from pathlib import Path
 import re
 import unittest
 
@@ -14,9 +14,9 @@ class ReleaseInvariants(unittest.TestCase):
         cls.video = (ROOT / "src/video.c").read_text(encoding="utf-8")
         cls.updater = (ROOT / "updater/main.c").read_text(encoding="utf-8")
 
-    def test_release_is_v094(self):
-        self.assertIn('set(WS_SFO_VERSION "00.94")', self.cmake)
-        self.assertIn('set(WS_FILE_VERSION "0.94")', self.cmake)
+    def test_release_is_v095(self):
+        self.assertIn('set(WS_SFO_VERSION "00.95")', self.cmake)
+        self.assertIn('set(WS_FILE_VERSION "0.95")', self.cmake)
 
     def test_third_party_author_badge_is_optional(self):
         catalog=(ROOT / "src/catalog.h").read_text(encoding="utf-8")
@@ -73,19 +73,42 @@ class ReleaseInvariants(unittest.TestCase):
         self.assertIn("int offset = ((int)(now_s * 9.0)) % len;", self.main)
         self.assertNotIn("float nh = 36 + (strip_visible() ? 32 : 0);", self.main)
 
-    def test_launches_updater_and_store_directly(self):
-        self.assertIn('sceAppMgrLaunchAppByUri(0x20000, "psgm:play?titleid=WOLF00002")', self.main)
-        self.assertIn('sceAppMgrLaunchAppByUri(0x20000, "psgm:play?titleid=" MAIN_TITLE)', self.updater)
-        self.assertIn('sceAppMgrLaunchAppByName(0x60000, "WOLF00002", NULL)', self.main)
-        self.assertIn('sceAppMgrLaunchAppByName(0x60000, MAIN_TITLE, NULL)', self.updater)
-        self.assertNotIn('sceAppMgrLaunchAppByUri(0xFFFFF', self.updater)
+    def test_handoff_queues_only_one_shell_launch_then_exits(self):
+        launch = self.main[self.main.index("static void launch_updater("):
+                           self.main.index("static void maybe_self_update(")]
+        self.assertIn('sceAppMgrLaunchAppByUri(0xFFFFF, "psgm:play?titleid=WOLF00002")',launch)
+        self.assertIn("sceKernelExitProcess(0);", launch)
+        self.assertNotIn("sceAppMgrLaunchAppByName(",launch)
+        self.assertNotIn("sceAppMgrLaunchAppByUri(0x20000",launch)
+        updater_launch = self.updater[self.updater.index('/* Wait for shell registration.'):]
+        self.assertIn('sceAppMgrLaunchAppByUri(0xFFFFF, "psgm:play?titleid=" MAIN_TITLE)',updater_launch)
+        self.assertIn("sceKernelExitProcess(0);",updater_launch)
+        self.assertNotIn("sceAppMgrLaunchAppByName(",updater_launch)
+        self.assertNotIn("sceAppMgrLaunchAppByUri(0x20000",updater_launch)
 
-    def test_defer_updater_cleanup_on_upgrade_first_launch(self):
-        self.assertIn('last_started_version.txt', self.main)
-        self.assertIn('if (upgraded_this_boot)', self.main)
-        self.assertIn('updater cleanup deferred: first boot of', self.main)
-        self.assertIn('cleanup updater on next launch', self.main)
-        self.assertIn('updater: relaunch Store ->', self.updater)
+    def test_updater_livearea_is_freshly_installed(self):
+        launch = self.main[self.main.index("static void launch_updater("):
+                           self.main.index("static void maybe_self_update(")]
+        self.assertLess(launch.index('inst_delete("WOLF00002")'),
+                        launch.index("inst_promote(WS_PKG_UPD)"))
+        for name in ("icon0.png","bg0.png","startup.png","template.xml"):
+            self.assertIn('fs_exists("ux0:app/WOLF00002/sce_sys/',launch)
+            self.assertIn(name,launch)
+        self.assertIn('updater: installed bubble missing custom LiveArea files',launch)
+
+    def test_cleanup_happens_on_first_updated_store_session(self):
+        self.assertIn('last_started_version.txt',self.main)
+        self.assertIn('WS_DATA "/updater_cleanup.pending"',self.main)
+        self.assertIn('updater_cleanup_pending =',self.main)
+        tick=self.main[self.main.index("static void tick_store("):
+                       self.main.index("/* ================================================================ main */")]
+        self.assertIn("now_s >= 9.0",tick)
+        self.assertIn('inst_delete("WOLF00002")',tick)
+        self.assertIn("updater_cleanup_pending = 0;",tick)
+        self.assertIn("fs_rm_rf(WS_DATA",tick)
+        self.assertIn('updater_cleanup.pending',self.updater)
+        self.assertIn("if (r < 0)",self.updater)
+        self.assertIn('sceKernelExitProcess(1);',self.updater)
 
     def test_main_removes_the_closed_updater_after_update(self):
         install_h = (ROOT / "src/install.h").read_text(encoding="utf-8")
