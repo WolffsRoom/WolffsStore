@@ -69,9 +69,9 @@ target_link_libraries(${PROJECT_NAME}
   png
   jpeg
   curl
-  pthread
   ssl
   crypto
+  pthread
   archive
   zstd
   lzma
