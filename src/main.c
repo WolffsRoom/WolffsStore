@@ -29,7 +29,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "0.99.1"
+#define WS_VERSION "0.99.2"
 #endif
 
 /* ================================================================ textos */
@@ -2949,8 +2949,10 @@ static void launch_updater(void) {
      * repeated requests provoke another "close the updater?" dialog. */
     vita2d_wait_rendering_done();
     ws_log("updater: VitaShell-style handoff to WFFS00043");
-    sceAppMgrLaunchAppByUri(0xFFFFF, "psgm:play?titleid=WFFS00043");
-    sceKernelExitProcess(0);
+    int launched = sceAppMgrLaunchAppByUri(0x20000, "psgm:play?titleid=WFFS00043");
+    ws_log("updater: direct app launch returned 0x%08X", launched);
+    if (launched >= 0) sceKernelExitProcess(0);
+    toast("Falha ao abrir o Auto Updater. Abra WFFS00043 pela LiveArea.");
 }
 
 static void maybe_self_update(void) {
@@ -2996,7 +2998,8 @@ static void tick_store(void) {
     int intro_done = started && now_s - intro_t0 >= T_DONE;
     /* Once the new Store is running normally, the helper process has had
      * time to exit. Uninstall its bubble without requiring a second boot. */
-    if (updater_cleanup_pending && now_s >= 9.0 && jobs_active() == 0) {
+    if (updater_cleanup_pending && !first_sync && intro_done &&
+        now_s - intro_t0 >= T_DONE + 2.0 && jobs_active() == 0) {
         updater_cleanup_pending = 0;
         int r = inst_delete("WFFS00043");
         ws_log("updater: cleanup after successful update -> 0x%08X", r);
@@ -3007,7 +3010,8 @@ static void tick_store(void) {
             ws_log("updater: cleanup failed; pending marker kept for next startup");
         }
     }
-    if (legacy_updater_cleanup_pending && now_s >= 9.0 && jobs_active() == 0) {
+    if (legacy_updater_cleanup_pending && !first_sync && intro_done &&
+        now_s - intro_t0 >= T_DONE + 2.0 && jobs_active() == 0) {
         legacy_updater_cleanup_pending = 0;
         char title[128] = "";
         int owned = sfo_get("ux0:app/WOLF00002/sce_sys/param.sfo",
@@ -3257,7 +3261,7 @@ int main(void) {
         fs_exists("ux0:app/WFFS00043/sce_sys/param.sfo") &&
         (upgraded_this_boot || fs_exists(WS_DATA "/updater_cleanup.pending"));
     if (updater_cleanup_pending)
-        ws_log("updater: deferred cleanup scheduled in THIS Store session");
+        ws_log("updater: deferred cleanup scheduled AFTER Home is ready");
     /* A v0.99 bridge installs WOLF00002, but this app uses WFFS00043.
      * Only remove a legacy bubble whose installed SFO explicitly proves
      * it is OUR updater. Never delete the old WOLF00001 main app. */
@@ -3539,10 +3543,14 @@ int main(void) {
         vita2d_end_drawing();
         if (ime_open) vita2d_common_dialog_update(); /* teclado do sistema por cima */
         vita2d_swap_buffers();
-        /* Wait until the title has actually been displayed (not first-sync loading). */
-        if (!music_started_after_frame && !first_sync) {
+        /* Start BGM only AFTER the fully loaded main Home has been drawn.
+         * No music while loading, on the title/intro, or during handoff. */
+        if (!music_started_after_frame && !first_sync && started &&
+            view == V_HOME && now_s - intro_t0 >= T_DONE &&
+            upd_job < 0) {
             audio_start_music_after_first_frame();
             music_started_after_frame = 1;
+            ws_log("music: started after main Home became ready");
         }
     }
     return 0;

@@ -98,6 +98,121 @@ static int promote(const char *path) {
     return r;
 }
 
+/* One-time migration of WOLF00001 to WFFS00042, performed only by the
+ * updater (the old Store must no longer be running). Check the installed
+ * SFO itself; never erase an unrelated app that happens to reuse the ID. */
+#define LEGACY_APP "WOLF00001"
+#define LEGACY_MIGRATION_MARKER "ux0:data/WolffsStore/legacy_id_migration_v0992.done"
+
+static uint32_t sfo_u32(const unsigned char *p) {
+    return (uint32_t)p[0] | (uint32_t)p[1] << 8 |
+           (uint32_t)p[2] << 16 | (uint32_t)p[3] << 24;
+}
+static unsigned sfo_u16(const unsigned char *p) {
+    return (unsigned)p[0] | (unsigned)p[1] << 8;
+}
+static int installed_sfo_value(const char *path, const char *field,
+                               char *out, size_t cap) {
+    unsigned char b[4096];
+    if (!cap) return -1;
+    out[0] = 0;
+    FILE *f = fopen(path, "rb");
+    if (!f) return -1;
+    size_t size = fread(b, 1, sizeof(b), f);
+    fclose(f);
+    if (size < 20 || sfo_u32(b) != 0x46535000U) return -1;
+    uint32_t key_base = sfo_u32(b + 8), value_base = sfo_u32(b + 12);
+    uint32_t count = sfo_u32(b + 16);
+    if (count > (size - 20) / 16) return -1;
+    for (uint32_t i = 0; i < count; ++i) {
+        const unsigned char *e = b + 20 + i * 16;
+        size_t k = (size_t)key_base + sfo_u16(e);
+        size_t v = (size_t)value_base + sfo_u32(e + 12);
+        size_t len = sfo_u32(e + 4);
+        if (k >= size || v >= size || len > size - v) continue;
+        const char *key = (const char *)b + k;
+        if (!memchr(key, '\0', size - k) || strcmp(key, field)) continue;
+        size_t n = 0;
+        while (n < len && b[v + n] && n + 1 < cap) ++n;
+        memcpy(out, b + v, n);
+        out[n] = '\0';
+        return 0;
+    }
+    return -1;
+}
+
+static void migration_log(const char *text) {
+    sceIoMkdir("ux0:data/WolffsStore/logs", 0777);
+    SceUID fd = sceIoOpen("ux0:data/WolffsStore/logs/wolffsstore.log",
+                         SCE_O_WRONLY | SCE_O_CREAT | SCE_O_APPEND, 0777);
+    if (fd >= 0) {
+        sceIoWrite(fd, text, (SceSize)strlen(text));
+        sceIoClose(fd);
+    }
+}
+
+static int valid_store_sfo(const char *path, const char *expected_id,
+                           int check_legacy_version) {
+    char id[32], title[96], version[32];
+    if (installed_sfo_value(path, "TITLE_ID", id, sizeof(id)) < 0 ||
+        installed_sfo_value(path, "TITLE", title, sizeof(title)) < 0 ||
+        installed_sfo_value(path, "APP_VER", version, sizeof(version)) < 0)
+        return 0;
+    if (strcmp(id, expected_id) || strcmp(title, "Wolff's Store")) return 0;
+    if (check_legacy_version) {
+        unsigned major = 999, minor = 999;
+        if (sscanf(version, "%u.%u", &major, &minor) != 2 ||
+            major != 0 || minor > 99)
+            return 0; /* never touch an unknown/future WOLF00001 install */
+    }
+    return 1;
+}
+
+static int delete_legacy_store(void) {
+    int r = load_paf();
+    if (r < 0) return r;
+    r = sceSysmoduleLoadModuleInternal(SCE_SYSMODULE_INTERNAL_PROMOTER_UTIL);
+    if (r >= 0) {
+        r = scePromoterUtilityInit();
+        if (r >= 0) {
+            r = scePromoterUtilityDeletePkg(LEGACY_APP);
+            scePromoterUtilityExit();
+        }
+        sceSysmoduleUnloadModuleInternal(SCE_SYSMODULE_INTERNAL_PROMOTER_UTIL);
+    }
+    unload_paf();
+    return r;
+}
+
+static void migrate_legacy_store_after_install(void) {
+    FILE *f = fopen(LEGACY_MIGRATION_MARKER, "rb");
+    if (f) { fclose(f); return; }
+    const char *new_sfo = "ux0:app/WFFS00042/sce_sys/param.sfo";
+    const char *old_sfo = "ux0:app/WOLF00001/sce_sys/param.sfo";
+    /* Require the newly installed Store to be registered and correctly
+     * identified before considering any removal of the previous bubble. */
+    if (!valid_store_sfo(new_sfo, "WFFS00042", 0)) {
+        migration_log("migration: new WFFS00042 identity not verified; preserving old app\r\n");
+        return;
+    }
+    int legacy_valid = valid_store_sfo(old_sfo, LEGACY_APP, 1);
+    if (legacy_valid) {
+        migration_log("migration: WOLF00001 TITLE/ID/APP_VER verified, deleting old Store\r\n");
+        int r = delete_legacy_store();
+        char msg[120];
+        snprintf(msg, sizeof(msg), "migration: DeletePkg(WOLF00001) -> 0x%08X\r\n", r);
+        migration_log(msg);
+        if (r < 0) return; /* retry only on a future updater run */
+    } else {
+        migration_log("migration: old WOLF00001 missing or identity/version mismatch; untouched\r\n");
+    }
+    f = fopen(LEGACY_MIGRATION_MARKER, "wb");
+    if (f) {
+        fputs("Migration checked for v0.99.2\r\n", f);
+        fclose(f);
+    }
+}
+
 /* PromoterUtil não informa porcentagem: a barra é propositalmente indeterminada. */
 static int anim(SceSize a, void *b) {
     (void)a;
@@ -176,6 +291,11 @@ int main(void) {
         sceKernelDelayThread(3500 * 1000);
         sceKernelExitProcess(1);
     }
+    /* Migrate ONLY the positively identified old WOLF00001 installation
+     * after WFFS00042 has been promoted. The helper is separate so the
+     * Store never uninstalls the legacy app from its own first session. */
+    migrate_legacy_store_after_install();
+
     /* This marker is consumed only AFTER the new Store has started.
      * Never uninstall WFFS00043 from inside its own updater process. */
     sceIoMkdir("ux0:data/WolffsStore", 0777);
@@ -187,9 +307,9 @@ int main(void) {
             sceIoClose(fd);
         }
     }
-    /* Wait for shell registration. VitaShell and PSVitaAlive use this single
-     * queued URI + immediate process exit to avoid the "close Updater?"
-     * prompt caused by switching games while the helper is still active. */
+    /* Wait for SceShell registration. For psgm:play URIs the VitaSDK
+     * explicitly documents 0x20000 to launch the app. 0xFFFFF opens
+     * LiveArea, which caused the observed return instead of reopening. */
     sceKernelDelayThread(1600 * 1000);
     vita2d_wait_rendering_done();
     {
@@ -200,7 +320,16 @@ int main(void) {
                             SCE_O_WRONLY | SCE_O_CREAT | SCE_O_APPEND, 0777);
         if (fd >= 0) { sceIoWrite(fd, line, n); sceIoClose(fd); }
     }
-    sceAppMgrLaunchAppByUri(0xFFFFF, "psgm:play?titleid=" MAIN_TITLE);
-    sceKernelExitProcess(0);
-    return 0;
+    int launched = sceAppMgrLaunchAppByUri(0x20000, "psgm:play?titleid=" MAIN_TITLE);
+    {
+        char line[120];
+        int n = snprintf(line, sizeof(line),
+                         "updater: direct Store launch returned 0x%08X\r\n", launched);
+        SceUID fd = sceIoOpen("ux0:data/WolffsStore/logs/wolffsstore.log",
+                             SCE_O_WRONLY | SCE_O_CREAT | SCE_O_APPEND, 0777);
+        if (fd >= 0) { sceIoWrite(fd, line, n); sceIoClose(fd); }
+    }
+    if (launched >= 0) sceKernelExitProcess(0);
+    /* Keep the updater alive on launch failure for visible diagnosis. */
+    return launched;
 }

@@ -92,19 +92,29 @@ git tag v0.1
 git push origin v0.1
 ```
 
-### Mudança de Title ID (v0.99.1)
+### Migração de Title ID e atualização estável (v0.99.2)
 
-A partir desta versão, a Store é instalada como **WFFS00042** e o updater
-temporário como **WFFS00043**. A versão publicada anteriormente utilizava
-WOLF00001 / WOLF00002; esses IDs antigos **não são desinstalados
-automaticamente**, pois podem pertencer a outros homebrews instalados.
+A Store instalada é WFFS00042 e o updater temporário é WFFS00043.
+Antes da migração, utilizavam-se os IDs WOLF00001 e WOLF00002.
 
-A atualização via app antigo pode instalar uma **segunda bolha** da Store,
-já que o Title ID novo é diferente. Os dados permanecem no mesmo diretório
-ux0:data/WolffsStore/. Após confirmar que a nova Store abre normalmente,
-o usuário pode remover manualmente a bolha antiga *somente depois de
-verificar seu Title ID e que ela pertence à antiga Store*. Não apague um
-aplicativo desconhecido apenas por ele usar WOLF00001.
+Durante a atualização automática, o updater v0.99.2 primeiro instala
+WFFS00042 e depois só exclui WOLF00001 quando o SFO instalado comprova
+simultaneamente TITLE_ID=WOLF00001, TITLE="Wolff's Store" e uma versão
+APP_VER 00.xx (anterior a v1.0). Se qualquer condição falhar, mantém o
+aplicativo intacto. O marcador
+ux0:data/WolffsStore/legacy_id_migration_v0992.done evita repetir essa
+migração nas atualizações futuras. Não apaga ux0:data/WolffsStore.
+
+Em instalações manuais do VPK, o updater não é executado e a bolha
+antiga não é apagada automaticamente; nesse caso, confirme nome, versão e
+Title ID antes de excluí-la manualmente pelo VitaShell/LiveArea.
+
+O comando psgm:play passou a usar sceAppMgrLaunchAppByUri(0x20000, ...)
+para iniciar diretamente o updater e a Store, em vez de voltar à LiveArea.
+A música só começa após a Home estar carregada, desenhada e a animação de
+entrada ter terminado. A limpeza dos helpers foi adiada até esse ponto,
+evitando execução durante AFK na tela de abertura.
+
 
 ## LiveArea
 
@@ -117,7 +127,7 @@ aplicativo desconhecido apenas por ele usar WOLF00001.
 
 1. Suba `WS_FILE_VERSION`/`WS_SFO_VERSION` no `CMakeLists.txt`.
 2. Crie e envie a tag correspondente, no formato `v0.8`, `v0.9`… ou `v1.0`:
-   `git tag v0.99.1 && git push origin v0.99.1`
+   `git tag v0.99.2 && git push origin v0.99.2`
 3. O workflow publica a release em `WolffsRoom/WolffsStore` com o asset fixo `WolffsStore.vpk`.
    A URL permanente da versão mais recente é
    `https://github.com/WolffsRoom/WolffsStore/releases/latest/download/WolffsStore.vpk`.

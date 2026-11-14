@@ -14,9 +14,9 @@ class ReleaseInvariants(unittest.TestCase):
         cls.video = (ROOT / "src/video.c").read_text(encoding="utf-8")
         cls.updater = (ROOT / "updater/main.c").read_text(encoding="utf-8")
 
-    def test_release_is_v0991(self):
+    def test_release_is_v0992(self):
         self.assertIn('set(WS_SFO_VERSION "00.99")', self.cmake)
-        self.assertIn('set(WS_FILE_VERSION "0.99.1")', self.cmake)
+        self.assertIn('set(WS_FILE_VERSION "0.99.2")', self.cmake)
 
     def test_featured_update_suffix_follows_app_title(self):
         hero=self.main[self.main.index("static void build_home("):
@@ -38,9 +38,9 @@ class ReleaseInvariants(unittest.TestCase):
     def test_title_id_migration_keeps_old_bubble_safe(self):
         self.assertIn('set(WS_TITLEID "WFFS00042")', self.cmake)
         self.assertIn('set(WS_UPDATER_TITLEID "WFFS00043")', self.cmake)
-        self.assertIn('set(WS_FILE_VERSION "0.99.1")', self.cmake)
+        self.assertIn('set(WS_FILE_VERSION "0.99.2")', self.cmake)
         self.assertIn('set(WS_SFO_VERSION "00.99")', self.cmake)
-        self.assertIn('#define WS_VERSION "0.99.1"', self.main)
+        self.assertIn('#define WS_VERSION "0.99.2"', self.main)
         self.assertIn('#define MAIN_TITLE "WFFS00042"', self.updater)
         self.assertNotIn('set(WS_TITLEID "WOLF00001")',self.cmake)
         self.assertNotIn('#define MAIN_TITLE "WOLF00001"',self.updater)
@@ -50,8 +50,38 @@ class ReleaseInvariants(unittest.TestCase):
         self.assertNotIn('inst_delete("WOLF00001")', self.main)
         self.assertIn('strcmp(title, "Wolff\'s Store Updater") == 0', self.main)
         readme=(ROOT/"README.md").read_text(encoding="utf-8")
-        self.assertIn("não são desinstalados",readme)
+        self.assertIn("só exclui WOLF00001",readme)
+        self.assertIn("APP_VER 00.xx",readme)
         self.assertIn("ux0:data/WolffsStore/",readme)
+
+    def test_music_only_after_fully_drawn_home(self):
+        self.assertIn("if (!music_started_after_frame && !first_sync && started &&",self.main)
+        self.assertIn("view == V_HOME && now_s - intro_t0 >= T_DONE &&",self.main)
+        self.assertIn("upd_job < 0",self.main)
+        frame=self.main[self.main.index("vita2d_swap_buffers();",self.main.index("int main(void)")):]
+        self.assertLess(frame.index("vita2d_swap_buffers();"),
+                        frame.index("audio_start_music_after_first_frame();"))
+        self.assertIn("music_screen_ready", (ROOT/"src/audio.c").read_text(encoding="utf-8"))
+
+    def test_legacy_migration_requires_exact_name_id_and_pre1_version(self):
+        self.assertIn('#define LEGACY_APP "WOLF00001"',self.updater)
+        self.assertIn('legacy_id_migration_v0992.done',self.updater)
+        self.assertIn('valid_store_sfo(old_sfo, LEGACY_APP, 1)',self.updater)
+        self.assertIn('valid_store_sfo(new_sfo, "WFFS00042", 0)',self.updater)
+        self.assertIn('strcmp(title, "Wolff\'s Store")',self.updater)
+        self.assertIn('strcmp(id, expected_id)',self.updater)
+        self.assertIn('installed_sfo_value(path, "APP_VER"',self.updater)
+        self.assertIn('major != 0 || minor > 99',self.updater)
+        self.assertIn("scePromoterUtilityDeletePkg(LEGACY_APP)",self.updater)
+        self.assertLess(self.updater.index("if (legacy_valid)"),
+                        self.updater.index("int r = delete_legacy_store();"))
+        post=self.updater[self.updater.index("int main(void) {"):]
+        self.assertLess(post.index("if (r < 0) {"),
+                        post.index("migrate_legacy_store_after_install();"))
+        self.assertLess(post.index("migrate_legacy_store_after_install();"),
+                        post.index('updater_cleanup.pending'))
+        self.assertNotIn('inst_delete("WOLF00001")',self.main)
+        self.assertIn('f = fopen(LEGACY_MIGRATION_MARKER, "wb")',self.updater)
 
     def test_legacy_updater_cleanup_is_guarded_by_installed_sfo(self):
         tick=self.main[self.main.index("static void tick_store("):
@@ -191,15 +221,15 @@ class ReleaseInvariants(unittest.TestCase):
     def test_handoff_queues_only_one_shell_launch_then_exits(self):
         launch = self.main[self.main.index("static void launch_updater("):
                            self.main.index("static void maybe_self_update(")]
-        self.assertIn('sceAppMgrLaunchAppByUri(0xFFFFF, "psgm:play?titleid=WFFS00043")',launch)
+        self.assertIn('sceAppMgrLaunchAppByUri(0x20000, "psgm:play?titleid=WFFS00043")',launch)
         self.assertIn("sceKernelExitProcess(0);", launch)
         self.assertNotIn("sceAppMgrLaunchAppByName(",launch)
-        self.assertNotIn("sceAppMgrLaunchAppByUri(0x20000",launch)
-        updater_launch = self.updater[self.updater.index('/* Wait for shell registration.'):]
-        self.assertIn('sceAppMgrLaunchAppByUri(0xFFFFF, "psgm:play?titleid=" MAIN_TITLE)',updater_launch)
+        self.assertNotIn("sceAppMgrLaunchAppByUri(0xFFFFF",launch)
+        updater_launch = self.updater[self.updater.index('/* Wait for SceShell registration.'):]
+        self.assertIn('sceAppMgrLaunchAppByUri(0x20000, "psgm:play?titleid=" MAIN_TITLE)',updater_launch)
         self.assertIn("sceKernelExitProcess(0);",updater_launch)
         self.assertNotIn("sceAppMgrLaunchAppByName(",updater_launch)
-        self.assertNotIn("sceAppMgrLaunchAppByUri(0x20000",updater_launch)
+        self.assertNotIn("sceAppMgrLaunchAppByUri(0xFFFFF",updater_launch)
 
     def test_updater_livearea_is_freshly_installed(self):
         launch = self.main[self.main.index("static void launch_updater("):
@@ -217,9 +247,10 @@ class ReleaseInvariants(unittest.TestCase):
         self.assertIn('updater_cleanup_pending =',self.main)
         tick=self.main[self.main.index("static void tick_store("):
                        self.main.index("/* ================================================================ main */")]
-        self.assertIn("now_s >= 9.0",tick)
-        self.assertNotIn("now_s >= 9.0 && intro_done",tick)
-        self.assertIn("updater_cleanup_pending && now_s >= 9.0 && jobs_active() == 0",tick)
+        self.assertNotIn("now_s >= 9.0",tick)
+        self.assertIn("updater_cleanup_pending && !first_sync && intro_done",tick)
+        self.assertIn("legacy_updater_cleanup_pending && !first_sync && intro_done",tick)
+        self.assertIn("now_s - intro_t0 >= T_DONE + 2.0 && jobs_active() == 0",tick)
         self.assertIn('inst_delete("WFFS00043")',tick)
         self.assertIn("updater_cleanup_pending = 0;",tick)
         self.assertIn("fs_rm_rf(WS_DATA",tick)
