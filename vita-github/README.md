@@ -1,50 +1,54 @@
-# GitHub Vita Lite (Wolff's Store)
+# GitHub Vita Lite for PS Vita
 
-A lightweight GitHub mirror for the original PS Vita web browser, hosted in the WolffsStore repository through GitHub Pages. It has no client-side JavaScript, external CSS, fonts or scripts.
+A lightweight, fully static GitHub browser bundled in the **WolffsStore** repository. It is built for the original PS Vita web browser using regular HTML and CSS, with no client-side JavaScript.
 
-## Live site (after enabling Pages)
+## Links
 
 - Home: https://wolffsroom.github.io/WolffsStore/
 - DeltaruneVita: https://wolffsroom.github.io/WolffsStore/WolffsRoom/DeltaruneVita/
 - WolffsStore: https://wolffsroom.github.io/WolffsStore/WolffsRoom/WolffsStore/
 
-This is a static snapshot, not a server/API. GitHub Pages cannot run Python or serve dynamic endpoints. Only repositories in repos.json are generated.
+## Automatically included repositories
 
-## One-time Pages activation
+Every GitHub Actions run discovers **all public repositories owned by WolffsRoom** using the public GitHub API. It **never mirrors a private repository**. These five exclusions in repos.json are always skipped:
 
-1. Open https://github.com/WolffsRoom/WolffsStore/settings/pages
-2. In Build and deployment > Source, select GitHub Actions.
-3. Open Actions > Vita GitHub Lite - Pages and run Run workflow once (or wait for a scheduled build).
-4. After successful deployment, open the links above.
+- ButterscotchVita
+- WolffsRoom
+- registro_frequencia
+- MTH-Vita
+- InfinityBladeVita
 
-The workflow runs every 12 hours, when these files are updated, and manually. A schedule can be delayed by GitHub. You do not need to keep a PC or server running.
+The two pinned repositories (DeltaruneVita and WolffsStore) are displayed first. Newly public repositories are added on the next build, and repositories that become private disappear from the next generated snapshot. For urgent removal, manually rerun the workflow rather than waiting for its scheduled build.
 
-## What is generated
+## GitHub Pages deployment
 
-- Repository home pages, README with Markdown formatting, and directory navigation.
-- Text file previews for up to 130 small source/docs files per repository; metadata placeholders for the remaining files.
-- Releases, asset links, and the 25 most recent open issues.
-- Local, resized PNG/JPEG copies of up to 80 README/release images per repository (including SVG-to-PNG conversion), where the host allows downloads.
-- Relative internal links, including the GitHub Pages project prefix /WolffsStore/.
+The GitHub Actions workflow is at .github/workflows/vita-github-pages.yml and publishes from the Actions artifact. If not yet enabled, go to repository Settings > Pages and set **Source: GitHub Actions**. Run the workflow manually from the Actions tab to publish now.
 
-Source content is fetched from GitHub on the Actions runner. The Vita only downloads static HTML, CSS and converted images. Some release downloads and links outside mirrored repositories still open GitHub HTTPS and may fail in the Vita browser.
+Automated scheduled builds happen every 12 hours. They can be delayed or skipped by GitHub. No PC is required.
 
-## Add repositories
+## GitHub formatting and media fidelity
 
-Edit vita-github/repos.json with an owner and repo, commit and wait for the workflow. Generating every source file for large repos takes time and makes many HTML pages.
+- HTML attributes such as width="48" and height="50" are retained; tables and centered content use old-style HTML and basic CSS suitable for PS Vita.
+- GIFs are mirrored as animated GIFs (not static PNGs), with resizing and frame-duration preservation for large files.
+- SVGs and badges are rasterized into PNGs so the browser does not need native SVG support.
+- Images use local URLs in the generated Pages artifact, improving TLS compatibility versus loading third-party assets directly.
+- All content is rendered server-side in the build process using Python. GitHub Pages **cannot** run Python requests or dynamic APIs on each Vita page load.
 
-## Run locally
+## Features and limits
 
-With Python 3.11+:
+- Repository home pages, Markdown README, directory listings, limited text file previews, open issues, and releases.
+- To keep builds and Pages sizes within limits, the generator caps the number of mirrored image files, source previews, and per-file HTML pages per repository. It links overflow items to their original GitHub URLs; these original links may not open on the Vita.
+- Git trees exceeding GitHub's API tree size limit may be only partially indexed; the site prints a warning.
+- Images from some external hosts cannot be downloaded or converted due to network restrictions or unsupported formats.
+- GitHub release assets are linked to their original GitHub download URLs, not hosted on GitHub Pages.
+- GIF animation may be limited by the PS Vita browser's own capabilities, even though the generated files preserve animation.
 
-1. pip install -r vita-github/requirements.txt
-2. python vita-github/generate.py _site
-3. python -m http.server 8000 --directory _site
+## Local testing
 
-Open http://YOUR-PC-IP:8000/ on the Vita (same Wi-Fi). An optional GH_TOKEN environment variable increases API limits; never insert tokens in the HTML.
+With Python 3.11 or newer:
 
-## PS Vita compatibility
+    pip install -r vita-github/requirements.txt
+    python vita-github/generate.py _site
+    python -m http.server 8000 --directory _site
 
-Because github.io uses HTTPS, the Vita must support its TLS and certificate chain. If the page never loads even though the HTML is simple, test on a PC and try an updated TLS/certificate solution on the Vita. A TLS failure is independent of HTML compatibility.
-
-VPK downloads are not hosted or proxied by this static Pages site. Do not mirror private repositories or secrets.
+Open http://YOUR-PC-IP:8000/ in the original Vita browser on the same Wi-Fi network. Optional GH_TOKEN environment variable increases GitHub API rate limits. Never include a token in the site files.

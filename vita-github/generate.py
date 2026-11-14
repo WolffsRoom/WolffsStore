@@ -9,6 +9,7 @@ import posixpath
 import re
 import sys
 from collections import defaultdict
+from math import ceil
 from pathlib import Path
 from urllib.parse import quote, unquote, urlparse
 from xml.etree import ElementTree
@@ -17,23 +18,26 @@ import cairosvg
 import markdown
 import requests
 from bs4 import BeautifulSoup
-from PIL import Image, ImageOps
+from PIL import Image, ImageOps, ImageSequence
 
 HERE = Path(__file__).resolve().parent
 OUT = Path(sys.argv[1] if len(sys.argv) > 1 else "_site").resolve()
 OUT.mkdir(parents=True, exist_ok=True)
 CONFIG = json.loads((HERE / "repos.json").read_text(encoding="utf-8"))
-REPOS = [(x["owner"], x["repo"]) for x in CONFIG["repositories"]]
+REPOS = []  # Filled exclusively from the public GitHub API, with explicit exclusions.
 SESSION = requests.Session()
 SESSION.headers.update({"User-Agent": "WolffsStore-Vita-GitHub-Lite/1.0", "Accept": "application/vnd.github+json"})
 if os.getenv("GH_TOKEN"):
     SESSION.headers["Authorization"] = "Bearer " + os.environ["GH_TOKEN"]
 IMAGES = {}
 IMAGE_COUNTS = defaultdict(int)
-ALLOWED_IMG = {"github.com", "raw.githubusercontent.com", "img.shields.io", "avatars.githubusercontent.com", "user-images.githubusercontent.com", "user-attachments.githubusercontent.com"}
+ALLOWED_IMG = {"github.com", "raw.githubusercontent.com", "img.shields.io", "avatars.githubusercontent.com", "user-images.githubusercontent.com", "user-attachments.githubusercontent.com", "deltarune.com", "www.deltarune.com", "media.giphy.com", "media.tenor.com", "i.imgur.com", "cdn.discordapp.com"}
 TEXT_EXT = {".md", ".markdown", ".txt", ".json", ".yml", ".yaml", ".c", ".h", ".cpp", ".hpp", ".py", ".sh", ".ini", ".toml", ".xml", ".cmake", ".css", ".html", ".js", ".ts"}
-MAX_TEXT_FILES = 130
-MAX_IMAGE_COUNT = 80
+MAX_TEXT_FILES = 25  # Keep building all repositories reasonably fast.
+MAX_FILE_PAGES = 1600  # Large source trees link unmirrored files to their originals.
+MAX_DIRECTORY_READMES = 12
+MAX_IMAGE_COUNT = 75  # Per repository; DeltaruneVita receives an increased allowance.
+MAX_GIF_FRAMES = 100
 
 
 def get_json(path):
@@ -41,6 +45,35 @@ def get_json(path):
     r = SESSION.get(url, timeout=35)
     r.raise_for_status()
     return r.json()
+
+
+def public_repositories():
+    """Only public repos of the configured owner; NEVER read private ones."""
+    owner = CONFIG["owner"]
+    ignored = {name.lower() for name in CONFIG["exclude"]}
+    found = []
+    page = 1
+    while True:
+        data = get_json("users/" + quote(owner, safe="") + "/repos?type=owner&per_page=100&page=" + str(page))
+        for record in data:
+            name = record.get("name", "")
+            if record.get("private", True) or record.get("visibility", "public") != "public":
+                continue
+            if record.get("owner", {}).get("login", "").lower() != owner.lower():
+                continue
+            if name.lower() in ignored:
+                continue
+            found.append((owner, name))
+        if len(data) < 100:
+            break
+        page += 1
+        if page > 20:
+            raise RuntimeError("Repository listing pagination limit reached")
+    pins = {name.lower(): i for i, name in enumerate(CONFIG.get("pinned", []))}
+    found.sort(key=lambda item: (pins.get(item[1].lower(), len(pins)), item[1].lower()))
+    if not found:
+        raise RuntimeError("No public repositories found")
+    return found
 
 
 def raw_url(owner, repo, branch, path):
@@ -122,21 +155,22 @@ def mirror_image(src, owner, repo, branch, context, page):
     if url in IMAGES:
         return asset_link(page, IMAGES[url]) if IMAGES[url] else ""
     key = (owner, repo)
-    if IMAGE_COUNTS[key] >= MAX_IMAGE_COUNT:
+    allowance = 135 if repo.lower() == "deltarunevita" else MAX_IMAGE_COUNT
+    is_gif_url = urlparse(url).path.lower().endswith(".gif")
+    if IMAGE_COUNTS[key] >= allowance and not is_gif_url:
         return ""
     IMAGE_COUNTS[key] += 1
     try:
-        with SESSION.get(url, stream=True, timeout=25, headers={"Accept": "image/*"}) as r:
+        with SESSION.get(url, stream=True, timeout=35, headers={"Accept": "image/*"}) as r:
             r.raise_for_status()
             raw = bytearray()
             for chunk in r.iter_content(65536):
                 raw.extend(chunk)
-                if len(raw) > 7_000_000:
-                    raise ValueError("image too large")
+                if len(raw) > 22_000_000:
+                    raise ValueError("image exceeds 22 MB input limit")
             source = bytes(raw)
             kind = r.headers.get("Content-Type", "").split(";")[0].lower()
         if "svg" in kind or source.lstrip().startswith(b"<svg") or urlparse(url).path.lower().endswith(".svg"):
-            # Large GitHub SVG headings may have a 19000px viewBox: scale BEFORE rasterizing.
             svg_root = ElementTree.fromstring(source)
             view_box = svg_root.attrib.get("viewBox", "")
             try:
@@ -145,25 +179,54 @@ def mirror_image(src, owner, repo, branch, context, page):
                 native_width = 900
             render_width = min(900, max(24, int(native_width)))
             source = cairosvg.svg2png(bytestring=source, output_width=render_width)
+        digest = hashlib.sha256(url.encode()).hexdigest()[:22]
         with Image.open(io.BytesIO(source)) as im:
-            im = ImageOps.exif_transpose(im)
-            im.thumbnail((900, 1800), Image.Resampling.LANCZOS)
-            im.load()
-            has_alpha = im.mode in ("RGBA", "LA") or (im.mode == "P" and "transparency" in im.info)
-            is_photo = not has_alpha and im.width * im.height > 150_000
-            ext = ".jpg" if is_photo else ".png"
-            dest = OUT / "_img" / (hashlib.sha256(url.encode()).hexdigest()[:22] + ext)
-            dest.parent.mkdir(parents=True, exist_ok=True)
-            if is_photo:
-                im.convert("RGB").save(dest, "JPEG", quality=82, optimize=True)
+            animated = (getattr(im, "n_frames", 1) > 1 and (im.format == "GIF" or "gif" in kind or is_gif_url))
+            if animated:
+                dest = OUT / "_img" / (digest + ".gif")
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                # Keep source GIF intact if already small. Otherwise resize AND keep movement.
+                if len(source) <= 2_500_000 and im.width <= 800:
+                    dest.write_bytes(source)
+                else:
+                    stride = max(1, ceil(im.n_frames / MAX_GIF_FRAMES))
+                    frames, durations = [], []
+                    total_ms = 0
+                    for n in range(im.n_frames):
+                        im.seek(n)
+                        total_ms += max(20, int(im.info.get("duration") or 100))
+                        if n % stride != 0 and n != im.n_frames - 1:
+                            continue
+                        frame = im.convert("RGBA")
+                        frame.thumbnail((640, 640), Image.Resampling.LANCZOS)
+                        frames.append(frame.convert("RGB").quantize(colors=128))
+                        durations.append(max(20, total_ms))
+                        total_ms = 0
+                    if not frames:
+                        raise ValueError("empty GIF")
+                    frames[0].save(dest, format="GIF", save_all=True, append_images=frames[1:],
+                                   duration=durations, loop=im.info.get("loop", 0),
+                                   disposal=2, optimize=True)
             else:
-                im.convert("RGBA" if has_alpha else "RGB").save(dest, "PNG", optimize=True)
+                im = ImageOps.exif_transpose(im)
+                im.thumbnail((900, 1800), Image.Resampling.LANCZOS)
+                im.load()
+                has_alpha = im.mode in ("RGBA", "LA") or (im.mode == "P" and "transparency" in im.info)
+                is_photo = not has_alpha and im.width * im.height > 150_000
+                ext = ".jpg" if is_photo else ".png"
+                dest = OUT / "_img" / (digest + ext)
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                if is_photo:
+                    im.convert("RGB").save(dest, "JPEG", quality=82, optimize=True)
+                else:
+                    im.convert("RGBA" if has_alpha else "RGB").save(dest, "PNG", optimize=True)
         IMAGES[url] = dest
         return asset_link(page, dest)
-    except (requests.RequestException, ValueError, OSError, Exception) as exc:
-        print("Image skipped:", url[:130], type(exc).__name__)
+    except Exception as exc:
+        print("Image skipped:", url[:130], type(exc).__name__, str(exc)[:130], flush=True)
         IMAGES[url] = None
         return ""
+
 
 
 def github_link(href, owner, repo, branch, current_dir, page, entries):
@@ -223,8 +286,11 @@ def markdown_html(text, owner, repo, branch, current_dir, page, entries):
             converted = mirror_image(original, owner, repo, branch, current_dir, page)
             if converted:
                 tag["src"] = converted
-                tag.attrs.pop("width", None)
-                tag.attrs.pop("height", None)
+                # Keep explicit GitHub README size constraints such as width="48" or height="50".
+                for dimension in ("width", "height"):
+                    value = str(tag.get(dimension, "")).strip()
+                    if value and not re.fullmatch(r"[1-9][0-9]{0,3}(?:px)?", value):
+                        tag.attrs.pop(dimension, None)
             else:
                 tag.replace_with(soup.new_string("[image: " + str(tag.get("alt", "not available")) + "]"))
         if tag.name == "a":
@@ -234,6 +300,8 @@ def markdown_html(text, owner, repo, branch, current_dir, page, entries):
                 tag["href"] = fixed
             else:
                 tag.unwrap()
+        if tag.name in ("div", "p", "table") and tag.get("align", "").lower() == "center":
+            tag["class"] = list(tag.get("class", [])) + ["align-center"]
     return str(soup)
 
 
@@ -250,9 +318,14 @@ def make_repo(owner, repo):
     print("Building", owner + "/" + repo, flush=True)
     info = get_json("repos/" + owner + "/" + repo)
     branch = info["default_branch"]
-    tree = get_json("repos/" + owner + "/" + repo + "/git/trees/" + quote(branch, safe="") + "?recursive=1")
+    try:
+        tree = get_json("repos/" + owner + "/" + repo + "/git/trees/" + quote(branch, safe="") + "?recursive=1")
+    except requests.HTTPError as exc:
+        if exc.response is None or exc.response.status_code not in (404, 409, 422):
+            raise
+        tree = {"tree": []}  # Empty repository: still publish its landing page.
     if tree.get("truncated"):
-        raise RuntimeError("GitHub tree truncated for " + owner + "/" + repo)
+        print("WARNING: partial Git tree for", repo, flush=True)
     entries = {x["path"]: x for x in tree["tree"]}
     children = defaultdict(list)
     dirs = {""}
@@ -268,6 +341,8 @@ def make_repo(owner, repo):
     files.sort(key=lambda x: (0 if x["path"].lower().endswith(".md") else 1 if x["path"].lower().endswith(".txt") else 2, x["path"].count("/"), x["path"].lower()))
     selected = {x["path"] for x in files if Path(x["path"]).suffix.lower() in TEXT_EXT and x.get("size", 0) <= 100000 and x.get("size", 0) > 0}
     selected = set([x["path"] for x in files if x["path"] in selected][:MAX_TEXT_FILES])
+    published_file_pages = {x["path"] for x in files[:MAX_FILE_PAGES]}
+    readmes_built = 0
     text_cache = {}
 
     def content(path):
@@ -282,14 +357,17 @@ def make_repo(owner, repo):
         for item in items:
             name = posixpath.basename(item["path"])
             dest = tree_page(owner, repo, item["path"]) if item["type"] == "tree" else file_page(owner, repo, item["path"])
+            href = (link(page, dest) if item["type"] == "tree" or item["path"] in published_file_pages
+                    else raw_url(owner, repo, branch, item["path"]))
             label = "DIR" if item["type"] == "tree" else "FILE"
             size = "—" if item["type"] == "tree" else (str(item.get("size", 0)) + " B")
-            table.append('<tr><td>' + label + '</td><td><a href="' + link(page, dest) + '">' + esc(name) + '</a></td><td>' + esc(size) + '</td></tr>')
+            table.append('<tr><td>' + label + '</td><td><a href="' + esc(href) + '">' + esc(name) + '</a></td><td>' + esc(size) + '</td></tr>')
         table.append("</table>")
         heading = '<h1>' + esc(info["name"]) + '</h1><p>' + esc(info.get("description") or "GitHub repository") + '</p>' if not directory else "<h2>Files</h2>"
         body = breadcrumbs(owner, repo, directory, page) + heading + "".join(table)
         readme = next((x["path"] for x in items if x["type"] == "blob" and posixpath.basename(x["path"]).lower() == "readme.md"), None)
-        if readme and entries[readme].get("size", 0) < 130000:
+        if readme and entries[readme].get("size", 0) < 130000 and readmes_built < MAX_DIRECTORY_READMES:
+            readmes_built += 1
             try:
                 body += '<section class="readme"><h2>README</h2>' + markdown_html(content(readme), owner, repo, branch, directory, page, entries) + "</section>"
             except requests.RequestException as e:
@@ -298,6 +376,8 @@ def make_repo(owner, repo):
 
     for item in files:
         path = item["path"]
+        if path not in published_file_pages:
+            continue
         page = file_page(owner, repo, path)
         body = breadcrumbs(owner, repo, posixpath.dirname(path), page) + '<h2>' + esc(posixpath.basename(path)) + '</h2>'
         body += '<p class="small">' + str(item.get("size", 0)) + ' bytes · <a href="' + esc(raw_url(owner, repo, branch, path)) + '">Original / download</a></p>'
@@ -340,15 +420,27 @@ def make_repo(owner, repo):
 
 
 def main():
+    REPOS[:] = public_repositories()
+    print("Selected public repos:", len(REPOS), [repo for _, repo in REPOS], flush=True)
     (OUT / ".nojekyll").write_text("", encoding="utf-8")
-    (OUT / "style.css").write_text('''*{box-sizing:border-box}body{margin:0;color:#24292f;background:#f6f8fa;font:15px Arial,Helvetica,sans-serif;line-height:1.5}header{background:#24292f;color:white;padding:12px 16px}header a{color:white;text-decoration:none;font-size:19px}header span{color:#c9d1d9}main{max-width:920px;margin:14px auto;background:white;padding:18px;border:1px solid #d0d7de}a{color:#0969da;text-decoration:none}a:hover{text-decoration:underline}h1{font-size:26px;margin:12px 0}h2{font-size:21px}h3{font-size:17px}.tabs,.crumb{padding:10px 0;border-bottom:1px solid #d8dee4;margin-bottom:14px}.tabs a{font-weight:bold}.files{width:100%;border-collapse:collapse;font-size:14px}.files td,.files th{padding:7px 6px;border-bottom:1px solid #d8dee4;text-align:left;word-break:break-word}.files th{background:#f6f8fa}.files td:first-child{width:44px;font-size:11px;color:#57606a}.files td:last-child{width:65px;color:#57606a}.readme{margin-top:18px;border:1px solid #d8dee4;padding:14px;overflow:hidden;word-wrap:break-word}.readme h1,.readme h2{padding-bottom:6px;border-bottom:1px solid #d8dee4}.readme img,.release img{max-width:100%;height:auto}.readme table,.release table{border-collapse:collapse;display:block;overflow:auto;max-width:100%}.readme td,.readme th,.release td,.release th{border:1px solid #d8dee4;padding:5px 8px}.readme tr:nth-child(even){background:#f6f8fa}pre{overflow:auto;white-space:pre-wrap;word-wrap:break-word;background:#f6f8fa;border:1px solid #d8dee4;padding:10px;font:12px monospace}.small{color:#57606a;font-size:12px}.release{padding:12px 0;border-bottom:1px solid #d8dee4;overflow:hidden;word-wrap:break-word}.release img{max-width:100%}blockquote{border-left:4px solid #d8dee4;padding-left:12px;color:#57606a;margin-left:0}footer{max-width:920px;margin:18px auto;color:#57606a;font-size:12px;text-align:center}@media(max-width:960px){main{margin:0;padding:10px;border:0}.readme{padding:9px}header{padding:8px}}''', encoding="utf-8")
+    (OUT / "style.css").write_text('''*{box-sizing:border-box}body{margin:0;color:#24292f;background:#f6f8fa;font:15px Arial,Helvetica,sans-serif;line-height:1.5}header{background:#24292f;color:white;padding:12px 16px}header a{color:white;text-decoration:none;font-size:19px}header span{color:#c9d1d9}main{max-width:920px;margin:14px auto;background:white;padding:18px;border:1px solid #d0d7de}a{color:#0969da;text-decoration:none}a:hover{text-decoration:underline}h1{font-size:26px;margin:12px 0}h2{font-size:21px}h3{font-size:17px}.tabs,.crumb{padding:10px 0;border-bottom:1px solid #d8dee4;margin-bottom:14px}.tabs a{font-weight:bold}.files{width:100%;border-collapse:collapse;font-size:14px}.files td,.files th{padding:7px 6px;border-bottom:1px solid #d8dee4;text-align:left;word-break:break-word}.files th{background:#f6f8fa}.files td:first-child{width:44px;font-size:11px;color:#57606a}.files td:last-child{width:65px;color:#57606a}.readme{margin-top:18px;border:1px solid #d8dee4;padding:14px;overflow:hidden;word-wrap:break-word}.readme h1,.readme h2{padding-bottom:6px;border-bottom:1px solid #d8dee4}.readme img,.release img{max-width:100%}.readme img[width],.release img[width]{max-width:100%}.readme .align-center,.release .align-center{text-align:center}.readme table.align-center,.release table.align-center{margin-left:auto;margin-right:auto}.readme table,.release table{border-collapse:collapse;max-width:100%;table-layout:auto}.readme td,.readme th{vertical-align:middle}.readme table img{max-width:100%}.readme td,.readme th,.release td,.release th{border:1px solid #d8dee4;padding:5px 8px}.readme tr:nth-child(even){background:#f6f8fa}pre{overflow:auto;white-space:pre-wrap;word-wrap:break-word;background:#f6f8fa;border:1px solid #d8dee4;padding:10px;font:12px monospace}.small{color:#57606a;font-size:12px}.release{padding:12px 0;border-bottom:1px solid #d8dee4;overflow:hidden;word-wrap:break-word}.release img{max-width:100%}blockquote{border-left:4px solid #d8dee4;padding-left:12px;color:#57606a;margin-left:0}footer{max-width:920px;margin:18px auto;color:#57606a;font-size:12px;text-align:center}@media(max-width:960px){main{margin:0;padding:10px;border:0}.readme{padding:9px}header{padding:8px}}''', encoding="utf-8")
     links = []
     for owner, repo in REPOS:
         links.append('<li><a href="' + link(OUT / "index.html", repo_page(owner, repo)) + '">' + esc(owner + "/" + repo) + '</a></li>')
-    render_page(OUT / "index.html", "Home", '<h1>GitHub for PS Vita</h1><p>Fast, formatted HTML for the original PlayStation Vita web browser. No JavaScript required.</p><h2>Repositories</h2><ul>' + "".join(links) + '</ul><p class="small">Static pages are updated by GitHub Actions. This is not a live API: only the listed repositories are generated.</p>')
+    render_page(OUT / "index.html", "Home", '<h1>GitHub for PS Vita</h1><p>Fast, formatted HTML for the original PlayStation Vita web browser. No JavaScript required.</p><h2>Repositories</h2><ul>' + "".join(links) + '</ul><p class="small">Static pages updated by GitHub Actions. All eligible public repositories are discovered automatically.</p>')
+    failed = []
     for owner, repo in REPOS:
-        make_repo(owner, repo)
-    print("Completed: ", OUT, flush=True)
+        try:
+            make_repo(owner, repo)
+        except Exception as exc:
+            print("REPO ERROR:", owner, repo, type(exc).__name__, str(exc)[:160], flush=True)
+            failed.append(repo)
+            render_page(repo_page(owner, repo), repo, '<h1>' + esc(repo) + '</h1><p>Repository temporarily unavailable in this snapshot.</p>', (owner, repo))
+            for section in ("releases", "issues"):
+                render_page(section_page(owner, repo, section), section, '<p>Data unavailable for this repository.</p>', (owner, repo))
+    print("Completed:", OUT, "failures:", failed, flush=True)
+    if failed:
+        print("WARNING: some repositories could not be fully mirrored:", failed, flush=True)
 
 
 if __name__ == "__main__":

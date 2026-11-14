@@ -1,12 +1,14 @@
 {
-  "repositories": [
-    {
-      "owner": "WolffsRoom",
-      "repo": "WolffsStore"
-    },
-    {
-      "owner": "WolffsRoom",
-      "repo": "DeltaruneVita"
-    }
+  "owner": "WolffsRoom",
+  "pinned": [
+    "DeltaruneVita",
+    "WolffsStore"
+  ],
+  "exclude": [
+    "ButterscotchVita",
+    "WolffsRoom",
+    "registro_frequencia",
+    "MTH-Vita",
+    "InfinityBladeVita"
   ]
 }
