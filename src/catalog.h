@@ -46,6 +46,7 @@ typedef struct {
     char *video;
     int trophies;     /* troféus nativos (NoTrpDrm) */
     char *author;     /* crédito opcional: autor do port externo */
+    int news_kind;    /* 0=none, 1=Release, 2=Update (not an install status) */
     char *video_file; /* .mp4 que o app toca dentro dele (vazio = abre o YouTube) */
     PostText t[2];
     /* v2 (store.json): imagens no cache do cartão; vazio = usa as do VPK (data/posts) */

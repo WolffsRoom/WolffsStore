@@ -14,9 +14,9 @@ class ReleaseInvariants(unittest.TestCase):
         cls.video = (ROOT / "src/video.c").read_text(encoding="utf-8")
         cls.updater = (ROOT / "updater/main.c").read_text(encoding="utf-8")
 
-    def test_release_is_v096(self):
-        self.assertIn('set(WS_SFO_VERSION "00.96")', self.cmake)
-        self.assertIn('set(WS_FILE_VERSION "0.96")', self.cmake)
+    def test_release_is_v097(self):
+        self.assertIn('set(WS_SFO_VERSION "00.97")', self.cmake)
+        self.assertIn('set(WS_FILE_VERSION "0.97")', self.cmake)
 
     def test_third_party_author_badge_is_optional(self):
         catalog=(ROOT / "src/catalog.h").read_text(encoding="utf-8")
@@ -41,6 +41,36 @@ class ReleaseInvariants(unittest.TestCase):
             self.assertIn("app0:"+partial,self.main)
         self.assertIn("updater/sce_sys/livearea/contents/template.xml",self.cmake)
         self.assertIn('fs_mkdir_p(WS_PKG_UPD "/sce_sys/livearea/contents")',self.main)
+
+    def test_updater_livearea_template_refresh_and_binary_integrity(self):
+        import xml.etree.ElementTree as ET
+        tmpl = ROOT / "assets/livearea_autoupdater/template.xml"
+        xml = ET.parse(tmpl).getroot()
+        self.assertEqual(xml.attrib.get("content-rev"), "97")
+        self.assertEqual(xml.findtext("livearea-background/image"), "bg0.png")
+        self.assertEqual(xml.findtext("gate/startup-image"), "startup.png")
+        self.assertIn("assets/livearea_autoupdater/template.xml",self.cmake)
+        self.assertIn("set(WS_UPDATER_SFO",self.cmake)
+        self.assertIn("updater_param_",self.cmake)
+        self.assertIn("DEPENDS",self.cmake)
+        self.assertIn("static int updater_asset_matches(", self.main)
+        self.assertIn("memcmp(a, b, (size_t)a_len)",self.main)
+        self.assertIn('updater_asset_matches("icon0.png")',self.main)
+        self.assertIn('updater_asset_matches("livearea/contents/bg0.png")',self.main)
+        self.assertIn('updater_asset_matches("livearea/contents/startup.png")',self.main)
+        self.assertIn('updater_asset_matches("livearea/contents/template.xml")',self.main)
+
+    def test_news_kind_is_optional_and_rendered_as_yellow_pixel_word(self):
+        header=(ROOT / "src/catalog.h").read_text(encoding="utf-8")
+        store=(ROOT / "src/store.c").read_text(encoding="utf-8")
+        self.assertIn("int news_kind;",header)
+        self.assertIn('json_object_get(o, "novidade")',store)
+        self.assertIn('!strcmp(kind, "Release")',store)
+        self.assertIn('!strcmp(kind, "Update")',store)
+        self.assertIn('static void news_word(int kind',self.main)
+        self.assertIn("C_GOLD",self.main)
+        self.assertIn("y - i * 1.1f * scale",self.main)
+        self.assertIn("p->news_kind",self.main)
 
     def test_home_featured_github_prefers_source_and_mirrors_lite(self):
         home=self.main[self.main.index("static void build_home("):self.main.index("static void build_cat(")]

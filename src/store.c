@@ -95,6 +95,8 @@ int store_parse(const char *text, Post *out, int max, AppRelease *app) {
         p->video_file = vf[0] ? dup_latin1(vf) : NULL;
         p->trophies = json_bool(json_object_get(o, "trofeus"), 0);
         p->author = S(o, "autor"); /* ausente em posts antigos: string vazia */
+    const char *kind = json_string(json_object_get(o, "novidade"), "");
+    p->news_kind = !strcmp(kind, "Release") ? 1 : !strcmp(kind, "Update") ? 2 : 0;
         texts(json_object_get(o, "pt"), &p->t[LANG_PT]);
         texts(json_object_get(o, "en"), &p->t[LANG_EN]);
         const char *capa = json_string(json_object_get(o, "capa"), "");

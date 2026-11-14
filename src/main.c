@@ -29,7 +29,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "0.96"
+#define WS_VERSION "0.97"
 #endif
 
 /* ================================================================ textos */
@@ -433,6 +433,18 @@ static void fmt_size(long long b, char *out, int n) {
 #define COVER_W 280
 #define COVER_H 158
 
+/* Yellow slanted pixel-art word only: no badge rectangle or outline.
+ * Stepped baseline preserves sharp bitmap glyphs on the Vita renderer. */
+static void news_word(int kind, float x, float y, int scale, double pop) {
+    const char *word = kind == 1 ? "RELEASE" : kind == 2 ? "UPDATE" : "";
+    for (int i = 0; word[i]; i++) {
+        char glyph[2] = {word[i], 0};
+        Op *t = title(keep(glyph), x + i * 8.f * scale,
+                      y - i * 1.1f * scale, scale, C_GOLD, 0);
+        t->pop = pop;
+    }
+}
+
 static float card_height(int pi) {
     PostText *t = &g_posts[pi].t[lang];
     float h = 4 + COVER_H + 4 + 16;
@@ -482,6 +494,8 @@ static void card(int pi, float x, float y, float h, double pop) {
         Op *t = body(c, x + 22, y + 13, C_WHITE);
         t->bold = 1;
     }
+    if (p->news_kind)
+        news_word(p->news_kind, x + 20, y + COVER_H - 20, 1, pop);
     if (p->trophies) { /* só o troféu em pixel art no canto da capa (troféus nativos, NoTrpDrm) */
         Op *o = op(OP_TROPHY, x + 4 + COVER_W - 12 - 30, y + 12, 30, 30);
         o->scale = 3;
@@ -660,7 +674,7 @@ static void build_home(void) {
         th = heading_lines(t->title, tsc, iw) * (tsc * 8 + 12);
         int n = para_lines(t->feature, iw, fl);
         total = BODY_LINE + 10 + (p->author && p->author[0] ? BODY_LINE + 8 : 0)
-              + th + 10 + n * BODY_LINE + 16 + 48;
+              + (p->news_kind ? 30 : 0) + th + 10 + n * BODY_LINE + 16 + 48;
         if (total <= sh || (tsc == 2 && fl <= 2)) {
             fl = n;
             break;
@@ -679,6 +693,10 @@ static void build_home(void) {
         first = nops;
         iy += para(by, ix, iy, iw, C_GOLD, 0, 2, 0) + 8;
         for (int i = first; i < nops; i++) ops[i].pop = ip + .04;
+    }
+    if (p->news_kind) {
+        news_word(p->news_kind, ix + 8, iy + 12, 2, ip + .06);
+        iy += 30;
     }
     first = nops;
     char up[512];
@@ -904,6 +922,10 @@ static void build_post(int pi) {
     snprintf(line, sizeof(line), "%s \xb7 %s", t->tag, t->status);
     upper_latin1(line);
     y += para(line, 24, y, 912, C_MUTED, 1, 2, 0) + 16;
+    if (p->news_kind) {
+        news_word(p->news_kind, 38, y + 10, 2, view_t0 + .08);
+        y += 34;
+    }
     rect(24, y, 912, 4, C_LINE);
     y += 4 + 28;
 
@@ -2825,6 +2847,22 @@ static void load_covers(void) {
 
 /* ================================================================ loja: sync, fila e auto-atualização */
 
+/* Verify the installed helper artwork byte-for-byte, not only filenames. */
+static int updater_asset_matches(const char *relative) {
+    char src[240], installed[240];
+    snprintf(src, sizeof(src), "app0:updater/sce_sys/%s", relative);
+    snprintf(installed, sizeof(installed), "ux0:app/WOLF00002/sce_sys/%s", relative);
+    int a_len = 0, b_len = 0;
+    char *a = fs_read(src, &a_len);
+    char *b = fs_read(installed, &b_len);
+    int match = a && b && a_len == b_len && memcmp(a, b, (size_t)a_len) == 0;
+    ws_log("updater LiveArea %s: %s (%d/%d bytes)", relative,
+           match ? "verified" : "MISMATCH", a_len, b_len);
+    free(a);
+    free(b);
+    return match;
+}
+
 static void launch_updater(void) {
     /* instala o updater (WOLF00002) a partir do que veio no VPK e passa a vez para ele */
     fs_rm_rf(WS_PKG_UPD);
@@ -2851,6 +2889,7 @@ static void launch_updater(void) {
             upd_skipped = 1;
             return;
         }
+        sceKernelDelayThread(350 * 1000); /* let SceShell invalidate old bubble */
     }
     if (ok) ok = inst_promote(WS_PKG_UPD) == 0;
     if (ok) {
@@ -2859,7 +2898,13 @@ static void launch_updater(void) {
              fs_exists("ux0:app/WOLF00002/sce_sys/livearea/contents/bg0.png") &&
              fs_exists("ux0:app/WOLF00002/sce_sys/livearea/contents/startup.png") &&
              fs_exists("ux0:app/WOLF00002/sce_sys/livearea/contents/template.xml");
-        if (!ok) ws_log("updater: installed bubble missing custom LiveArea files");
+        if (ok) {
+            ok = updater_asset_matches("icon0.png") &&
+                 updater_asset_matches("livearea/contents/bg0.png") &&
+                 updater_asset_matches("livearea/contents/startup.png") &&
+                 updater_asset_matches("livearea/contents/template.xml");
+        }
+        if (!ok) ws_log("updater: installed bubble missing custom LiveArea files or stale asset bytes");
     }
     if (!ok) {
         char t[256];
