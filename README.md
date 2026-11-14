@@ -33,7 +33,7 @@ organização, animações e sons.
   durante a instalação, checagem de espaço livre antes de começar.
 - **Auto-atualização**: ao abrir, a v0.5 ou posterior consulta a release mais recente de
   `WolffsRoom/WolffsStore` e procura o asset `WolffsStore.vpk`. Se a versão da tag `v*` for maior,
-  baixa e reinstala: o updater (`WOLF00002`, dentro do VPK) instala a versão nova com o app fechado e
+  baixa e reinstala: o updater (`WFFS00043`, dentro do VPK) instala a versão nova com o app fechado e
   abre o Wolff's Store de novo. ○ deixa para depois. O campo `app` do `store.json` continua aceito como
   fallback, inclusive para levar a v0.41 até a v0.5 (anunciada como `0.50` para compatibilidade).
 
@@ -79,7 +79,7 @@ powershell -ExecutionPolicy Bypass -File scripts\build.ps1
 powershell -ExecutionPolicy Bypass -File scripts\build.ps1 -Site C:\caminho\para\WolffsRoomSite
 ```
 
-Gera `artifacts/current/WolffsStore.vpk` (Title ID `WOLF00001`). O VPK contém o catálogo textual e os
+Gera `artifacts/current/WolffsStore.vpk` (Title ID `WFFS00042`). O VPK contém o catálogo textual e os
 recursos da interface; as imagens dos posts ficam em `ux0:data/WolffsStore/cache/` após a sincronização.
 
 ### Release no GitHub
@@ -92,6 +92,20 @@ git tag v0.1
 git push origin v0.1
 ```
 
+### Mudança de Title ID (v0.99.1)
+
+A partir desta versão, a Store é instalada como **WFFS00042** e o updater
+temporário como **WFFS00043**. A versão publicada anteriormente utilizava
+WOLF00001 / WOLF00002; esses IDs antigos **não são desinstalados
+automaticamente**, pois podem pertencer a outros homebrews instalados.
+
+A atualização via app antigo pode instalar uma **segunda bolha** da Store,
+já que o Title ID novo é diferente. Os dados permanecem no mesmo diretório
+ux0:data/WolffsStore/. Após confirmar que a nova Store abre normalmente,
+o usuário pode remover manualmente a bolha antiga *somente depois de
+verificar seu Title ID e que ela pertence à antiga Store*. Não apague um
+aplicativo desconhecido apenas por ele usar WOLF00001.
+
 ## LiveArea
 
 - `sce_sys/icon0.png`: a patinha.
@@ -103,7 +117,7 @@ git push origin v0.1
 
 1. Suba `WS_FILE_VERSION`/`WS_SFO_VERSION` no `CMakeLists.txt`.
 2. Crie e envie a tag correspondente, no formato `v0.8`, `v0.9`… ou `v1.0`:
-   `git tag v0.99 && git push origin v0.99`
+   `git tag v0.99.1 && git push origin v0.99.1`
 3. O workflow publica a release em `WolffsRoom/WolffsStore` com o asset fixo `WolffsStore.vpk`.
    A URL permanente da versão mais recente é
    `https://github.com/WolffsRoom/WolffsStore/releases/latest/download/WolffsStore.vpk`.

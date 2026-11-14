@@ -29,7 +29,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "0.99"
+#define WS_VERSION "0.99.1"
 #endif
 
 /* ================================================================ textos */
@@ -136,6 +136,7 @@ static int sync_manual = 0, sync_reported = 1;
 static AppRelease app_rel;
 static int upd_job = -1, upd_skipped = 0; /* atualização do próprio app */
 static int updater_cleanup_pending = 0;
+static int legacy_updater_cleanup_pending = 0;
 static double letter_hop[16] = {-100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100};
 static double bark_t0 = -100, sync_done_t = -100;
 static int snd_menu = 0, snd_row = 0, vid_open = 0, vid_music = 0;
@@ -433,16 +434,47 @@ static void fmt_size(long long b, char *out, int n) {
 #define COVER_W 280
 #define COVER_H 158
 
-/* Yellow slanted pixel-art word only: no badge rectangle or outline.
- * Stepped baseline preserves sharp bitmap glyphs on the Vita renderer. */
-static void news_word(int kind, float x, float y, int scale, double pop) {
-    const char *word = kind == 1 ? "RELEASE" : kind == 2 ? "UPDATE" : "";
-    for (int i = 0; word[i]; i++) {
-        char glyph[2] = {word[i], 0};
-        Op *t = title(keep(glyph), x + i * 8.f * scale,
-                      y - i * 1.1f * scale, scale, C_GOLD, 0);
-        t->pop = pop;
+/* Release/update is a yellow text suffix of the featured app title.
+ * Never overlay it on navigation buttons or cards. */
+static const char *feature_suffix(int kind) {
+    return kind == 1 ? " - Release" : kind == 2 ? " - Update" : "";
+}
+
+/* Compute the same wrapped title height used by the renderer, reserving an
+ * extra row only when the suffix cannot fit after the last title word. */
+static int feature_title_rows(const char *name, int scale, float width, int kind) {
+    char *lines[16], buf[2048];
+    int n = wrap_title(name, scale, (int)width, lines, 16, buf, sizeof(buf));
+    const char *suffix = feature_suffix(kind);
+    if (n > 0 && suffix[0] &&
+        title_width(lines[n - 1], scale) + 8 + title_width(suffix, 2) > width)
+        n++;
+    return n;
+}
+
+static float feature_title(const char *name, float x, float y, float width,
+                           int scale, int kind, double pop) {
+    char *lines[16], buf[2048];
+    int n = wrap_title(name, scale, (int)width, lines, 16, buf, sizeof(buf));
+    float line_h = scale * 8 + 12;
+    for (int i = 0; i < n; i++) {
+        Op *o = title(keep(lines[i]), x, y + i * line_h,
+                      scale, C_WHITE, C_SHADOW);
+        o->pop = pop;
     }
+    const char *suffix = feature_suffix(kind);
+    if (n > 0 && suffix[0]) {
+        float sx = x + title_width(lines[n - 1], scale) + 8;
+        float sy = y + (n - 1) * line_h + (scale > 2 ? 5 : 0);
+        if (sx + title_width(suffix, 2) > x + width) {
+            sx = x;
+            sy = y + n * line_h;
+            n++;
+        }
+        Op *o = title(keep(suffix), sx, sy, 2, C_GOLD, 0);
+        o->pop = pop + .08; /* a subtle second pixel-art entrance */
+    }
+    return n * line_h;
 }
 
 static float card_height(int pi) {
@@ -666,10 +698,10 @@ static void build_home(void) {
     snprintf(line, sizeof(line), "%s \xb7 %s", t->tag, t->status);
     upper_latin1(line);
     /* a coluna precisa caber na altura do palco (o resto fica longe das categorias) */
-    int tsc = heading_lines(t->title, 3, iw) <= 2 ? 3 : 2, fl = 5;
+    int tsc = feature_title_rows(t->title, 3, iw, p->news_kind) <= 2 ? 3 : 2, fl = 5;
     float th, total;
     for (;;) {
-        th = heading_lines(t->title, tsc, iw) * (tsc * 8 + 12);
+        th = feature_title_rows(t->title, tsc, iw, p->news_kind) * (tsc * 8 + 12);
         int n = para_lines(t->feature, iw, fl);
         total = BODY_LINE + 10 + (p->author && p->author[0] ? BODY_LINE + 8 : 0)
               + th + 10 + n * BODY_LINE + 16 + 48;
@@ -692,11 +724,8 @@ static void build_home(void) {
         iy += para(by, ix, iy, iw, C_GOLD, 0, 2, 0) + 8;
         for (int i = first; i < nops; i++) ops[i].pop = ip + .04;
     }
-    first = nops;
-    char up[512];
-    snprintf(up, sizeof(up), "%s", t->title);
-    iy += heading(up, ix, iy, iw, tsc, C_WHITE, C_SHADOW, 0, 0, tsc * 8 + 12) + 10;
-    for (int i = first; i < nops; i++) ops[i].pop = ip + 0.08;
+    iy += feature_title(t->title, ix, iy, iw, tsc,
+                        p->news_kind, ip + .08) + 10;
     first = nops;
     iy += para(t->feature, ix, iy, iw, C_SOFT, 0, fl, 0) + 16;
     for (int i = first; i < nops; i++) ops[i].pop = ip + 0.16;
@@ -719,18 +748,6 @@ static void build_home(void) {
         button("GitHub", items[b1].x + items[b1].w + 16, iy, 0, 0,
                A_URL, 0, keep(url), ip + 0.32);
     }
-    /* Release/Update overlaps the LOWER-RIGHT border of "Ver detalhes".
-     * Draw after both buttons so the text is visible, but it is NOT a
-     * separate interactive item and never changes the button's hitbox. */
-    if (p->news_kind && b1 >= 0) {
-        const int letters = p->news_kind == 1 ? 7 : 6;
-        const int scale = 2;
-        const Item *details = &items[b1];
-        const float badge_x = details->x + details->w - letters * 8.f * scale + 8;
-        const float badge_y = details->y + details->h - 10;
-        news_word(p->news_kind, badge_x, badge_y, scale, ip + .40);
-    }
-
     /* as três novidades mais recentes (o catálogo já vem do mais novo para o mais antigo) */
     y = sy + sh + 44;
     {
@@ -2851,8 +2868,8 @@ static void load_covers(void) {
 /* Verify the installed helper artwork byte-for-byte, not only filenames. */
 static int updater_asset_matches(const char *relative) {
     char src[240], installed[240];
-    snprintf(src, sizeof(src), WS_PKG_SELF "/updater/sce_sys/%s", relative);
-    snprintf(installed, sizeof(installed), "ux0:app/WOLF00002/sce_sys/%s", relative);
+    snprintf(src, sizeof(src), WS_PKG_SELF "/updater_v2/sce_sys/%s", relative);
+    snprintf(installed, sizeof(installed), "ux0:app/WFFS00043/sce_sys/%s", relative);
     int a_len = 0, b_len = 0;
     char *a = fs_read(src, &a_len);
     char *b = fs_read(installed, &b_len);
@@ -2865,18 +2882,18 @@ static int updater_asset_matches(const char *relative) {
 }
 
 /* The self-update worker extracted the NEXT release into WS_PKG_SELF.
- * Never use app0:updater: it would install the old version's LiveArea assets,
- * which is exactly why the user kept seeing an outdated updater bubble. */
+ * The new app installs updater_v2/ as WFFS00043. updater/ is a legacy
+ * compatibility bridge for the old WOLF00001 / WOLF00002 updater code. */
 static int copy_new_updater_file(const char *relative, const char *dst) {
     char src[512];
-    snprintf(src, sizeof(src), WS_PKG_SELF "/updater/%s", relative);
+    snprintf(src, sizeof(src), WS_PKG_SELF "/updater_v2/%s", relative);
     int r = fs_copy(src, dst);
     if (r < 0) ws_log("updater: NEW VPK missing %s (0x%08X)", src, r);
     return r == 0;
 }
 
 static void launch_updater(void) {
-    /* instala o updater (WOLF00002) a partir do que veio no VPK e passa a vez para ele */
+    /* instala o updater (WFFS00043) a partir do que veio no VPK e passa a vez para ele */
     fs_rm_rf(WS_PKG_UPD);
     fs_mkdir_p(WS_PKG_UPD "/sce_sys");
     fs_mkdir_p(WS_PKG_UPD "/sce_sys/livearea/contents");
@@ -2893,8 +2910,8 @@ static void launch_updater(void) {
     if (ok) ok = inst_make_head_bin(WS_PKG_UPD) == 0;
     /* Delete the OLD helper while Store is foreground, BEFORE the new helper
      * starts. This refreshes icon0 and the LiveArea on every upgrade. */
-    if (ok && fs_exists("ux0:app/WOLF00002/sce_sys/param.sfo")) {
-        int remove_old = inst_delete("WOLF00002");
+    if (ok && fs_exists("ux0:app/WFFS00043/sce_sys/param.sfo")) {
+        int remove_old = inst_delete("WFFS00043");
         ws_log("updater: remove previous LiveArea/bubble -> 0x%08X", remove_old);
         if (remove_old < 0) {
             toast("Nao foi possivel substituir o Auto Updater antigo.");
@@ -2907,10 +2924,10 @@ static void launch_updater(void) {
     if (ok) ok = inst_promote(WS_PKG_UPD) == 0;
     if (ok) {
         /* Refuse handoff to a helper whose LiveArea was not installed. */
-        ok = fs_exists("ux0:app/WOLF00002/sce_sys/icon0.png") &&
-             fs_exists("ux0:app/WOLF00002/sce_sys/livearea/contents/bg0.png") &&
-             fs_exists("ux0:app/WOLF00002/sce_sys/livearea/contents/startup.png") &&
-             fs_exists("ux0:app/WOLF00002/sce_sys/livearea/contents/template.xml");
+        ok = fs_exists("ux0:app/WFFS00043/sce_sys/icon0.png") &&
+             fs_exists("ux0:app/WFFS00043/sce_sys/livearea/contents/bg0.png") &&
+             fs_exists("ux0:app/WFFS00043/sce_sys/livearea/contents/startup.png") &&
+             fs_exists("ux0:app/WFFS00043/sce_sys/livearea/contents/template.xml");
         if (ok) {
             ok = updater_asset_matches("icon0.png") &&
                  updater_asset_matches("livearea/contents/bg0.png") &&
@@ -2931,8 +2948,8 @@ static void launch_updater(void) {
      * Queue a shell launch once, then exit immediately. No second launch:
      * repeated requests provoke another "close the updater?" dialog. */
     vita2d_wait_rendering_done();
-    ws_log("updater: VitaShell-style handoff to WOLF00002");
-    sceAppMgrLaunchAppByUri(0xFFFFF, "psgm:play?titleid=WOLF00002");
+    ws_log("updater: VitaShell-style handoff to WFFS00043");
+    sceAppMgrLaunchAppByUri(0xFFFFF, "psgm:play?titleid=WFFS00043");
     sceKernelExitProcess(0);
 }
 
@@ -2981,12 +2998,31 @@ static void tick_store(void) {
      * time to exit. Uninstall its bubble without requiring a second boot. */
     if (updater_cleanup_pending && now_s >= 9.0 && jobs_active() == 0) {
         updater_cleanup_pending = 0;
-        int r = inst_delete("WOLF00002");
+        int r = inst_delete("WFFS00043");
         ws_log("updater: cleanup after successful update -> 0x%08X", r);
-        if (r >= 0 || !fs_exists("ux0:app/WOLF00002/sce_sys/param.sfo"))
-            fs_rm_rf(WS_DATA "/updater_cleanup.pending");
-        else
+        if (r >= 0 || !fs_exists("ux0:app/WFFS00043/sce_sys/param.sfo")) {
+            if (!legacy_updater_cleanup_pending)
+                fs_rm_rf(WS_DATA "/updater_cleanup.pending");
+        } else {
             ws_log("updater: cleanup failed; pending marker kept for next startup");
+        }
+    }
+    if (legacy_updater_cleanup_pending && now_s >= 9.0 && jobs_active() == 0) {
+        legacy_updater_cleanup_pending = 0;
+        char title[128] = "";
+        int owned = sfo_get("ux0:app/WOLF00002/sce_sys/param.sfo",
+                            "TITLE", title, sizeof(title)) == 0 &&
+                    strcmp(title, "Wolff's Store Updater") == 0;
+        if (owned) {
+            int r = inst_delete("WOLF00002");
+            ws_log("updater: remove verified WOLF00002 compatibility helper -> 0x%08X",r);
+            if (r >= 0 || !fs_exists("ux0:app/WOLF00002/sce_sys/param.sfo")) {
+                if (!fs_exists("ux0:app/WFFS00043/sce_sys/param.sfo"))
+                    fs_rm_rf(WS_DATA "/updater_cleanup.pending");
+            }
+        } else {
+            ws_log("updater: old WOLF00002 is not ours; leaving it untouched");
+        }
     }
     int st = sync_state();
     if (first_sync && st == SYNC_READY) {
@@ -3218,10 +3254,24 @@ int main(void) {
         fs_write(WS_DATA "/last_started_version.txt", WS_VERSION, (int)strlen(WS_VERSION));
     }
     updater_cleanup_pending =
-        fs_exists("ux0:app/WOLF00002/sce_sys/param.sfo") &&
+        fs_exists("ux0:app/WFFS00043/sce_sys/param.sfo") &&
         (upgraded_this_boot || fs_exists(WS_DATA "/updater_cleanup.pending"));
     if (updater_cleanup_pending)
         ws_log("updater: deferred cleanup scheduled in THIS Store session");
+    /* A v0.99 bridge installs WOLF00002, but this app uses WFFS00043.
+     * Only remove a legacy bubble whose installed SFO explicitly proves
+     * it is OUR updater. Never delete the old WOLF00001 main app. */
+    {
+        char title[128] = "";
+        legacy_updater_cleanup_pending =
+            fs_exists(WS_DATA "/updater_cleanup.pending") &&
+            fs_exists("ux0:app/WOLF00002/sce_sys/param.sfo") &&
+            sfo_get("ux0:app/WOLF00002/sce_sys/param.sfo",
+                    "TITLE", title, sizeof(title)) == 0 &&
+            strcmp(title, "Wolff's Store Updater") == 0;
+        if (legacy_updater_cleanup_pending)
+            ws_log("updater: verified legacy helper cleanup scheduled");
+    }
     /* sobras de uma atualização do próprio app */
     fs_rm_rf(WS_PKG_SELF);
     fs_rm_rf(WS_PKG_UPD);

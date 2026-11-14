@@ -14,9 +14,65 @@ class ReleaseInvariants(unittest.TestCase):
         cls.video = (ROOT / "src/video.c").read_text(encoding="utf-8")
         cls.updater = (ROOT / "updater/main.c").read_text(encoding="utf-8")
 
-    def test_release_is_v099(self):
+    def test_release_is_v0991(self):
         self.assertIn('set(WS_SFO_VERSION "00.99")', self.cmake)
-        self.assertIn('set(WS_FILE_VERSION "0.99")', self.cmake)
+        self.assertIn('set(WS_FILE_VERSION "0.99.1")', self.cmake)
+
+    def test_featured_update_suffix_follows_app_title(self):
+        hero=self.main[self.main.index("static void build_home("):
+                       self.main.index("static void build_cat(")]
+        self.assertIn('kind == 1 ? " - Release" : kind == 2 ? " - Update"',self.main)
+        self.assertIn("feature_title_rows(t->title",hero)
+        self.assertIn("feature_title(t->title, ix, iy, iw, tsc",hero)
+        self.assertIn("p->news_kind, ip + .08",hero)
+        self.assertIn("C_GOLD",self.main)
+        self.assertIn("sx + title_width(suffix, 2) > x + width",self.main)
+        self.assertNotIn("news_word(",hero)
+        self.assertNotIn("badge_x",hero)
+
+    def test_updater_paw_is_smaller_and_higher(self):
+        self.assertIn("const float scale = 1.5f",self.updater)
+        self.assertIn("draw_paw((960.f - w * scale) / 2.f, 40.f, scale)",self.updater)
+        self.assertNotIn("draw_paw(412, 62, 2)",self.updater)
+
+    def test_title_id_migration_keeps_old_bubble_safe(self):
+        self.assertIn('set(WS_TITLEID "WFFS00042")', self.cmake)
+        self.assertIn('set(WS_UPDATER_TITLEID "WFFS00043")', self.cmake)
+        self.assertIn('set(WS_FILE_VERSION "0.99.1")', self.cmake)
+        self.assertIn('set(WS_SFO_VERSION "00.99")', self.cmake)
+        self.assertIn('#define WS_VERSION "0.99.1"', self.main)
+        self.assertIn('#define MAIN_TITLE "WFFS00042"', self.updater)
+        self.assertNotIn('set(WS_TITLEID "WOLF00001")',self.cmake)
+        self.assertNotIn('#define MAIN_TITLE "WOLF00001"',self.updater)
+        self.assertIn('inst_delete("WOLF00002")', self.main)
+        self.assertNotIn('"psgm:play?titleid=WOLF00002"', self.main)
+        self.assertIn('inst_delete("WFFS00043")', self.main)
+        self.assertNotIn('inst_delete("WOLF00001")', self.main)
+        self.assertIn('strcmp(title, "Wolff\'s Store Updater") == 0', self.main)
+        readme=(ROOT/"README.md").read_text(encoding="utf-8")
+        self.assertIn("não são desinstalados",readme)
+        self.assertIn("ux0:data/WolffsStore/",readme)
+
+    def test_legacy_updater_cleanup_is_guarded_by_installed_sfo(self):
+        tick=self.main[self.main.index("static void tick_store("):
+                       self.main.index("/* ================================================================ main */")]
+        self.assertIn('sfo_get("ux0:app/WOLF00002/sce_sys/param.sfo"',tick)
+        self.assertIn('strcmp(title, "Wolff\'s Store Updater") == 0',tick)
+        self.assertLess(tick.index('strcmp(title, "Wolff\'s Store Updater")'),
+                        tick.index('inst_delete("WOLF00002")'))
+        self.assertIn('if (owned)',tick)
+        self.assertNotIn('inst_delete("WOLF00001")',tick)
+
+    def test_legacy_updater_migration_bridge(self):
+        self.assertIn("set(WS_LEGACY_UPDATER_SFO",self.cmake)
+        self.assertIn("TITLE_ID=WOLF00002",self.cmake)
+        self.assertIn("updater/sce_sys/param.sfo",self.cmake)
+        self.assertIn("updater_v2/sce_sys/param.sfo",self.cmake)
+        self.assertIn("updater_v2/sce_sys/icon0.png",self.cmake)
+        self.assertIn("ws_legacy_updater_sfo",self.cmake)
+        self.assertIn('WS_PKG_SELF "/updater_v2/%s"',self.main)
+        self.assertIn('WS_PKG_SELF "/updater_v2/sce_sys/%s"',self.main)
+        self.assertIn('#define MAIN_TITLE "WFFS00042"',self.updater)
 
     def test_third_party_author_badge_is_optional(self):
         catalog=(ROOT / "src/catalog.h").read_text(encoding="utf-8")
@@ -68,14 +124,14 @@ class ReleaseInvariants(unittest.TestCase):
         self.assertIn('json_object_get(o, "novidade")',store)
         self.assertIn('!strcmp(kind, "Release")',store)
         self.assertIn('!strcmp(kind, "Update")',store)
-        self.assertIn('static void news_word(int kind',self.main)
+        self.assertIn('static const char *feature_suffix(int kind)',self.main)
         self.assertIn("C_GOLD",self.main)
-        self.assertIn("y - i * 1.1f * scale",self.main)
+        self.assertIn("feature_title_rows",self.main)
         self.assertIn("p->news_kind",self.main)
 
     def test_self_update_installs_livearea_from_downloaded_new_vpk(self):
-        self.assertIn('WS_PKG_SELF "/updater/%s"', self.main)
-        self.assertIn('WS_PKG_SELF "/updater/sce_sys/%s"', self.main)
+        self.assertIn('WS_PKG_SELF "/updater_v2/%s"', self.main)
+        self.assertIn('WS_PKG_SELF "/updater_v2/sce_sys/%s"', self.main)
         self.assertIn("static int copy_new_updater_file(", self.main)
         launch=self.main[self.main.index("static void launch_updater("):
                          self.main.index("static void maybe_self_update(")]
@@ -92,20 +148,14 @@ class ReleaseInvariants(unittest.TestCase):
     def test_update_label_only_featured_on_vita_not_cards_or_post_details(self):
         hero=self.main[self.main.index("static void build_home("):
                        self.main.index("static void build_cat(")]
-        self.assertIn("news_word(p->news_kind",hero)
-        self.assertIn('const Item *details = &items[b1];',hero)
-        self.assertIn('details->x + details->w - letters * 8.f * scale + 8',hero)
-        self.assertIn('details->y + details->h - 10',hero)
-        self.assertIn('news_word(p->news_kind, badge_x, badge_y, scale, ip + .40)',hero)
-        self.assertLess(hero.index('button(TXT(S_DETAILS)'),hero.index('news_word(p->news_kind, badge_x'))
-        self.assertNotIn('if (p->news_kind ? 30',hero)
-
+        self.assertIn("feature_title(t->title, ix, iy, iw, tsc",hero)
         card=self.main[self.main.index("static void card("):
                        self.main.index("static float header(")]
         post=self.main[self.main.index("static void build_post("):
                        self.main.index("/* barra de rolagem",self.main.index("static void build_post("))]
-        self.assertNotIn("news_word(",card)
-        self.assertNotIn("news_word(",post)
+        self.assertNotIn("feature_suffix(",card)
+        self.assertNotIn("feature_suffix(",post)
+        self.assertNotIn("news_word(",self.main)
 
     def test_home_featured_github_prefers_source_and_mirrors_lite(self):
         home=self.main[self.main.index("static void build_home("):self.main.index("static void build_cat(")]
@@ -141,7 +191,7 @@ class ReleaseInvariants(unittest.TestCase):
     def test_handoff_queues_only_one_shell_launch_then_exits(self):
         launch = self.main[self.main.index("static void launch_updater("):
                            self.main.index("static void maybe_self_update(")]
-        self.assertIn('sceAppMgrLaunchAppByUri(0xFFFFF, "psgm:play?titleid=WOLF00002")',launch)
+        self.assertIn('sceAppMgrLaunchAppByUri(0xFFFFF, "psgm:play?titleid=WFFS00043")',launch)
         self.assertIn("sceKernelExitProcess(0);", launch)
         self.assertNotIn("sceAppMgrLaunchAppByName(",launch)
         self.assertNotIn("sceAppMgrLaunchAppByUri(0x20000",launch)
@@ -154,10 +204,10 @@ class ReleaseInvariants(unittest.TestCase):
     def test_updater_livearea_is_freshly_installed(self):
         launch = self.main[self.main.index("static void launch_updater("):
                            self.main.index("static void maybe_self_update(")]
-        self.assertLess(launch.index('inst_delete("WOLF00002")'),
+        self.assertLess(launch.index('inst_delete("WFFS00043")'),
                         launch.index("inst_promote(WS_PKG_UPD)"))
         for name in ("icon0.png","bg0.png","startup.png","template.xml"):
-            self.assertIn('fs_exists("ux0:app/WOLF00002/sce_sys/',launch)
+            self.assertIn('fs_exists("ux0:app/WFFS00043/sce_sys/',launch)
             self.assertIn(name,launch)
         self.assertIn('updater: installed bubble missing custom LiveArea files',launch)
 
@@ -170,7 +220,7 @@ class ReleaseInvariants(unittest.TestCase):
         self.assertIn("now_s >= 9.0",tick)
         self.assertNotIn("now_s >= 9.0 && intro_done",tick)
         self.assertIn("updater_cleanup_pending && now_s >= 9.0 && jobs_active() == 0",tick)
-        self.assertIn('inst_delete("WOLF00002")',tick)
+        self.assertIn('inst_delete("WFFS00043")',tick)
         self.assertIn("updater_cleanup_pending = 0;",tick)
         self.assertIn("fs_rm_rf(WS_DATA",tick)
         self.assertIn('updater_cleanup.pending',self.updater)
@@ -182,7 +232,7 @@ class ReleaseInvariants(unittest.TestCase):
         install_c = (ROOT / "src/install.c").read_text(encoding="utf-8")
         self.assertIn("int inst_delete(const char *titleid);", install_h)
         self.assertIn("scePromoterUtilityDeletePkg(titleid)", install_c)
-        self.assertIn('inst_delete("WOLF00002")', self.main)
+        self.assertIn('inst_delete("WFFS00043")', self.main)
 
     def test_settings_touch_does_not_scroll_page_behind_modal(self):
         self.assertIn("dragged && viewer < 0 && !vid_open && !settings_open", self.main)

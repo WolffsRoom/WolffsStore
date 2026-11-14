@@ -11,11 +11,11 @@ include("$ENV{VITASDK}/share/vita.cmake" REQUIRED)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2 -Wall -Wno-format-truncation")
 
-set(WS_TITLEID "WOLF00001")
-set(WS_UPDATER_TITLEID "WOLF00002")
+set(WS_TITLEID "WFFS00042")
+set(WS_UPDATER_TITLEID "WFFS00043")
 # LiveArea padrão: assets/livearea (icon0 128x128, bg0 840x500, startup 280x158, PNG indexado de 8 bits)
 set(WS_SFO_VERSION "00.99")
-set(WS_FILE_VERSION "0.99")
+set(WS_FILE_VERSION "0.99.1")
 set(WS_VPK_NAME "WolffsStore.vpk")
 set(WS_ARTIFACTS_DIR "${CMAKE_SOURCE_DIR}/artifacts/current")
 
@@ -108,7 +108,7 @@ target_link_libraries(${PROJECT_NAME}
 # UNSAFE: o promoter (instalar VPKs) precisa de permissões estendidas, como no VitaShell/VitaSeed
 vita_create_self(eboot.bin ${PROJECT_NAME} UNSAFE)
 
-# ------------------------------------------------------------------ updater (WOLF00002)
+# ------------------------------------------------------------------ updater (WFFS00043)
 
 add_executable(WolffsUpdater updater/main.c)
 target_link_libraries(WolffsUpdater
@@ -137,6 +137,16 @@ add_custom_command(OUTPUT ${WS_UPDATER_SFO}
   VERBATIM)
 add_custom_target(ws_updater_sfo ALL DEPENDS ${WS_UPDATER_SFO})
 
+# Backward compatibility: v0.99 and older hardcode updater/ and WOLF00002.
+# The new WFFS00042 Store uses updater_v2/ with WFFS00043 exclusively.
+set(WS_LEGACY_UPDATER_SFO ${CMAKE_CURRENT_BINARY_DIR}/updater_legacy_param_${WS_SFO_VERSION}.sfo)
+add_custom_command(OUTPUT ${WS_LEGACY_UPDATER_SFO}
+  COMMAND vita-mksfoex -s TITLE_ID=WOLF00002 -s APP_VER=${WS_SFO_VERSION}
+          "Wolff's Store Updater" ${WS_LEGACY_UPDATER_SFO}
+  DEPENDS ${CMAKE_SOURCE_DIR}/CMakeLists.txt
+  VERBATIM)
+add_custom_target(ws_legacy_updater_sfo ALL DEPENDS ${WS_LEGACY_UPDATER_SFO})
+
 # ------------------------------------------------------------------ VPK
 
 # O catálogo textual garante uma tela útil sem rede e data/tex contém os
@@ -159,17 +169,27 @@ vita_create_vpk(${WS_VPK_NAME} ${WS_TITLEID} eboot.bin
     ${CMAKE_SOURCE_DIR}/assets/livearea/startup.png sce_sys/livearea/contents/startup.png
     ${CMAKE_SOURCE_DIR}/assets/livearea/template.xml sce_sys/livearea/contents/template.xml
     ${CMAKE_CURRENT_BINARY_DIR}/updater_eboot.bin updater/eboot.bin
-    ${WS_UPDATER_SFO} updater/sce_sys/param.sfo
-    # Independent LiveArea assets for temporary updater WOLF00002.
+    # Legacy SFO for older WOLF00001 clients; no new app installs this.
+    ${WS_LEGACY_UPDATER_SFO} updater/sce_sys/param.sfo
+    # Independent LiveArea assets for temporary updater WFFS00043.
     ${CMAKE_SOURCE_DIR}/assets/livearea_autoupdater/icon0.png updater/sce_sys/icon0.png
     ${CMAKE_SOURCE_DIR}/assets/livearea_autoupdater/bg0.png updater/sce_sys/livearea/contents/bg0.png
     ${CMAKE_SOURCE_DIR}/assets/livearea_autoupdater/startup.png updater/sce_sys/livearea/contents/startup.png
     ${CMAKE_SOURCE_DIR}/assets/livearea_autoupdater/template.xml updater/sce_sys/livearea/contents/template.xml
     ${CMAKE_SOURCE_DIR}/data/tex/paw4.wrt updater/data/tex/paw4.wrt
     ${CMAKE_SOURCE_DIR}/data/tex/font_title.wrt updater/data/tex/font_title.wrt
+    # WFFS00042 installs only the updater_v2/ helper with ID WFFS00043.
+    ${CMAKE_CURRENT_BINARY_DIR}/updater_eboot.bin updater_v2/eboot.bin
+    ${WS_UPDATER_SFO} updater_v2/sce_sys/param.sfo
+    ${CMAKE_SOURCE_DIR}/assets/livearea_autoupdater/icon0.png updater_v2/sce_sys/icon0.png
+    ${CMAKE_SOURCE_DIR}/assets/livearea_autoupdater/bg0.png updater_v2/sce_sys/livearea/contents/bg0.png
+    ${CMAKE_SOURCE_DIR}/assets/livearea_autoupdater/startup.png updater_v2/sce_sys/livearea/contents/startup.png
+    ${CMAKE_SOURCE_DIR}/assets/livearea_autoupdater/template.xml updater_v2/sce_sys/livearea/contents/template.xml
+    ${CMAKE_SOURCE_DIR}/data/tex/paw4.wrt updater_v2/data/tex/paw4.wrt
+    ${CMAKE_SOURCE_DIR}/data/tex/font_title.wrt updater_v2/data/tex/font_title.wrt
     ${ws_files}
 )
-add_dependencies(${WS_VPK_NAME}-vpk updater_eboot.bin-self ws_updater_sfo)
+add_dependencies(${WS_VPK_NAME}-vpk updater_eboot.bin-self ws_updater_sfo ws_legacy_updater_sfo)
 
 add_custom_target(ws_copy_artifact ALL
   COMMAND ${CMAKE_COMMAND} -E make_directory ${WS_ARTIFACTS_DIR}

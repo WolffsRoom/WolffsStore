@@ -1,5 +1,5 @@
 /*
- * Wolff's Store Updater (WOLF00002)
+ * Wolff's Store Updater (WFFS00043)
  * O app principal baixa a versão nova, extrai em ux0:data/WolffsStore/pkg (com head.bin),
  * instala este updater e o abre fechando a si mesmo. Aqui o Wolff's Store já está fechado,
  * então dá para instalar por cima e reabrir. Mesmo esquema do updater do VitaShell (GPLv3).
@@ -19,7 +19,7 @@
 #include <string.h>
 
 #define PKG "ux0:data/WolffsStore/pkg"
-#define MAIN_TITLE "WOLF00001"
+#define MAIN_TITLE "WFFS00042"
 
 static volatile int busy = 1;
 static vita2d_texture *brand_paw, *brand_font;
@@ -106,7 +106,12 @@ static int anim(SceSize a, void *b) {
     while (busy) {
         vita2d_start_drawing();
         vita2d_clear_screen();
-        draw_paw(412, 62, 2);
+        /* A 25% smaller paw, centered 22 px higher in the updater UI. */
+        if (brand_paw) {
+            const float scale = 1.5f; /* 75% of the old scale 2.0 */
+            float w = vita2d_texture_get_width(brand_paw);
+            draw_paw((960.f - w * scale) / 2.f, 40.f, scale);
+        }
         const char *brand = "WOLFF'S ROOM";
         int scale = 4;
         float bx = (960 - brand_width(brand, scale)) / 2;
@@ -172,7 +177,7 @@ int main(void) {
         sceKernelExitProcess(1);
     }
     /* This marker is consumed only AFTER the new Store has started.
-     * Never uninstall WOLF00002 from inside its own updater process. */
+     * Never uninstall WFFS00043 from inside its own updater process. */
     sceIoMkdir("ux0:data/WolffsStore", 0777);
     {
         SceUID fd = sceIoOpen("ux0:data/WolffsStore/updater_cleanup.pending",
