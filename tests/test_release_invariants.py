@@ -14,9 +14,9 @@ class ReleaseInvariants(unittest.TestCase):
         cls.video = (ROOT / "src/video.c").read_text(encoding="utf-8")
         cls.updater = (ROOT / "updater/main.c").read_text(encoding="utf-8")
 
-    def test_release_is_v091(self):
-        self.assertIn('set(WS_SFO_VERSION "00.91")', self.cmake)
-        self.assertIn('set(WS_FILE_VERSION "0.91")', self.cmake)
+    def test_release_is_v092(self):
+        self.assertIn('set(WS_SFO_VERSION "00.92")', self.cmake)
+        self.assertIn('set(WS_FILE_VERSION "0.92")', self.cmake)
 
     def test_third_party_author_badge_is_optional(self):
         catalog=(ROOT / "src/catalog.h").read_text(encoding="utf-8")
@@ -26,6 +26,20 @@ class ReleaseInvariants(unittest.TestCase):
         self.assertIn('snprintf(by, sizeof(by), "by: %s", p->author)', self.main)
         self.assertIn("p->author && p->author[0]", self.main)
         self.assertIn('snprintf(by, sizeof(by), "by: %s", g_posts[pi].author)', self.main)
+
+    def test_launches_updater_and_store_directly(self):
+        self.assertIn('sceAppMgrLaunchAppByUri(0x20000, "psgm:play?titleid=WOLF00002")', self.main)
+        self.assertIn('sceAppMgrLaunchAppByUri(0x20000, "psgm:play?titleid=" MAIN_TITLE)', self.updater)
+        self.assertIn('sceAppMgrLaunchAppByName(0x60000, "WOLF00002", NULL)', self.main)
+        self.assertIn('sceAppMgrLaunchAppByName(0x60000, MAIN_TITLE, NULL)', self.updater)
+        self.assertNotIn('sceAppMgrLaunchAppByUri(0xFFFFF', self.updater)
+
+    def test_defer_updater_cleanup_on_upgrade_first_launch(self):
+        self.assertIn('last_started_version.txt', self.main)
+        self.assertIn('if (upgraded_this_boot)', self.main)
+        self.assertIn('updater cleanup deferred: first boot of', self.main)
+        self.assertIn('cleanup updater on next launch', self.main)
+        self.assertIn('updater: relaunch Store ->', self.updater)
 
     def test_main_removes_the_closed_updater_after_update(self):
         install_h = (ROOT / "src/install.h").read_text(encoding="utf-8")

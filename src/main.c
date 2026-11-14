@@ -29,7 +29,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "0.91"
+#define WS_VERSION "0.92"
 #endif
 
 /* ================================================================ textos */
@@ -2810,7 +2810,12 @@ static void launch_updater(void) {
         return;
     }
     vita2d_wait_rendering_done();
-    sceAppMgrLaunchAppByUri(0xFFFFF, "psgm:play?titleid=WOLF00002");
+    int launch_r = sceAppMgrLaunchAppByUri(0x20000, "psgm:play?titleid=WOLF00002");
+    ws_log("launch updater directly: 0x%08X", launch_r);
+    if (launch_r < 0) {
+        launch_r = sceAppMgrLaunchAppByName(0x60000, "WOLF00002", NULL);
+        ws_log("launch updater fallback by titleid: 0x%08X", launch_r);
+    }
     sceKernelDelayThread(100 * 1000);
     sceKernelExitProcess(0);
 }
@@ -3063,11 +3068,28 @@ int main(void) {
     feat = catalog_featured();
     load_covers();
     make_mosaic();
-    /* O mini-atualizador já terminou e fechou antes de reabrir a Store.
-     * Removê-lo aqui também limpa bubbles deixadas por versões anteriores. */
+    /* On the first boot after an upgrade, the updater may still be closing.
+     * Uninstalling its running title here can abruptly terminate the Store.
+     * Leave the temporary bubble only until the NEXT Store launch. This also
+     * protects upgrades from older updater binaries (v0.91 and earlier). */
+    fs_mkdir_p(WS_DATA);
+    int upgraded_this_boot = 1;
+    {
+        int last_len = 0;
+        char *last = fs_read(WS_DATA "/last_started_version.txt", &last_len);
+        if (last) {
+            upgraded_this_boot = strcmp(last, WS_VERSION) != 0;
+            free(last);
+        }
+        fs_write(WS_DATA "/last_started_version.txt", WS_VERSION, (int)strlen(WS_VERSION));
+    }
     if (fs_exists("ux0:app/WOLF00002/sce_sys/param.sfo")) {
-        int cleanup = inst_delete("WOLF00002");
-        ws_log("cleanup updater: resultado 0x%08X", cleanup);
+        if (upgraded_this_boot) {
+            ws_log("updater cleanup deferred: first boot of %s", WS_VERSION);
+        } else {
+            int cleanup = inst_delete("WOLF00002");
+            ws_log("cleanup updater on next launch: 0x%08X", cleanup);
+        }
     }
     /* sobras de uma atualização do próprio app */
     fs_rm_rf(WS_PKG_SELF);

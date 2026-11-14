@@ -160,8 +160,22 @@ int main(void) {
     }
     busy = 0;
     sceKernelDelayThread(100 * 1000);
-    sceAppMgrLaunchAppByUri(0xFFFFF, "psgm:play?titleid=" MAIN_TITLE);
-    sceKernelDelayThread(50 * 1000);
+    /* 0x20000 starts the installed app directly; 0xFFFFF only opens LiveArea.
+     * Give the installation and shell a moment to settle before relaunch. */
+    sceKernelDelayThread(350 * 1000);
+    int launch_r = sceAppMgrLaunchAppByUri(0x20000, "psgm:play?titleid=" MAIN_TITLE);
+    if (launch_r < 0) {
+        launch_r = sceAppMgrLaunchAppByName(0x60000, MAIN_TITLE, NULL);
+    }
+    {
+        char line[96];
+        int n = snprintf(line, sizeof(line), "updater: relaunch Store -> 0x%08X\r\n", launch_r);
+        sceIoMkdir("ux0:data/WolffsStore/logs", 0777);
+        SceUID fd = sceIoOpen("ux0:data/WolffsStore/logs/wolffsstore.log",
+                            SCE_O_WRONLY | SCE_O_CREAT | SCE_O_APPEND, 0777);
+        if (fd >= 0) { sceIoWrite(fd, line, n); sceIoClose(fd); }
+    }
+    sceKernelDelayThread(350 * 1000);
     sceKernelExitProcess(0);
     return 0;
 }
