@@ -1,0 +1,1580 @@
+post	godot-v03
+cat	ferramentas
+group	0
+date	2026-11-13
+feat	1
+title.pt	Godot 4 Vita - Release v0.3
+tag.pt	Engine · C++
+status.pt	v0.3 lançada
+desc.pt	Nova versão da Godot 4 para PS Vita, agora com editor para Windows, Linux e macOS.
+feature_text.pt	Nova versão da Godot 4 para PS Vita, agora com editor para Windows, Linux e macOS.
+about.pt	A v0.3 da Godot 4 Vita foca em memória, leitura de arquivos e no renderizador GXM nativo, e traz exportação para PS Vita também no Linux e no macOS.
+sec.pt	Aviso
+para.pt	A Godot 4 Vita é um programa de computador. O editor desta versão está disponível para Windows, Linux e macOS: você cria e exporta o jogo no PC e instala o VPK gerado no Vita. No Vita, o arquivo para testar é o Showcase v0.3 (VPK), uma demonstração com streaming do PCK, áudio e cenas 2D/3D.
+para.pt	A versão de macOS ainda não foi testada em um Mac de verdade, e a de Linux foi gerada no Ubuntu 22.04.
+sec.pt	Novidades
+item.pt	Editores portáteis para Windows x64, Linux x86_64 e macOS universal (Intel e Apple Silicon), com a plataforma PS Vita embutida
+item.pt	Pré-leitura do game.pck no quarto núcleo da CPU (com CapUnlocker), ligada por padrão
+item.pt	Menos memória usada: texturas vão para a GPU ao carregar e a malha 3D foi para a CDRAM (cerca de 24 MiB livres em cenas 3D)
+item.pt	Áudio no modo godot3 por padrão, com thread de mixagem própria
+item.pt	Pasta de dados separada com game.pck e logs em ux0:data/<pasta>/logs/
+item.pt	Correções no 3D em GXM (Sprite3D, AnimatedSprite3D, Label3D) e canvas 2D mais leve
+item.pt	Compilador de shaders no console, experimental e desligado por padrão
+item.pt	SelfTest VPK que roda todos os testes no aparelho em cerca de 6 minutos
+sec.pt	Instalação
+item.pt	Baixe o editor do seu sistema na página da release, extraia a pasta inteira e mantenha a pasta vita/ ao lado do executável
+item.pt	Em Project > Export, adicione o preset PS Vita e exporte o .vpk
+item.pt	Instale o VPK com o VitaShell e copie a pasta de dados gerada para ux0:data/
+item.pt	Projetos da v0.2 precisam ser exportados de novo com o editor da v0.3
+sec.pt	Limitações conhecidas
+item.pt	3D em GXM ainda é experimental
+item.pt	Shaders e materiais de CanvasItem ainda não são renderizados
+item.pt	Troféus são empacotados, mas ainda não desbloqueiam
+info.pt	Versão|v0.3
+info.pt	Editor|Windows, Linux e macOS
+info.pt	Base|Godot 4.8-dev7
+info.pt	Showcase|VPK para PS Vita
+info.pt	Requisitos|HENkaku/Ens? e kubridge
+link.pt	Baixar Showcase (VPK)|https://github.com/WolffsRoom/godot4-psvita/releases/download/v0.3/Godot4Vita-v0.3-Showcase.vpk
+title.en	Godot 4 Vita - Release v0.3
+tag.en	Engine · C++
+status.en	v0.3 released
+desc.en	New Godot 4 for PS Vita release, now with editors for Windows, Linux and macOS.
+feature_text.en	New Godot 4 for PS Vita release, now with editors for Windows, Linux and macOS.
+about.en	Godot 4 Vita v0.3 focuses on memory, file reading and the native GXM renderer, and adds PS Vita export on Linux and macOS too.
+sec.en	Notice
+para.en	Godot 4 Vita is a computer program. This version's editor is available for Windows, Linux and macOS: you build and export the game on your PC and install the generated VPK on the Vita. To try it on the Vita, get the Showcase v0.3 (VPK), a demo with PCK streaming, audio and 2D/3D scenes.
+para.en	The macOS build hasn't been tested on a real Mac yet, and the Linux build was made on Ubuntu 22.04.
+sec.en	What's new
+item.en	Portable editors for Windows x64, Linux x86_64 and universal macOS (Intel and Apple Silicon), with the PS Vita platform built in
+item.en	game.pck read-ahead on the fourth CPU core (with CapUnlocker), on by default
+item.en	Lower memory use: textures go to the GPU on load and the 3D mesh moved to CDRAM (about 24 MiB freed in 3D scenes)
+item.en	godot3 audio mode by default, with its own mixer thread
+item.en	Separate data folder with game.pck and logs in ux0:data/<folder>/logs/
+item.en	GXM 3D fixes (Sprite3D, AnimatedSprite3D, Label3D) and a lighter 2D canvas
+item.en	On-console shader compiler, experimental and off by default
+item.en	SelfTest VPK that runs every device test in about 6 minutes
+sec.en	Installation
+item.en	Download the editor for your OS from the release page, extract the whole folder and keep vita/ next to the executable
+item.en	In Project > Export, add the PS Vita preset and export the .vpk
+item.en	Install the VPK with VitaShell and copy the generated data folder to ux0:data/
+item.en	v0.2 projects must be re-exported with the v0.3 editor
+sec.en	Known limitations
+item.en	GXM 3D is still experimental
+item.en	CanvasItem shaders and materials aren't rendered yet
+item.en	Trophies are packaged but don't unlock yet
+info.en	Version|v0.3
+info.en	Editor|Windows, Linux and macOS
+info.en	Base|Godot 4.8-dev7
+info.en	Showcase|PS Vita VPK
+info.en	Requirements|HENkaku/Ens? and kubridge
+link.en	Download Showcase (VPK)|https://github.com/WolffsRoom/godot4-psvita/releases/download/v0.3/Godot4Vita-v0.3-Showcase.vpk
+cover	1
+shots	0
+end	
+post	pizza
+cat	ports
+group	0
+date	2026-11-13
+pixel	1
+video_arquivo	https://wolffsroom.github.io/WolffsRoomSite/posts/pizza/trailer.mp4
+title.pt	Pizza Tower - SAGE 2019 Demo
+tag.pt	Port · PS Vita
+status.pt	Em andamento
+desc.pt	Port da demo da SAGE 2019 para o PS Vita.
+feature_text.pt	Port não oficial da demo de Pizza Tower lançada na SAGE 2019, com Peppino e Snick, para o PS Vita.
+about.pt	Port não oficial da demo de Pizza Tower lançada na Sonic Amateur Games Expo (SAGE) de 2019 para o PS Vita. A demo é gratuita e feita em GameMaker.
+sec.pt	Sobre a demo
+item.pt	Lançada durante a SAGE 2019, com fases novas, o modo Snick Challenge e bastante conteúdo não usado
+item.pt	Snick the Porcupine é jogável só nesta demo
+item.pt	Moedas de pizza caem dos blocos e servem para comprar a espingarda na Pizzamart
+sec.pt	Instalação
+item.pt	Baixe o VPK e instale com o VitaShell
+item.pt	Baixe os dados, extraia o .zip e copie a pasta extraída para ux0:data/
+item.pt	Abra o jogo pela LiveArea
+sec.pt	Requisitos
+item.pt	PS Vita desbloqueado
+item.pt	Plugin kubridge.suprx
+item.pt	libshacccg.suprx
+item.pt	Pasta game-data em ux0:data/ (baixada no botão Baixar dados)
+info.pt	Status|Em andamento
+info.pt	Jogo|Pizza Tower - SAGE 2019 Demo
+info.pt	Criadores|Tour de Pizza
+info.pt	Engine original|GameMaker
+info.pt	Dados|pasta em ux0:data/
+link.pt	Baixar VPK|https://drive.google.com/file/d/1EgVvq6LYAK5bxLwH1CLnedn7eMGqDFZ9/view?usp=sharing
+link.pt	Baixar dados|https://drive.google.com/file/d/1CBof60EExpF4IrZMhyix6CvRicqSONRA/view?usp=sharing
+title.en	Pizza Tower - SAGE 2019 Demo
+tag.en	Port · PS Vita
+status.en	In progress
+desc.en	Port of the SAGE 2019 demo to PS Vita.
+feature_text.en	Unofficial PS Vita port of the Pizza Tower demo released at SAGE 2019, with Peppino and Snick.
+about.en	Unofficial PS Vita port of the Pizza Tower demo released at the 2019 Sonic Amateur Games Expo (SAGE). The demo is free and made in GameMaker.
+sec.en	About the demo
+item.en	Released during SAGE 2019, with new levels, the Snick Challenge mode and plenty of unused content
+item.en	Snick the Porcupine is playable only in this demo
+item.en	Pizza coins drop from blocks and buy the shotgun at the Pizzamart
+sec.en	Installation
+item.en	Download the VPK and install it with VitaShell
+item.en	Download the data, extract the .zip and copy the extracted folder to ux0:data/
+item.en	Start the game from the LiveArea
+sec.en	Requirements
+item.en	Hacked PS Vita
+item.en	kubridge.suprx plugin
+item.en	libshacccg.suprx
+item.en	game-data folder in ux0:data/ (from the Download data button)
+info.en	Status|In progress
+info.en	Game|Pizza Tower - SAGE 2019 Demo
+info.en	Creators|Tour de Pizza
+info.en	Original engine|GameMaker
+info.en	Data|folder in ux0:data/
+link.en	Download VPK|https://drive.google.com/file/d/1EgVvq6LYAK5bxLwH1CLnedn7eMGqDFZ9/view?usp=sharing
+link.en	Download data|https://drive.google.com/file/d/1CBof60EExpF4IrZMhyix6CvRicqSONRA/view?usp=sharing
+cover	1
+shots	6
+end	
+post	void
+cat	ports
+group	0
+date	2026-11-11
+pixel	1
+progress	95
+title.pt	Void Stranger - PS Vita Edition
+tag.pt	Port · C
+status.pt	95% · Jogável
+desc.pt	Port nativo não oficial de Void Stranger para o PS Vita.
+feature_text.pt	Port nativo não oficial de Void Stranger para o PS Vita.
+about.pt	Port nativo não oficial de Void Stranger. Não emula o Windows: lê os dados oficiais do GameMaker (Steam 1.1.3) e os executa em uma versão customizada do Butterscotch, com VitaGL e OpenAL. O jogo está totalmente jogável; podem ocorrer quedas de FPS em batalhas com muitos efeitos.
+sec.pt	Destaques
+item.pt	Controles nativos e suporte a toque
+item.pt	Seis idiomas, incluindo português do Brasil
+item.pt	Opções gráficas próprias do Vita e controle de paleta/tom
+item.pt	Cache de texturas gerado no próprio console
+item.pt	Vídeo de abertura com reprodução nativa
+item.pt	30 troféus nativos, com navegador de troféus dentro do jogo
+sec.pt	Requisitos
+item.pt	Cópia legítima de Void Stranger 1.1.3 na Steam
+item.pt	kubridge (kubridge.skprx)
+item.pt	FdFix (fd_fix.skprx), exceto se você usa rePatch
+item.pt	libshacccg.suprx instalado no Vita
+item.pt	NoTrpDrm (opcional, para os troféus nativos)
+sec.pt	Créditos
+item.pt	distheusurper2 - testes extensivos em hardware real
+item.pt	System Erasure - criadores de Void Stranger
+item.pt	Butterscotch - runner de GameMaker
+item.pt	VitaGL - camada gráfica
+item.pt	Void Stranger International - base do suporte a idiomas
+info.pt	Status|Jogável
+info.pt	Fonte|PC/Steam 1.1.3
+info.pt	Runtime|Butterscotch + VitaGL
+info.pt	Idiomas|EN, FI, ES, FR, IT, PT-BR
+info.pt	Troféus|30, nativos
+link.pt	Ver no GitHub|https://github.com/WolffsRoom/VoidStrangerVita
+link.pt	Releases|https://github.com/WolffsRoom/VoidStrangerVita/releases
+title.en	Void Stranger - PS Vita Edition
+tag.en	Port · C
+status.en	95% · Playable
+desc.en	Unofficial native port of Void Stranger to PS Vita.
+feature_text.en	Unofficial native port of Void Stranger to PS Vita.
+about.en	Unofficial native port of Void Stranger. It does not emulate Windows: it reads the official GameMaker data (Steam 1.1.3) and runs it on a custom Butterscotch build, with VitaGL and OpenAL. The game is fully playable; FPS may drop in battles with many effects.
+sec.en	Highlights
+item.en	Native controls and touch support
+item.en	Six languages, including Brazilian Portuguese
+item.en	Vita-specific graphics options and palette/tone controls
+item.en	Texture cache built on the console itself
+item.en	Intro video with native playback
+item.en	30 native trophies, with an in-game trophy browser
+sec.en	Requirements
+item.en	Legitimate copy of Void Stranger 1.1.3 on Steam
+item.en	kubridge (kubridge.skprx)
+item.en	FdFix (fd_fix.skprx), unless you use rePatch
+item.en	libshacccg.suprx installed on the Vita
+item.en	NoTrpDrm (optional, for the native trophies)
+sec.en	Credits
+item.en	distheusurper2 - extensive testing on real hardware
+item.en	System Erasure - creators of Void Stranger
+item.en	Butterscotch - GameMaker runner
+item.en	VitaGL - graphics layer
+item.en	Void Stranger International - base for language support
+info.en	Status|Playable
+info.en	Source|PC/Steam 1.1.3
+info.en	Runtime|Butterscotch + VitaGL
+info.en	Languages|EN, FI, ES, FR, IT, PT-BR
+info.en	Trophies|30, native
+link.en	View on GitHub|https://github.com/WolffsRoom/VoidStrangerVita
+link.en	Releases|https://github.com/WolffsRoom/VoidStrangerVita/releases
+cover	1
+shots	0
+end	
+post	delta
+cat	ports
+group	0
+date	2026-11-10
+pixel	1
+trofeus	1
+video_arquivo	https://wolffsroom.github.io/WolffsRoomSite/posts/delta/trailer.mp4
+progress	81
+title.pt	DeltaruneVita
+tag.pt	Port · C
+status.pt	81% · Jogável
+desc.pt	Deltarune, capítulos 1 a 5, no PS Vita.
+feature_text.pt	Deltarune, capítulos 1 a 5, no PS Vita.
+bars_title.pt	Revisão por capítulo
+about.pt	Port não oficial de DELTARUNE, capítulos 1 a 5. Executa os dados oficiais do GameMaker (Windows/Steam) em uma implementação do Butterscotch voltada ao Vita, com VitaGL nos gráficos e OpenAL no áudio. O repositório e os releases não incluem os dados comerciais do jogo.
+sec.pt	Estado dos capítulos
+item.pt	Capítulo 1 - tudo funciona
+item.pt	Capítulo 2 - pequenas quedas de desempenho em algumas salas
+item.pt	Capítulo 3 - alguns minigames engasgam no primeiro carregamento
+item.pt	Capítulo 4 - algumas salas ainda precisam de otimização
+item.pt	Capítulo 5 - otimização incompleta; conclusão total ainda não verificada
+sec.pt	Destaques
+item.pt	Controles do Vita e toque opcional
+item.pt	Gráficos e áudio configuráveis
+item.pt	Bordas de console
+item.pt	Suporte a idiomas e mods
+item.pt	Troféus
+item.pt	Reprodução nativa de vídeo
+item.pt	Patchers que geram os dados do Vita a partir da sua cópia do jogo
+sec.pt	Requisitos
+item.pt	PS Vita desbloqueado
+item.pt	kubridge (kubridge.skprx)
+item.pt	FdFix (fd_fix.skprx), exceto se você usa rePatch
+item.pt	libshacccg.suprx instalado no Vita
+item.pt	Instalação oficial e sem modificações de DELTARUNE na Steam (v0.0.253)
+item.pt	CapUnlocker, para melhorar o desempenho
+item.pt	NoTrpDrm, para os troféus (opcional)
+sec.pt	Instalação
+item.pt	Gere os dados do Vita com um dos patchers
+item.pt	Copie a pasta deltarune gerada para ux0:data/
+item.pt	Instale o VPK no Vita
+bar.pt	Capítulo 1|100|
+bar.pt	Capítulo 2|100|
+bar.pt	Capítulo 3|95|
+bar.pt	Capítulo 4|85|
+bar.pt	Capítulo 5|80|
+info.pt	Status|Jogável
+info.pt	Fonte|Steam v0.0.253
+info.pt	Runtime|Butterscotch + VitaGL + OpenAL
+info.pt	Build|Deltarune-v0.81.vpk
+info.pt	Troféus|Sim (NoTrpDrm)
+link.pt	Baixar VPK (v0.81)|https://github.com/WolffsRoom/DeltaruneVita/releases/download/v0.81/Deltarune-v0.81.vpk
+title.en	DeltaruneVita
+tag.en	Port · C
+status.en	81% · Playable
+desc.en	Deltarune, chapters 1 to 5, on PS Vita.
+feature_text.en	Deltarune, chapters 1 to 5, on PS Vita.
+bars_title.en	Review by chapter
+about.en	Unofficial port of DELTARUNE, chapters 1 to 5. It runs the official GameMaker data (Windows/Steam) on a Vita-focused Butterscotch implementation, with VitaGL for graphics and OpenAL for audio. The repository and releases do not include the commercial game data.
+sec.en	Chapter status
+item.en	Chapter 1 - everything works
+item.en	Chapter 2 - small performance drops in some rooms
+item.en	Chapter 3 - some minigames stutter on first load
+item.en	Chapter 4 - some rooms still need optimization
+item.en	Chapter 5 - optimization incomplete; full completion not verified yet
+sec.en	Highlights
+item.en	Vita controls with optional touch
+item.en	Configurable graphics and audio
+item.en	Console borders
+item.en	Language and mod support
+item.en	Trophies
+item.en	Native video playback
+item.en	Patchers that build the Vita data from your copy of the game
+sec.en	Requirements
+item.en	Hacked PS Vita
+item.en	kubridge (kubridge.skprx)
+item.en	FdFix (fd_fix.skprx), unless you use rePatch
+item.en	libshacccg.suprx installed on the Vita
+item.en	Official, unmodified DELTARUNE install from Steam (v0.0.253)
+item.en	CapUnlocker, to improve performance
+item.en	NoTrpDrm, for trophies (optional)
+sec.en	Installation
+item.en	Build the Vita data with one of the patchers
+item.en	Copy the generated deltarune folder to ux0:data/
+item.en	Install the VPK on the Vita
+bar.en	Chapter 1|100|
+bar.en	Chapter 2|100|
+bar.en	Chapter 3|95|
+bar.en	Chapter 4|85|
+bar.en	Chapter 5|80|
+info.en	Status|Playable
+info.en	Source|Steam v0.0.253
+info.en	Runtime|Butterscotch + VitaGL + OpenAL
+info.en	Build|Deltarune-v0.81.vpk
+info.en	Trophies|Yes (NoTrpDrm)
+link.en	Download VPK (v0.81)|https://github.com/WolffsRoom/DeltaruneVita/releases/download/v0.81/Deltarune-v0.81.vpk
+cover	1
+shots	8
+end	
+post	fm
+cat	ferramentas
+group	1
+date	2026-06-17
+title.pt	FMVita
+tag.pt	Ferramenta · C
+status.pt	v0.5.0
+desc.pt	Gerenciador de arquivos com interface moderna e suporte a toque. Fork do VitaShell.
+feature_text.pt	Gerenciador de arquivos com interface moderna e suporte a toque. Fork do VitaShell.
+about.pt	File Manager Vita é um fork aprimorado do VitaShell (criado por TheFloW), focado em usabilidade. Tem Title ID próprio e pasta dedicada em ux0:FMVita/, então pode ser instalado lado a lado com o VitaShell ou outro gerenciador.
+sec.pt	Destaques
+item.pt	Suporte ampliado à tela de toque
+item.pt	Fundos animados e temas, incluindo tema Custom por colors.txt
+item.pt	Layouts em grade, 2 e 3 colunas
+item.pt	Instalação de vários VPKs em sequência
+item.pt	Servidor FTP com progresso de 0 a 100%
+item.pt	Visualizador de imagens
+item.pt	Sistema de desfazer
+sec.pt	Instalação
+item.pt	Transfira o .vpk do FMVita para o console (FTP ou USB)
+item.pt	Instale pelo VitaShell ou outro gerenciador
+info.pt	Versão|v0.5.0
+info.pt	Lançada em|17/06/2026
+info.pt	Base|VitaShell
+link.pt	Ver no GitHub|https://github.com/WolffsRoom/FMVita
+link.pt	Releases|https://github.com/WolffsRoom/FMVita/releases
+title.en	FMVita
+tag.en	Tool · C
+status.en	v0.5.0
+desc.en	File manager with a modern interface and touch support. A VitaShell fork.
+feature_text.en	File manager with a modern interface and touch support. A VitaShell fork.
+about.en	File Manager Vita is an improved fork of VitaShell (by TheFloW) focused on usability. It has its own Title ID and a dedicated folder at ux0:FMVita/, so it can be installed side by side with VitaShell or another manager.
+sec.en	Highlights
+item.en	Extended touchscreen support
+item.en	Animated backgrounds and themes, including a Custom theme via colors.txt
+item.en	Grid, 2-column and 3-column layouts
+item.en	Install several VPKs in a row
+item.en	FTP server with 0-100% progress
+item.en	Image viewer
+item.en	Undo system
+sec.en	Installation
+item.en	Transfer the FMVita .vpk to the console (FTP or USB)
+item.en	Install it with VitaShell or another manager
+info.en	Version|v0.5.0
+info.en	Released|17/06/2026
+info.en	Base|VitaShell
+link.en	View on GitHub|https://github.com/WolffsRoom/FMVita
+link.en	Releases|https://github.com/WolffsRoom/FMVita/releases
+cover	1
+shots	0
+end	
+post	ystool
+cat	ferramentas
+group	0
+date	2026-06-10
+title.pt	Ys Origins Translation Tool
+tag.pt	Ferramenta · Python
+status.pt	Beta
+desc.pt	Editor visual para traduzir Ys Origins, com proteção contra estouro de caracteres.
+feature_text.pt	Editor visual para traduzir Ys Origins, com proteção contra estouro de caracteres.
+about.pt	Ferramenta em Python para traduzir Ys Origins no PS Vita, com interface visual de edição e contagem de caracteres para não estourar o limite de cada linha. O código vai para o GitHub quando estiver estável.
+sec.pt	Componentes
+item.pt	Backend em Python: leitura, salvamento e proteção dos arquivos
+item.pt	Frontend em HTML/JS no estilo VS Code, com contador de caracteres
+item.pt	PyWebview empacota tudo como app de desktop
+info.pt	Status|Beta, em desenvolvimento
+info.pt	Linguagem|Python + HTML/JS
+info.pt	Interface|PyWebview
+link.pt	Ver página de ferramentas|https://wolffsroom.wordpress.com/ferramentas/
+title.en	Ys Origins Translation Tool
+tag.en	Tool · Python
+status.en	Beta
+desc.en	Visual editor for translating Ys Origins, with protection against line overflow.
+feature_text.en	Visual editor for translating Ys Origins, with protection against line overflow.
+about.en	A Python tool for translating Ys Origins on PS Vita, with a visual editing interface and a character counter so no line goes over its limit. The code will be published on GitHub once it is stable.
+sec.en	Components
+item.en	Python backend: reading, saving and protecting the files
+item.en	VS Code-style HTML/JS frontend with a character counter
+item.en	PyWebview packages everything as a desktop app
+info.en	Status|Beta, in development
+info.en	Language|Python + HTML/JS
+info.en	Interface|PyWebview
+link.en	Tools page|https://wolffsroom.wordpress.com/ferramentas/
+cover	1
+shots	2
+end	
+post	godot
+cat	ferramentas
+group	0
+date	2026-06-05
+title.pt	Godot 4 PSVita
+tag.pt	Engine · C++
+status.pt	2D em GXM nativo · 3D experimental
+desc.pt	Godot Engine 4.x portada para o PS Vita, com exportação direto do editor.
+feature_text.pt	Godot Engine 4.x portada para o PS Vita, com exportação direto do editor.
+about.pt	Runtime customizado do Godot 4.8-dev7 com renderização GXM nativa, mais um editor para Windows que exporta VPKs de PS Vita diretamente. Não é um release oficial do Godot.
+sec.pt	As três partes
+item.pt	Runtime - Godot compilado para ARM como libgodot.so, com camada de sistema do Vita, renderers GXM, áudio, entrada e arquivos
+item.pt	Loader - eboot.bin que carrega e inicia a libgodot.so, mostra a animação de carregamento e gerencia CapUnlocker, logs e caminhos de dados
+item.pt	Editor Windows - PS Vita como plataforma de exportação embutida
+sec.pt	Destaques
+item.pt	Godot4Vita.exe portátil: exporta sem addon, Python, WSL ou VitaSDK
+item.pt	Transforma projetos compatíveis em VPK instalável, com LiveArea e pasta de dados separada
+item.pt	Seleção de template de LiveArea com prévia
+info.pt	Base|Godot 4.8-dev7
+info.pt	2D|GXM nativo
+info.pt	3D|Experimental
+info.pt	Troféus|Em desenvolvimento
+link.pt	Ver no GitHub|https://github.com/WolffsRoom/godot4-psvita
+link.pt	Releases|https://github.com/WolffsRoom/godot4-psvita/releases
+title.en	Godot 4 PSVita
+tag.en	Engine · C++
+status.en	Native GXM 2D · experimental 3D
+desc.en	Godot Engine 4.x ported to PS Vita, exporting straight from the editor.
+feature_text.en	Godot Engine 4.x ported to PS Vita, exporting straight from the editor.
+about.en	A custom Godot 4.8-dev7 runtime with native GXM rendering, plus a Windows editor that exports PS Vita VPKs directly. This is not an official Godot release.
+sec.en	The three parts
+item.en	Runtime - Godot built for ARM as libgodot.so, with a Vita system layer, GXM renderers, audio, input and files
+item.en	Loader - eboot.bin that loads and starts libgodot.so, shows the boot animation and handles CapUnlocker, logs and data paths
+item.en	Windows editor - PS Vita as a built-in export platform
+sec.en	Highlights
+item.en	Portable Godot4Vita.exe: exports with no addon, Python, WSL or VitaSDK
+item.en	Turns compatible projects into installable VPKs, with LiveArea and a separate data folder
+item.en	LiveArea template picker with preview
+info.en	Base|Godot 4.8-dev7
+info.en	2D|Native GXM
+info.en	3D|Experimental
+info.en	Trophies|In development
+link.en	View on GitHub|https://github.com/WolffsRoom/godot4-psvita
+link.en	Releases|https://github.com/WolffsRoom/godot4-psvita/releases
+cover	1
+shots	0
+end	
+post	idol
+cat	ports
+group	0
+date	2026-06-01
+title.pt	The Case of the Golden Idol
+tag.pt	Port · Python
+status.pt	Em andamento
+desc.pt	Port para PS Vita, com tradução em andamento.
+feature_text.pt	Port para PS Vita, com tradução em andamento.
+about.pt	Port de The Case of the Golden Idol para o PS Vita, adaptado a partir da versão de PC em Godot. O repositório reúne os scripts, os patchers e as ferramentas criadas para o jogo rodar nativamente no console. A tradução ainda está em andamento (suporte a acentuação nas fontes).
+sec.pt	Melhorias para o Vita
+item.pt	Cursor virtual controlado pelo analógico, com velocidade ajustável
+item.pt	Controles refeitos para os botões do Vita
+item.pt	Tela de ajuda com os comandos reais do console
+item.pt	Zoom progressivo na cena e no painel de dedução (até 3x)
+item.pt	Telas retrabalhadas para o toque
+sec.pt	Planejado
+item.pt	v0.8.0 - troféus e desempenho nas transições de cenário
+item.pt	v0.9.0 - suporte à DLC da trilha sonora
+item.pt	v1.0.0 - troca de idioma no patcher
+sec.pt	Problemas conhecidos
+item.pt	Carregamento de telas e fases um pouco mais longo (cerca de 5 segundos)
+sec.pt	Instalação
+item.pt	Baixe GoldenIdol-Patch.zip e o VPK na aba Releases
+item.pt	Extraia o patch em uma pasta no PC e siga o guia do repositório
+info.pt	Status|Em andamento
+info.pt	Base|Versão Godot de PC
+info.pt	Ferramentas|GDRE_Tools, Godot PSVita, AssetStudio
+link.pt	Ver no GitHub|https://github.com/WolffsRoom/GoldenIdol-PSVita
+link.pt	Releases|https://github.com/WolffsRoom/GoldenIdol-PSVita/releases
+title.en	The Case of the Golden Idol
+tag.en	Port · Python
+status.en	In progress
+desc.en	PS Vita port, translation in progress.
+feature_text.en	PS Vita port, translation in progress.
+about.en	Port of The Case of the Golden Idol to PS Vita, adapted from the Godot-based PC version. The repository gathers the scripts, patchers and tools made to run the game natively on the console. The translation is still in progress (accent support in the fonts).
+sec.en	Vita improvements
+item.en	Virtual cursor on the analog stick, with adjustable speed
+item.en	Controls remapped to the Vita buttons
+item.en	Help screen showing the real console controls
+item.en	Progressive zoom on the scene and the deduction board (up to 3x)
+item.en	Screens reworked for touch
+sec.en	Planned
+item.en	v0.8.0 - trophies and performance on scene transitions
+item.en	v0.9.0 - soundtrack DLC support
+item.en	v1.0.0 - language switch in the patcher
+sec.en	Known issues
+item.en	Screens and levels take a little longer to load (about 5 seconds)
+sec.en	Installation
+item.en	Download GoldenIdol-Patch.zip and the VPK from the Releases tab
+item.en	Extract the patch into a folder on your PC and follow the repository guide
+info.en	Status|In progress
+info.en	Base|PC Godot version
+info.en	Tools|GDRE_Tools, Godot PSVita, AssetStudio
+link.en	View on GitHub|https://github.com/WolffsRoom/GoldenIdol-PSVita
+link.en	Releases|https://github.com/WolffsRoom/GoldenIdol-PSVita/releases
+cover	1
+shots	0
+end	
+post	uty
+cat	ports
+group	1
+date	2026-05-20
+pixel	1
+title.pt	Undertale Yellow
+tag.pt	Port · C
+status.pt	Jogável
+desc.pt	Port de Undertale Yellow para o PS Vita.
+feature_text.pt	Port de Undertale Yellow para o PS Vita.
+about.pt	Port nativo não oficial de Undertale Yellow. Roda o jogo completo em uma versão customizada do Butterscotch, com renderização acelerada por hardware via VitaGL. Undertale Yellow é um fangame gratuito, prequel de UNDERTALE, criado pelo Team Undertale Yellow.
+sec.pt	Destaques
+item.pt	Suporte modular a traduções e mods em ux0:data/undertale-yellow/mods/Lang/
+item.pt	Idiomas aparecem em Game Settings > Language (Select no jogo)
+item.pt	Configurações próprias do port no menu Game Settings
+sec.pt	Requisitos
+item.pt	kubridge (kubridge.skprx)
+item.pt	FdFix (fd_fix.skprx), exceto se você usa rePatch
+item.pt	libshacccg.suprx instalado no Vita
+item.pt	PSVshell (opcional) para overclock da CPU em batalhas pesadas
+sec.pt	Créditos
+item.pt	Team Undertale Yellow - o fangame e a trilha sonora
+item.pt	Toby Fox - UNDERTALE e DELTARUNE
+item.pt	DeltaRepack e DeltaCache - texturas
+item.pt	Rinnegatamante - VitaGL
+item.pt	TheFloW - kubridge
+item.pt	Butterscotch Team - runtime de GameMaker
+info.pt	Status|Jogável
+info.pt	Fonte|Game Jolt
+info.pt	Runtime|Butterscotch + VitaGL
+link.pt	Ver no GitHub|https://github.com/WolffsRoom/UndertaleYellowVita
+link.pt	Releases|https://github.com/WolffsRoom/UndertaleYellowVita/releases
+title.en	Undertale Yellow
+tag.en	Port · C
+status.en	Playable
+desc.en	Undertale Yellow ported to PS Vita.
+feature_text.en	Undertale Yellow ported to PS Vita.
+about.en	Unofficial native port of Undertale Yellow. It runs the full game on a custom Butterscotch build with hardware-accelerated rendering through VitaGL. Undertale Yellow is a free fangame, a prequel to UNDERTALE, made by Team Undertale Yellow.
+sec.en	Highlights
+item.en	Modular translation and mod support in ux0:data/undertale-yellow/mods/Lang/
+item.en	Languages show up under Game Settings > Language (Select in game)
+item.en	Port-specific settings in the Game Settings menu
+sec.en	Requirements
+item.en	kubridge (kubridge.skprx)
+item.en	FdFix (fd_fix.skprx), unless you use rePatch
+item.en	libshacccg.suprx installed on the Vita
+item.en	PSVshell (optional) to overclock the CPU in heavy battles
+sec.en	Credits
+item.en	Team Undertale Yellow - the fangame and soundtrack
+item.en	Toby Fox - UNDERTALE and DELTARUNE
+item.en	DeltaRepack and DeltaCache - textures
+item.en	Rinnegatamante - VitaGL
+item.en	TheFloW - kubridge
+item.en	Butterscotch Team - GameMaker runtime
+info.en	Status|Playable
+info.en	Source|Game Jolt
+info.en	Runtime|Butterscotch + VitaGL
+link.en	View on GitHub|https://github.com/WolffsRoom/UndertaleYellowVita
+link.en	Releases|https://github.com/WolffsRoom/UndertaleYellowVita/releases
+cover	1
+shots	0
+end	
+post	horizon
+cat	ferramentas
+group	1
+date	2026-05-15
+title.pt	Horizon Chase Turbo: Patch de Otimização
+tag.pt	Mod · PS Vita
+status.pt	Publicado · 05/2026
+desc.pt	Ajusta configurações de qualidade e gráficos da Unity para melhorar o desempenho.
+feature_text.pt	Ajusta configurações de qualidade e gráficos da Unity para melhorar o desempenho.
+about.pt	Patch de otimização para Horizon Chase Turbo no PS Vita. Altera configurações da Unity para aliviar a GPU e a memória de vídeo. Vem em três opções: 736x416, 832x480 e 832x480 a 30 FPS.
+sec.pt	O que muda
+item.pt	Resolução de 832x480 (o padrão do Vita é 960x544)
+item.pt	Buffer de vídeo em 16 bits, para reduzir o uso de VRAM
+item.pt	VSync ativado
+item.pt	Perfil gráfico Low desde o início
+item.pt	Filtragem anisotrópica desligada
+item.pt	Frequência do acelerômetro zerada
+sec.pt	Desempenho relatado
+item.pt	Com overclock: de cerca de 35 para 45 FPS
+item.pt	Sem overclock: 30 FPS fixos, contra 20 a 29 no original
+sec.pt	Requisitos
+item.pt	PS Vita desbloqueado (HENkaku/Enso)
+item.pt	Jogo instalado (PCSH10315)
+item.pt	Plugin rePatch instalado e ativo
+sec.pt	Instalação
+item.pt	Baixe e extraia o arquivo
+item.pt	Conecte o Vita por USB ou FTP
+item.pt	Copie uma das três pastas para ux0:rePatch/
+item.pt	Reinicie o Vita e abra o jogo
+sec.pt	Créditos
+item.pt	Titi Clash - vídeo de demonstração
+item.pt	Ferramentas: VitaShell e UABEA
+info.pt	Status|Publicado
+info.pt	Versão do jogo|PCSH10315
+info.pt	Post|15/05/2026
+info.pt	Senha do arquivo|wolffsroom
+link.pt	Google Drive|https://drive.google.com/file/d/1yzabN4ZbU9WIyPoEBrCsT_dpn0gtq2dd/view?usp=sharing
+link.pt	MediaFire|https://www.mediafire.com/file/3fsdmthpxlwqb4h/Patch+PCSH10315.rar/file
+link.pt	Ver post original|https://wolffsroom.wordpress.com/2026/05/15/horizon-chase-turbo-patch-de-otimizacao/
+title.en	Horizon Chase Turbo: Optimization Patch
+tag.en	Mod · PS Vita
+status.en	Published · 05/2026
+desc.en	Tweaks Unity quality and graphics settings to improve performance.
+feature_text.en	Tweaks Unity quality and graphics settings to improve performance.
+about.en	Optimization patch for Horizon Chase Turbo on PS Vita. It changes Unity settings to ease the load on the GPU and video memory. It comes in three options: 736x416, 832x480 and 832x480 at 30 FPS.
+sec.en	What changes
+item.en	832x480 resolution (the Vita default is 960x544)
+item.en	16-bit video buffer to reduce VRAM use
+item.en	VSync on
+item.en	Low graphics profile from the start
+item.en	Anisotropic filtering off
+item.en	Accelerometer frequency set to zero
+sec.en	Reported performance
+item.en	With overclock: from about 35 to 45 FPS
+item.en	Without overclock: a locked 30 FPS, versus 20 to 29 in the original
+sec.en	Requirements
+item.en	Hacked PS Vita (HENkaku/Enso)
+item.en	Game installed (PCSH10315)
+item.en	rePatch plugin installed and enabled
+sec.en	Installation
+item.en	Download and extract the archive
+item.en	Connect the Vita over USB or FTP
+item.en	Copy one of the three folders to ux0:rePatch/
+item.en	Restart the Vita and open the game
+sec.en	Credits
+item.en	Titi Clash - demo video
+item.en	Tools: VitaShell and UABEA
+info.en	Status|Published
+info.en	Game version|PCSH10315
+info.en	Posted|15/05/2026
+info.en	Archive password|wolffsroom
+link.en	Google Drive|https://drive.google.com/file/d/1yzabN4ZbU9WIyPoEBrCsT_dpn0gtq2dd/view?usp=sharing
+link.en	MediaFire|https://www.mediafire.com/file/3fsdmthpxlwqb4h/Patch+PCSH10315.rar/file
+link.en	Original post|https://wolffsroom.wordpress.com/2026/05/15/horizon-chase-turbo-patch-de-otimizacao/
+cover	1
+shots	0
+video	https://youtu.be/uLmCN01wOwo
+end	
+post	sonic
+cat	traducoes
+group	0
+date	2026-02-25
+progress	58
+title.pt	Sonic Mania Plus
+tag.pt	Tradução PT-BR · PS Vita
+status.pt	58% · Em andamento
+desc.pt	Plataforma 2D clássica com múltiplos caminhos, jogável com Sonic, Tails ou Knuckles.
+feature_text.pt	Plataforma 2D clássica com múltiplos caminhos, jogável com Sonic, Tails ou Knuckles.
+bars_title.pt	Progresso
+about.pt	Tradução para português do Brasil de Sonic Mania Plus no PS Vita, com modificações extras. A tradução é inserida nos arquivos do jogo como mod. Ainda não está finalizada nem disponível para download.
+sec.pt	O que está sendo feito
+item.pt	Manual convertido para a LiveArea do Vita (ainda não traduzido)
+item.pt	Tradução dos sprites que continuam em inglês
+item.pt	Remoção opcional dos níveis 3D, recomendada para evitar lag
+item.pt	Melhorias no controle
+sec.pt	Créditos
+item.pt	André - tradução base, a partir dos trabalhos de Sonic Connect e Yuki-sensei
+item.pt	The Andre - revisão
+item.pt	SonicMastr - port para o Vita
+item.pt	Sega - jogo original
+bar.pt	Scripts|90|
+bar.pt	Ortografia|20|
+bar.pt	Gráficos|60|
+bar.pt	Cinemáticas|100|
+bar.pt	Testes|20|
+info.pt	Status|Em andamento
+info.pt	Download|Ainda não disponível
+info.pt	Post|25/02/2026
+link.pt	Ver post original|https://wolffsroom.wordpress.com/2026/02/25/sonic-mania-plus-psvita/
+link.pt	Port do Vita (GitHub)|https://github.com/SonicMastr/Sonic-Mania-Vita
+title.en	Sonic Mania Plus
+tag.en	PT-BR translation · PS Vita
+status.en	58% · In progress
+desc.en	Classic 2D platformer with branching paths, playable as Sonic, Tails or Knuckles.
+feature_text.en	Classic 2D platformer with branching paths, playable as Sonic, Tails or Knuckles.
+bars_title.en	Progress
+about.en	Brazilian Portuguese translation of Sonic Mania Plus on PS Vita, with extra modifications. The translation is added to the game files as a mod. It is not finished or available for download yet.
+sec.en	Work in progress
+item.en	Manual converted to the Vita LiveArea (not translated yet)
+item.en	Translating sprites that are still in English
+item.en	Optional removal of the 3D stages, recommended to avoid lag
+item.en	Control improvements
+sec.en	Credits
+item.en	André - base translation, built on work by Sonic Connect and Yuki-sensei
+item.en	The Andre - proofreading
+item.en	SonicMastr - Vita port
+item.en	Sega - original game
+bar.en	Scripts|90|
+bar.en	Proofreading|20|
+bar.en	Graphics|60|
+bar.en	Cutscenes|100|
+bar.en	Testing|20|
+info.en	Status|In progress
+info.en	Download|Not available yet
+info.en	Posted|25/02/2026
+link.en	Original post|https://wolffsroom.wordpress.com/2026/02/25/sonic-mania-plus-psvita/
+link.en	Vita port (GitHub)|https://github.com/SonicMastr/Sonic-Mania-Vita
+cover	1
+shots	0
+end	
+post	dontstarve
+cat	traducoes
+group	2
+date	2026-02-25
+progress	58
+title.pt	Don't Starve: Reign of Giants
+tag.pt	Tradução PT-BR · PS Vita
+status.pt	58% · Em desenvolvimento
+desc.pt	Tradução para o PS Vita em desenvolvimento.
+feature_text.pt	Tradução para o PS Vita em desenvolvimento.
+bars_title.pt	Progresso
+about.pt	Tradução para português do Brasil de Don't Starve: Reign of Giants no PS Vita. Ainda em desenvolvimento, sem guia de instalação nem download disponível.
+sec.pt	Ferramentas
+item.pt	Sublime Text
+item.pt	Photoshop 2025 e Photopea
+item.pt	PyCharm
+item.pt	UltraEdit
+item.pt	Gemini
+bar.pt	Scripts|90|
+bar.pt	Ortografia|20|
+bar.pt	Gráficos|60|
+bar.pt	Cinemáticas|100|
+bar.pt	Testes|20|
+info.pt	Status|Em desenvolvimento
+info.pt	Download|Ainda não disponível
+info.pt	Post|25/02/2026
+link.pt	Ver post original|https://wolffsroom.wordpress.com/2026/02/25/dont-starve-reign-of-giants-psvita/
+title.en	Don't Starve: Reign of Giants
+tag.en	PT-BR translation · PS Vita
+status.en	58% · In development
+desc.en	PS Vita translation in development.
+feature_text.en	PS Vita translation in development.
+bars_title.en	Progress
+about.en	Brazilian Portuguese translation of Don't Starve: Reign of Giants on PS Vita. Still in development, with no installation guide or download yet.
+sec.en	Tools
+item.en	Sublime Text
+item.en	Photoshop 2025 and Photopea
+item.en	PyCharm
+item.en	UltraEdit
+item.en	Gemini
+bar.en	Scripts|90|
+bar.en	Proofreading|20|
+bar.en	Graphics|60|
+bar.en	Cutscenes|100|
+bar.en	Testing|20|
+info.en	Status|In development
+info.en	Download|Not available yet
+info.en	Posted|25/02/2026
+link.en	Original post|https://wolffsroom.wordpress.com/2026/02/25/dont-starve-reign-of-giants-psvita/
+cover	1
+shots	0
+end	
+post	wolf
+cat	traducoes
+group	3
+date	2026-02-23
+progress	100
+title.pt	The Wolf Among Us
+tag.pt	Tradução PT-BR · GameLab Traduções
+status.pt	100% · Disponível
+desc.pt	Tradução revisada pela GameLab e portada para o PS Vita.
+feature_text.pt	Tradução revisada pela GameLab e portada para o PS Vita.
+bars_title.pt	Progresso
+about.pt	Tradução para português do Brasil de The Wolf Among Us no PS Vita. O texto original é da Tribo Gamer, revisado pela GameLab Traduções, com porte de Heitor Spectre. Também habilita o menu de depuração do jogo (botão Select).
+sec.pt	O que foi feito
+item.pt	Revisão completa da tradução, com novos contextos
+item.pt	Ajustes em texturas e nomes que estavam sem tradução
+item.pt	Correções ortográficas e gramaticais
+item.pt	Menu de depuração habilitado (botão Select)
+sec.pt	Instalação
+item.pt	Baixe e extraia o arquivo no computador
+item.pt	Conecte o Vita por USB ou FTP
+item.pt	Copie a pasta rePatch (dentro de CONSOLE) para a raiz de ux0:
+item.pt	Reinicie o Vita e abra o jogo
+sec.pt	Aviso
+item.pt	Use um save novo. Para continuar um progresso, apague caboose.prop, choice.prop e feed.prop em ux0:user/00/savedata/PCSE00352
+sec.pt	Créditos
+item.pt	Tribo Gamer - tradução
+item.pt	Heitor Spectre - ferramenta, revisão e porte
+item.pt	Heitor Spectre e Carlos - texturas
+item.pt	LucasSaragosa, Den Em, BlueSkyWestSide e Pashok6798 - ferramenta
+item.pt	André - tutorial de instalação
+item.pt	Wolff - testes e ajustes no patch
+bar.pt	Scripts|100|
+bar.pt	Ortografia|100|
+bar.pt	Gráficos|100|
+bar.pt	Cinemáticas|100|
+bar.pt	Testes|100|
+info.pt	Equipe|GameLab Traduções
+info.pt	Versão do jogo|PCSE00352
+info.pt	Porte|Heitor Spectre
+info.pt	Senha do arquivo|wolffsroom
+link.pt	Google Drive|https://drive.google.com/file/d/15wPBd36wCPJnXkCQxTQ8Kk_lovv4AU-p/view?usp=sharing
+link.pt	MEGA|https://mega.nz/file/9otQDLYR#TqVqHv7MGhEdrEgTdc9k_2rNXwgqFdUuT5fB0Tk4u3s
+link.pt	MediaFire|https://www.mediafire.com/file/j4m92448sonzci1/Tradu%25C3%25A7%25C3%25A3o_-_The_Wolf_Among_Us_%2528PS_Vita%2529.rar/file
+link.pt	Ver post original|https://wolffsroom.wordpress.com/2026/02/23/the-wolf-among-us-psvita/
+title.en	The Wolf Among Us
+tag.en	PT-BR translation · GameLab Traduções
+status.en	100% · Available
+desc.en	Translation reviewed by GameLab and ported to PS Vita.
+feature_text.en	Translation reviewed by GameLab and ported to PS Vita.
+bars_title.en	Progress
+about.en	Brazilian Portuguese translation of The Wolf Among Us on PS Vita. The original text is by Tribo Gamer, reviewed by GameLab Traduções, with a port by Heitor Spectre. It also unlocks the game's debug menu (Select button).
+sec.en	What was done
+item.en	Full review of the translation, with new context
+item.en	Fixed textures and names that were left untranslated
+item.en	Spelling and grammar fixes
+item.en	Debug menu enabled (Select button)
+sec.en	Installation
+item.en	Download and extract the archive on your computer
+item.en	Connect the Vita over USB or FTP
+item.en	Copy the rePatch folder (inside CONSOLE) to the root of ux0:
+item.en	Restart the Vita and open the game
+sec.en	Warning
+item.en	Use a new save. To keep an existing one, delete caboose.prop, choice.prop and feed.prop in ux0:user/00/savedata/PCSE00352
+sec.en	Credits
+item.en	Tribo Gamer - translation
+item.en	Heitor Spectre - tool, review and port
+item.en	Heitor Spectre and Carlos - textures
+item.en	LucasSaragosa, Den Em, BlueSkyWestSide and Pashok6798 - tool
+item.en	André - installation tutorial
+item.en	Wolff - testing and patch fixes
+bar.en	Scripts|100|
+bar.en	Proofreading|100|
+bar.en	Graphics|100|
+bar.en	Cutscenes|100|
+bar.en	Testing|100|
+info.en	Team|GameLab Traduções
+info.en	Game version|PCSE00352
+info.en	Port|Heitor Spectre
+info.en	Archive password|wolffsroom
+link.en	Google Drive|https://drive.google.com/file/d/15wPBd36wCPJnXkCQxTQ8Kk_lovv4AU-p/view?usp=sharing
+link.en	MEGA|https://mega.nz/file/9otQDLYR#TqVqHv7MGhEdrEgTdc9k_2rNXwgqFdUuT5fB0Tk4u3s
+link.en	MediaFire|https://www.mediafire.com/file/j4m92448sonzci1/Tradu%25C3%25A7%25C3%25A3o_-_The_Wolf_Among_Us_%2528PS_Vita%2529.rar/file
+link.en	Original post|https://wolffsroom.wordpress.com/2026/02/23/the-wolf-among-us-psvita/
+cover	1
+shots	4
+end	
+post	wipeout
+cat	traducoes
+group	3
+date	2026-02-21
+progress	100
+title.pt	WipEout 2048
+tag.pt	Tradução e dublagem PT-BR · Rubinho146
+status.pt	100% · Disponível
+desc.pt	Traduzido e dublado em português, com textos da Omega Collection.
+feature_text.pt	Traduzido e dublado em português, com textos da Omega Collection.
+bars_title.pt	Progresso
+about.pt	Tradução e dublagem em português de WipEout 2048 para o PS Vita, feitas por Rúben Fernandes (Rubinho146). Os textos aproveitam os do WipEout Omega Collection (PS4); os manuais digitais ficaram em português de Portugal.
+sec.pt	Instalação
+item.pt	Baixe e extraia a pasta PCSF00007
+item.pt	Copie o conteúdo para ux0: no Vita
+item.pt	Abra a pasta ux0 no gerenciador e use Refresh LiveArea
+item.pt	Aguarde e reinicie o console
+sec.pt	Créditos
+item.pt	Rúben Fernandes (rubinho146) - ajustes de texto e direção de vozes
+item.pt	Ajkmetiuk - ajuda no port do PS4 para o Vita
+item.pt	Horieber Oliveira - vozes masculinas
+item.pt	Lynah Gouveia - vozes femininas
+bar.pt	Scripts|100|
+bar.pt	Ortografia|100|
+bar.pt	Gráficos|100|
+bar.pt	Cinemáticas|100|
+bar.pt	Testes|100|
+info.pt	Equipe|Rubinho146
+info.pt	Versão do jogo|PCSF00007
+info.pt	Post|21/02/2026
+link.pt	Ver post e downloads|https://wolffsroom.wordpress.com/2026/02/21/wipeout-2048-psvita/
+link.pt	Canal do Rubinho146|https://www.youtube.com/channel/UCvRIQWYlpPKQ1LJfyO_ttKQ
+title.en	WipEout 2048
+tag.en	PT-BR translation and dub · Rubinho146
+status.en	100% · Available
+desc.en	Translated and dubbed in Portuguese, with text from the Omega Collection.
+feature_text.en	Translated and dubbed in Portuguese, with text from the Omega Collection.
+bars_title.en	Progress
+about.en	Portuguese translation and dub of WipEout 2048 for PS Vita, by Rúben Fernandes (Rubinho146). The text reuses WipEout Omega Collection (PS4); the digital manuals are in European Portuguese.
+sec.en	Installation
+item.en	Download and extract the PCSF00007 folder
+item.en	Copy its contents to ux0: on the Vita
+item.en	Open the ux0 folder in your file manager and use Refresh LiveArea
+item.en	Wait, then restart the console
+sec.en	Credits
+item.en	Rúben Fernandes (rubinho146) - text adjustments and voice direction
+item.en	Ajkmetiuk - help porting from PS4 to Vita
+item.en	Horieber Oliveira - male voices
+item.en	Lynah Gouveia - female voices
+bar.en	Scripts|100|
+bar.en	Proofreading|100|
+bar.en	Graphics|100|
+bar.en	Cutscenes|100|
+bar.en	Testing|100|
+info.en	Team|Rubinho146
+info.en	Game version|PCSF00007
+info.en	Posted|21/02/2026
+link.en	Post and downloads|https://wolffsroom.wordpress.com/2026/02/21/wipeout-2048-psvita/
+link.en	Rubinho146's channel|https://www.youtube.com/channel/UCvRIQWYlpPKQ1LJfyO_ttKQ
+cover	1
+shots	3
+video	https://youtu.be/mbDw97XA5Mg
+end	
+post	twd2
+cat	traducoes
+group	3
+date	2026-02-18
+progress	100
+title.pt	The Walking Dead: Temporada 2
+tag.pt	Tradução PT-BR · GameLab Traduções
+status.pt	100% · Disponível
+desc.pt	Tradução oficial da Telltale revisada e portada para o PS Vita.
+feature_text.pt	Tradução oficial da Telltale revisada e portada para o PS Vita.
+bars_title.pt	Progresso
+about.pt	Tradução para português do Brasil de The Walking Dead: Temporada 2 no PS Vita, feita pela GameLab Traduções com porte de Heitor Spectre. Parte da tradução oficial da Telltale, com revisão completa e texturas ajustadas.
+sec.pt	O que foi feito
+item.pt	Revisão completa da tradução, com novos contextos
+item.pt	Ajustes em texturas
+item.pt	Tradução de nomes que estavam em inglês
+item.pt	Correções ortográficas e gramaticais
+sec.pt	Instalação
+item.pt	Baixe e extraia o arquivo no computador
+item.pt	Conecte o Vita por USB ou FTP
+item.pt	Copie a pasta rePatch (dentro de CONSOLE) para a raiz de ux0:
+item.pt	Reinicie o Vita e abra o jogo
+sec.pt	Créditos
+item.pt	Telltale Games - tradução oficial
+item.pt	Heitor Spectre - ferramenta e porte
+item.pt	Niccbilac - texturas
+item.pt	Den Em e Pashok6798 - ferramenta
+item.pt	André - tutorial de instalação
+item.pt	Wolff - testes e ajustes no patch
+bar.pt	Scripts|100|
+bar.pt	Ortografia|100|
+bar.pt	Gráficos|100|
+bar.pt	Cinemáticas|100|
+bar.pt	Testes|100|
+info.pt	Equipe|GameLab Traduções
+info.pt	Versão do jogo|PCSE00556
+info.pt	Porte|Heitor Spectre
+info.pt	Senha do arquivo|wolffsroom
+link.pt	Google Drive|https://drive.google.com/file/d/1_U2kVFTmZ0uiHE1s2I9BHViSMlbhrCGw/view?usp=sharing
+link.pt	MEGA|https://mega.nz/file/w0MlQDgD#yYMDDbmC-Cg5-8wxQT4Bvkjlpu_AvKkYFpds1RBwkeA
+link.pt	MediaFire|https://www.mediafire.com/file/6a5btu7eg3buazc/Tradu%C3%A7%C3%A3o_TWD_Temporada2.rar/file
+link.pt	Ver post original|https://wolffsroom.wordpress.com/2026/02/18/the-walking-dead-temporada-2-psvita/
+title.en	The Walking Dead: Season Two
+tag.en	PT-BR translation · GameLab Traduções
+status.en	100% · Available
+desc.en	Telltale's official translation, reviewed and ported to PS Vita.
+feature_text.en	Telltale's official translation, reviewed and ported to PS Vita.
+bars_title.en	Progress
+about.en	Brazilian Portuguese translation of The Walking Dead: Season Two on PS Vita, by GameLab Traduções with a port by Heitor Spectre. It starts from Telltale's official translation, with a full review and adjusted textures.
+sec.en	What was done
+item.en	Full review of the translation, with new context
+item.en	Texture adjustments
+item.en	Translated names that were still in English
+item.en	Spelling and grammar fixes
+sec.en	Installation
+item.en	Download and extract the archive on your computer
+item.en	Connect the Vita over USB or FTP
+item.en	Copy the rePatch folder (inside CONSOLE) to the root of ux0:
+item.en	Restart the Vita and open the game
+sec.en	Credits
+item.en	Telltale Games - official translation
+item.en	Heitor Spectre - tool and port
+item.en	Niccbilac - textures
+item.en	Den Em and Pashok6798 - tool
+item.en	André - installation tutorial
+item.en	Wolff - testing and patch fixes
+bar.en	Scripts|100|
+bar.en	Proofreading|100|
+bar.en	Graphics|100|
+bar.en	Cutscenes|100|
+bar.en	Testing|100|
+info.en	Team|GameLab Traduções
+info.en	Game version|PCSE00556
+info.en	Port|Heitor Spectre
+info.en	Archive password|wolffsroom
+link.en	Google Drive|https://drive.google.com/file/d/1_U2kVFTmZ0uiHE1s2I9BHViSMlbhrCGw/view?usp=sharing
+link.en	MEGA|https://mega.nz/file/w0MlQDgD#yYMDDbmC-Cg5-8wxQT4Bvkjlpu_AvKkYFpds1RBwkeA
+link.en	MediaFire|https://www.mediafire.com/file/6a5btu7eg3buazc/Tradu%C3%A7%C3%A3o_TWD_Temporada2.rar/file
+link.en	Original post|https://wolffsroom.wordpress.com/2026/02/18/the-walking-dead-temporada-2-psvita/
+cover	1
+shots	3
+end	
+post	alone
+cat	traducoes
+group	0
+date	2025-06-10
+progress	58
+title.pt	Alone With You
+tag.pt	Tradução PT-BR · PS Vita
+status.pt	58% · Em andamento
+desc.pt	Aventura sci-fi em uma colônia espacial à beira do fim.
+feature_text.pt	Aventura sci-fi em uma colônia espacial à beira do fim.
+bars_title.pt	Progresso
+about.pt	Tradução para português do Brasil de Alone With You, aventura de ficção científica da BancyCo. O jogo usa GameMaker e os textos são acessados com o Undertale Mod Tool. A tradução inicial foi gerada com IA e será revisada linha a linha contra o original em inglês.
+sec.pt	Planos
+item.pt	Ajustar a fonte para acentuação
+item.pt	Criar uma ferramenta em Python para a revisão
+item.pt	Traduzir sprites, imagens e manuais
+sec.pt	Problemas conhecidos
+item.pt	Alguns sons não são reproduzidos
+item.pt	Algumas quebras de linha estão incorretas
+item.pt	A fonte de alguns títulos não exibe acentos
+bar.pt	Scripts|90|
+bar.pt	Ortografia|20|
+bar.pt	Gráficos|60|
+bar.pt	Cinemáticas|100|
+bar.pt	Testes|20|
+info.pt	Status|Em andamento
+info.pt	Download|Ainda não disponível
+info.pt	Post|10/06/2025
+link.pt	Ver post original|https://wolffsroom.wordpress.com/2025/06/10/psv-alone-with-you-traducao-pt-br/
+title.en	Alone With You
+tag.en	PT-BR translation · PS Vita
+status.en	58% · In progress
+desc.en	Sci-fi adventure in a space colony on the brink of collapse.
+feature_text.en	Sci-fi adventure in a space colony on the brink of collapse.
+bars_title.en	Progress
+about.en	Brazilian Portuguese translation of Alone With You, a science-fiction adventure by BancyCo. The game uses GameMaker, and its text is accessed with Undertale Mod Tool. The first pass was machine-translated and will be reviewed line by line against the English original.
+sec.en	Plans
+item.en	Adjust the font to support accented characters
+item.en	Build a Python tool for the review
+item.en	Translate sprites, images and manuals
+sec.en	Known issues
+item.en	Some sounds don't play
+item.en	Some line breaks are wrong
+item.en	The font in some titles doesn't show accents
+bar.en	Scripts|90|
+bar.en	Proofreading|20|
+bar.en	Graphics|60|
+bar.en	Cutscenes|100|
+bar.en	Testing|20|
+info.en	Status|In progress
+info.en	Download|Not available yet
+info.en	Posted|10/06/2025
+link.en	Original post|https://wolffsroom.wordpress.com/2025/06/10/psv-alone-with-you-traducao-pt-br/
+cover	1
+shots	3
+end	
+post	p4g
+cat	reviews
+group	1
+date	2025-04-26
+title.pt	Persona 4 Golden
+tag.pt	Review · PS Vita
+status.pt	Nota 8.9/10
+desc.pt	Análise pessoal após zerar o jogo.
+feature_text.pt	Análise pessoal após zerar o jogo.
+bars_title.pt	Notas
+about.pt	Análise pessoal de Persona 4 Golden no PS Vita, escrita depois de zerar o jogo em 86 horas. A nota usa o sistema "seis ao cubo": seis categorias, cada uma valendo até 36 pontos.
+sec.pt	Pontos positivos
+item.pt	História bem escrita, com personagens profundos e momentos cômicos
+item.pt	Tradução para português do Brasil excelente
+item.pt	Trilha sonora com faixas originais e novas
+item.pt	Gráficos melhorados em relação ao PS2
+item.pt	Sistema de Personas, habilidades e fusões
+sec.pt	Pontos negativos
+item.pt	Masmorras repetitivas
+item.pt	Romances fracos, sem grande impacto na história
+item.pt	Inaba é pequena e restrita
+item.pt	Modelos 3D menos expressivos que os sprites de diálogo
+sec.pt	Veredito
+item.pt	Recomendado, especialmente para quem está começando na série
+bar.pt	Nota final|89|192/216
+bar.pt	Gráficos|100|36/36
+bar.pt	História|100|36/36
+bar.pt	Jogabilidade|83|30/36
+bar.pt	Trilha sonora|100|36/36
+bar.pt	Level design|83|30/36
+bar.pt	Duração|83|30/36
+info.pt	Plataforma|PS Vita
+info.pt	Publicado em|26/04/2025
+info.pt	Tempo de jogo|86 horas
+info.pt	Nota|192/216 (8.9/10)
+link.pt	Ler análise completa|https://wolffsroom.wordpress.com/2025/04/26/persona-4-golden-psvita-analise/
+title.en	Persona 4 Golden
+tag.en	Review · PS Vita
+status.en	Score 8.9/10
+desc.en	A personal review after finishing the game.
+feature_text.en	A personal review after finishing the game.
+bars_title.en	Scores
+about.en	A personal review of Persona 4 Golden on PS Vita, written after finishing the game in 86 hours. The score uses a "six cubed" system: six categories, each worth up to 36 points.
+sec.en	Pros
+item.en	Well-written story, with deep characters and funny moments
+item.en	Excellent Brazilian Portuguese translation
+item.en	Soundtrack with original and new tracks
+item.en	Improved graphics over the PS2 version
+item.en	Persona, skill and fusion systems
+sec.en	Cons
+item.en	Repetitive dungeons
+item.en	Weak romances with little impact on the story
+item.en	Inaba is small and limited
+item.en	3D models are less expressive than the dialogue sprites
+sec.en	Verdict
+item.en	Recommended, especially if you are new to the series
+bar.en	Final score|89|192/216
+bar.en	Graphics|100|36/36
+bar.en	Story|100|36/36
+bar.en	Gameplay|83|30/36
+bar.en	Soundtrack|100|36/36
+bar.en	Level design|83|30/36
+bar.en	Length|83|30/36
+info.en	Platform|PS Vita
+info.en	Published|26/04/2025
+info.en	Playtime|86 hours
+info.en	Score|192/216 (8.9/10)
+link.en	Read the full review|https://wolffsroom.wordpress.com/2025/04/26/persona-4-golden-psvita-analise/
+cover	1
+shots	2
+end	
+post	ayesha
+cat	traducoes
+group	2
+date	2025-03-31
+progress	1
+title.pt	Atelier Ayesha: The Alchemist of Dusk
+tag.pt	Tradução PT-BR · PS Vita
+status.pt	1% · Fase inicial
+desc.pt	JRPG de alquimia; tradução em fase inicial.
+feature_text.pt	JRPG de alquimia; tradução em fase inicial.
+bars_title.pt	Progresso
+about.pt	Tradução para português do Brasil de Atelier Ayesha no PS Vita. Por ser um JRPG grande, o projeto pode levar anos, ou nem ser concluído.
+sec.pt	Sobre o projeto
+item.pt	Script em Python extrai os arquivos .ebm e converte para .txt
+item.pt	Ferramenta de tradução linha a linha (incompleta), baseada no Atelier Translator do Ferripro321
+sec.pt	Próximas etapas
+item.pt	Extrair, editar e reempacotar os gráficos
+item.pt	Extrair o psarc (Res/resources1.psarc/Event/event)
+bar.pt	Scripts|5|
+bar.pt	Ortografia|0|
+bar.pt	Gráficos|0|
+bar.pt	Cinemáticas|0|
+bar.pt	Testes|0|
+info.pt	Versão do jogo|PCSE00584 (USA)
+info.pt	Desenvolvedor|Gust / Koei Tecmo
+info.pt	Post|31/03/2025
+link.pt	Ver post original|https://wolffsroom.wordpress.com/2025/03/31/psv-atelier-ayesha-traducao-pt-br/
+title.en	Atelier Ayesha: The Alchemist of Dusk
+tag.en	PT-BR translation · PS Vita
+status.en	1% · Early stage
+desc.en	Alchemy JRPG; translation at an early stage.
+feature_text.en	Alchemy JRPG; translation at an early stage.
+bars_title.en	Progress
+about.en	Brazilian Portuguese translation of Atelier Ayesha on PS Vita. Since it is a large JRPG, the project may take years, or may never be finished.
+sec.en	About the project
+item.en	A Python script extracts the .ebm files and converts them to .txt
+item.en	Line-by-line translation tool (incomplete), based on Ferripro321's Atelier Translator
+sec.en	Next steps
+item.en	Extract, edit and repack the graphics
+item.en	Extract the psarc (Res/resources1.psarc/Event/event)
+bar.en	Scripts|5|
+bar.en	Proofreading|0|
+bar.en	Graphics|0|
+bar.en	Cutscenes|0|
+bar.en	Testing|0|
+info.en	Game version|PCSE00584 (USA)
+info.en	Developer|Gust / Koei Tecmo
+info.en	Posted|31/03/2025
+link.en	Original post|https://wolffsroom.wordpress.com/2025/03/31/psv-atelier-ayesha-traducao-pt-br/
+cover	1
+shots	1
+end	
+post	bastion
+cat	traducoes
+group	2
+date	2025-02-20
+progress	60
+title.pt	Bastion
+tag.pt	Tradução PT-BR · PS Vita
+status.pt	60% · Em desenvolvimento
+desc.pt	Ação da Supergiant Games, com tradução em andamento.
+feature_text.pt	Ação da Supergiant Games, com tradução em andamento.
+bars_title.pt	Progresso
+about.pt	Tradução para português do Brasil de Bastion no PS Vita. Os scripts e as cinemáticas estão prontos; faltam revisão, gráficos e testes. Os manuais também devem ser traduzidos.
+sec.pt	Ferramentas
+item.pt	Sublime Text
+item.pt	Photoshop 2025 e Photopea
+item.pt	txt-to-vita-manual
+item.pt	param.sfo Editor
+bar.pt	Scripts|100|
+bar.pt	Ortografia|70|
+bar.pt	Gráficos|0|
+bar.pt	Cinemáticas|100|
+bar.pt	Testes|30|
+info.pt	Versão do jogo|PCSE00790
+info.pt	Desenvolvedor|Supergiant Games
+info.pt	Post|20/02/2025
+link.pt	Ver post original|https://wolffsroom.wordpress.com/2025/02/20/psv-bastion-traducao-pt-br/
+title.en	Bastion
+tag.en	PT-BR translation · PS Vita
+status.en	60% · In development
+desc.en	Supergiant Games action title, translation in progress.
+feature_text.en	Supergiant Games action title, translation in progress.
+bars_title.en	Progress
+about.en	Brazilian Portuguese translation of Bastion on PS Vita. Scripts and cutscenes are done; proofreading, graphics and testing remain. The manuals will be translated as well.
+sec.en	Tools
+item.en	Sublime Text
+item.en	Photoshop 2025 and Photopea
+item.en	txt-to-vita-manual
+item.en	param.sfo Editor
+bar.en	Scripts|100|
+bar.en	Proofreading|70|
+bar.en	Graphics|0|
+bar.en	Cutscenes|100|
+bar.en	Testing|30|
+info.en	Game version|PCSE00790
+info.en	Developer|Supergiant Games
+info.en	Posted|20/02/2025
+link.en	Original post|https://wolffsroom.wordpress.com/2025/02/20/psv-bastion-traducao-pt-br/
+cover	1
+shots	1
+end	
+post	undertale
+cat	traducoes
+group	2
+date	2025-02-12
+progress	70
+title.pt	Undertale: Melhorias na Tradução
+tag.pt	Tradução PT-BR · PS Vita
+status.pt	70% · Em desenvolvimento
+desc.pt	Ajustes na tradução existente, com sprites traduzidos.
+feature_text.pt	Ajustes na tradução existente, com sprites traduzidos.
+bars_title.pt	Progresso
+about.pt	Melhorias na tradução de Undertale para o PS Vita, partindo do trabalho de Nykolas André. O jogo usa GameMaker Studio 2, o que permite editar os textos com o Undertale Mod Tool.
+sec.pt	Próximas etapas
+item.pt	Atualizar os sprites que ficaram sem tradução
+bar.pt	Scripts|90|
+bar.pt	Ortografia|100|
+bar.pt	Gráficos|40|
+bar.pt	Cinemáticas|100|
+bar.pt	Testes|20|
+info.pt	Versão do jogo|PCSE01116
+info.pt	Desenvolvedor|Toby Fox
+info.pt	Post|12/02/2025
+link.pt	Ver post original|https://wolffsroom.wordpress.com/2025/02/12/psv-undertale-melhorias-na-traducao-pt-br/
+title.en	Undertale: Translation Improvements
+tag.en	PT-BR translation · PS Vita
+status.en	70% · In development
+desc.en	Fixes to the existing translation, with translated sprites.
+feature_text.en	Fixes to the existing translation, with translated sprites.
+bars_title.en	Progress
+about.en	Improvements to the Undertale translation for PS Vita, building on Nykolas André's work. The game uses GameMaker Studio 2, so its text can be edited with Undertale Mod Tool.
+sec.en	Next steps
+item.en	Update the sprites that were left untranslated
+bar.en	Scripts|90|
+bar.en	Proofreading|100|
+bar.en	Graphics|40|
+bar.en	Cutscenes|100|
+bar.en	Testing|20|
+info.en	Game version|PCSE01116
+info.en	Developer|Toby Fox
+info.en	Posted|12/02/2025
+link.en	Original post|https://wolffsroom.wordpress.com/2025/02/12/psv-undertale-melhorias-na-traducao-pt-br/
+cover	1
+shots	1
+end	
+post	delta1
+cat	traducoes
+group	1
+date	2025-02-06
+progress	98
+title.pt	Deltarune: Capítulo 1
+tag.pt	Port + Tradução PT-BR
+status.pt	98% · Disponível
+desc.pt	Uma história no universo de Undertale, com mistério e reviravoltas.
+feature_text.pt	Uma história no universo de Undertale, com mistério e reviravoltas.
+bars_title.pt	Progresso
+about.pt	Tradução para português do Brasil de Deltarune: Capítulo 1 no PS Vita, sobre o port não oficial de tijesef. O VPK foi remontado com a tradução incluída, adaptado para 16:9 e com os manuais da LiveArea traduzidos.
+sec.pt	O que foi feito
+item.pt	Mescla de versões da tradução original
+item.pt	Ajustes em sprites e nos controles padrão do Vita
+item.pt	Correção do problema de salvamento
+item.pt	Adaptação para 16:9 e manuais da LiveArea com novas imagens
+sec.pt	Instalação
+item.pt	Baixe e extraia Deltarune PTBR.zip
+item.pt	Envie o VPK ao Vita por FTP ou USB
+item.pt	Instale pelo VitaShell
+item.pt	Se já tiver save em inglês, faça backup de ux0:user/00 antes
+sec.pt	Problemas conhecidos
+item.pt	Alterar os controles nas opções causa travamento
+item.pt	O jogo ainda cita as teclas Z, C e X em vez dos botões do Vita
+sec.pt	Créditos
+item.pt	tijesef - port não oficial para o Vita
+item.pt	Equipe Teiarruma - projeto de tradução original
+item.pt	Toby Fox - desenvolvedor do jogo
+bar.pt	Scripts|90|
+bar.pt	Ortografia|100|
+bar.pt	Gráficos|100|
+bar.pt	Cinemáticas|100|
+bar.pt	Testes|100|
+info.pt	Status|Disponível
+info.pt	Post|06/02/2025
+info.pt	Senha do arquivo|wolffsroom
+link.pt	Google Drive|https://drive.google.com/file/d/1-uf89S5Bz9iMJZzA5AkSmT48WTpiNqnm/view
+link.pt	MEGA|https://mega.nz/file/slUUhQKL#zS1wuEAgez2n8HfPoLCPBHJBKDk37XHKuaDwuFygJ6U
+link.pt	MediaFire|https://www.mediafire.com/file/hrhd5r8v9zbca4a/Deltarune+PTBR.zip/file
+link.pt	Ver post original|https://wolffsroom.wordpress.com/2025/02/06/psv-deltarune-capitulo-1-port-traducao-pt-br/
+title.en	Deltarune: Chapter 1
+tag.en	Port + PT-BR translation
+status.en	98% · Available
+desc.en	A story in the Undertale universe, full of mystery and twists.
+feature_text.en	A story in the Undertale universe, full of mystery and twists.
+bars_title.en	Progress
+about.en	Brazilian Portuguese translation of Deltarune: Chapter 1 on PS Vita, built on tijesef's unofficial port. The VPK was rebuilt with the translation included, adapted to 16:9 and with translated LiveArea manuals.
+sec.en	What was done
+item.en	Merged versions of the original translation
+item.en	Adjusted sprites and the default Vita controls
+item.en	Fixed the save issue
+item.en	16:9 adaptation and LiveArea manuals with new images
+sec.en	Installation
+item.en	Download and extract Deltarune PTBR.zip
+item.en	Send the VPK to the Vita over FTP or USB
+item.en	Install it with VitaShell
+item.en	If you already have an English save, back up ux0:user/00 first
+sec.en	Known issues
+item.en	Changing the controls in the options crashes the game
+item.en	The game still mentions the Z, C and X keys instead of the Vita buttons
+sec.en	Credits
+item.en	tijesef - unofficial Vita port
+item.en	Teiarruma team - original translation project
+item.en	Toby Fox - game developer
+bar.en	Scripts|90|
+bar.en	Proofreading|100|
+bar.en	Graphics|100|
+bar.en	Cutscenes|100|
+bar.en	Testing|100|
+info.en	Status|Available
+info.en	Posted|06/02/2025
+info.en	Archive password|wolffsroom
+link.en	Google Drive|https://drive.google.com/file/d/1-uf89S5Bz9iMJZzA5AkSmT48WTpiNqnm/view
+link.en	MEGA|https://mega.nz/file/slUUhQKL#zS1wuEAgez2n8HfPoLCPBHJBKDk37XHKuaDwuFygJ6U
+link.en	MediaFire|https://www.mediafire.com/file/hrhd5r8v9zbca4a/Deltarune+PTBR.zip/file
+link.en	Original post|https://wolffsroom.wordpress.com/2025/02/06/psv-deltarune-capitulo-1-port-traducao-pt-br/
+cover	1
+shots	3
+end	
+post	cave
+cat	traducoes
+group	1
+date	2025-02-06
+progress	84
+title.pt	Cave Story
+tag.pt	Port + Tradução PT-BR
+status.pt	84% · Disponível
+desc.pt	Ação e plataforma indie com visual retrô, em um mundo subterrâneo.
+feature_text.pt	Ação e plataforma indie com visual retrô, em um mundo subterrâneo.
+bars_title.pt	Progresso
+about.pt	Tradução para português do Brasil de Cave Story, adaptada para o PS Vita na versão NXEngine. Inclui VPK próprio, artes editadas e manual da LiveArea em desenvolvimento.
+sec.pt	Recursos
+item.pt	Suporte a widescreen
+item.pt	Caixas de diálogo e animações melhoradas
+item.pt	Menu e gerenciamento de saves aprimorados
+item.pt	Suporte a mods
+item.pt	Roda a 55 FPS fixos, como o original
+sec.pt	Instalação
+item.pt	Baixe e extraia Cave Story.zip
+item.pt	Envie CaveStory.vpk ao Vita por FTP ou USB
+item.pt	Instale pelo VitaShell
+item.pt	Se já tiver save em inglês, faça backup de ux0:user/00 antes
+sec.pt	Créditos
+item.pt	Alex foffano - tradução original
+item.pt	Solid One - port da tradução para NXEngine
+item.pt	sage_dna - port para PS Vita
+item.pt	Epifanov Ivan - port NXEngine
+bar.pt	Scripts|100|
+bar.pt	Ortografia|100|
+bar.pt	Gráficos|100|
+bar.pt	Cinemáticas|100|
+bar.pt	Testes|20|
+info.pt	Status|Disponível
+info.pt	Versão|DOKU41220 (V1.0.3)
+info.pt	Post|06/02/2025
+info.pt	Senha do arquivo|wolffsroom
+link.pt	Google Drive|https://drive.google.com/file/d/1OJuyRLHyqmou2FMxREUEdvcgUqcbbkD7/view
+link.pt	MEGA|https://mega.nz/file/d1FAmKyS#tp7T-DAA2MG4HymcnNjuhUJy-p7YfZSkwNT-nd5VF-g
+link.pt	MediaFire|https://www.mediafire.com/file/jb44o6hsrx1sg4a/CaveStory.zip/file
+link.pt	Ver post original|https://wolffsroom.wordpress.com/2025/02/06/psv-cave-story-traducao-pt-br/
+title.en	Cave Story
+tag.en	Port + PT-BR translation
+status.en	84% · Available
+desc.en	Retro-styled indie action platformer set in an underground world.
+feature_text.en	Retro-styled indie action platformer set in an underground world.
+bars_title.en	Progress
+about.en	Brazilian Portuguese translation of Cave Story, adapted for PS Vita on NXEngine. Includes its own VPK, edited artwork and a LiveArea manual in progress.
+sec.en	Features
+item.en	Widescreen support
+item.en	Improved dialogue boxes and animations
+item.en	Better menu and save management
+item.en	Mod support
+item.en	Runs at a locked 55 FPS, like the original
+sec.en	Installation
+item.en	Download and extract Cave Story.zip
+item.en	Send CaveStory.vpk to the Vita over FTP or USB
+item.en	Install it with VitaShell
+item.en	If you already have an English save, back up ux0:user/00 first
+sec.en	Credits
+item.en	Alex foffano - original translation
+item.en	Solid One - translation ported to NXEngine
+item.en	sage_dna - PS Vita port
+item.en	Epifanov Ivan - NXEngine port
+bar.en	Scripts|100|
+bar.en	Proofreading|100|
+bar.en	Graphics|100|
+bar.en	Cutscenes|100|
+bar.en	Testing|20|
+info.en	Status|Available
+info.en	Version|DOKU41220 (V1.0.3)
+info.en	Posted|06/02/2025
+info.en	Archive password|wolffsroom
+link.en	Google Drive|https://drive.google.com/file/d/1OJuyRLHyqmou2FMxREUEdvcgUqcbbkD7/view
+link.en	MEGA|https://mega.nz/file/d1FAmKyS#tp7T-DAA2MG4HymcnNjuhUJy-p7YfZSkwNT-nd5VF-g
+link.en	MediaFire|https://www.mediafire.com/file/jb44o6hsrx1sg4a/CaveStory.zip/file
+link.en	Original post|https://wolffsroom.wordpress.com/2025/02/06/psv-cave-story-traducao-pt-br/
+cover	1
+shots	3
+end	
+post	ys
+cat	traducoes
+group	2
+date	2025-01-29
+progress	38
+title.pt	Ys Origin
+tag.pt	Tradução PT-BR · PS Vita
+status.pt	38% · Em desenvolvimento
+desc.pt	Recriando a tradução com suporte a acentos.
+feature_text.pt	Recriando a tradução com suporte a acentos.
+bars_title.pt	Progresso
+about.pt	Tradução para português do Brasil de Ys Origin no PS Vita, usando como base a tradução da PKG e recriada sobre a versão em espanhol do jogo, que tem suporte a acentos.
+sec.pt	Sobre o projeto
+item.pt	Ferramenta e scripts de compactação, descompactação e extração de DDS para GXT
+item.pt	Arquivos trabalhados: data.ni, data.nu e data.na
+sec.pt	Próximas etapas
+item.pt	Finalizar testes, ferramenta e scripts
+item.pt	Iniciar a revisão
+item.pt	Avaliar duas versões: LOW_RES e FULL_RES
+bar.pt	Scripts|20|
+bar.pt	Ortografia|0|
+bar.pt	Gráficos|50|
+bar.pt	Cinemáticas|100|
+bar.pt	Testes|20|
+info.pt	Versão do jogo|PCSE01033 (USA)
+info.pt	Desenvolvedor|Nihon Falcom
+info.pt	Post|29/01/2025
+link.pt	Ver post original|https://wolffsroom.wordpress.com/2025/01/29/psv-ys-origin-traducao-pt-br/
+title.en	Ys Origin
+tag.en	PT-BR translation · PS Vita
+status.en	38% · In development
+desc.en	Rebuilding the translation with accent support.
+feature_text.en	Rebuilding the translation with accent support.
+bars_title.en	Progress
+about.en	Brazilian Portuguese translation of Ys Origin on PS Vita, based on the PKG translation and rebuilt on top of the game's Spanish version, which supports accented characters.
+sec.en	About the project
+item.en	Tool and scripts to pack, unpack and convert DDS to GXT
+item.en	Files worked on: data.ni, data.nu and data.na
+sec.en	Next steps
+item.en	Finish testing, the tool and the scripts
+item.en	Start proofreading
+item.en	Consider two builds: LOW_RES and FULL_RES
+bar.en	Scripts|20|
+bar.en	Proofreading|0|
+bar.en	Graphics|50|
+bar.en	Cutscenes|100|
+bar.en	Testing|20|
+info.en	Game version|PCSE01033 (USA)
+info.en	Developer|Nihon Falcom
+info.en	Posted|29/01/2025
+link.en	Original post|https://wolffsroom.wordpress.com/2025/01/29/psv-ys-origin-traducao-pt-br/
+cover	1
+shots	2
+end	
+post	darkest
+cat	ferramentas
+group	0
+date	2025-01-27
+title.pt	Darkest Dungeon: Pilha Reforçada
+tag.pt	Mod · PS Vita
+status.pt	Ainda não disponível
+desc.pt	Aumenta a quantidade e os valores dos itens saqueados.
+feature_text.pt	Aumenta a quantidade e os valores dos itens saqueados.
+about.pt	Modificação para Darkest Dungeon que aumenta a quantidade e os valores dos itens saqueados nas pilhas, para você ter mais recursos nas expedições. O mod ainda não foi disponibilizado e o guia de instalação não foi publicado.
+sec.pt	Créditos
+item.pt	Red Hook Studios e Sickhead Games - desenvolvedores do jogo
+info.pt	Status|Ainda não disponível
+info.pt	Versão do jogo|PCSE00919 (USA)
+info.pt	Post|27/01/2025
+link.pt	Ver post original|https://wolffsroom.wordpress.com/2025/01/27/darkest-dungeon-mod/
+title.en	Darkest Dungeon: Reinforced Stacks
+tag.en	Mod · PS Vita
+status.en	Not available yet
+desc.en	Raises the amount and value of looted items.
+feature_text.en	Raises the amount and value of looted items.
+about.en	A Darkest Dungeon mod that raises the amount and value of items in loot stacks, so you have more resources on expeditions. The mod has not been released yet and the installation guide is not out.
+sec.en	Credits
+item.en	Red Hook Studios and Sickhead Games - game developers
+info.en	Status|Not available yet
+info.en	Game version|PCSE00919 (USA)
+info.en	Posted|27/01/2025
+link.en	Original post|https://wolffsroom.wordpress.com/2025/01/27/darkest-dungeon-mod/
+cover	1
+shots	1
+end	
+post	icono
+cat	traducoes
+group	1
+date	2025-01-25
+progress	70
+title.pt	Iconoclasts
+tag.pt	Tradução PT-BR · PS Vita
+status.pt	70% · Disponível
+desc.pt	Ação e plataforma em pixel art, com puzzles, estrelando a mecânica Robin.
+feature_text.pt	Ação e plataforma em pixel art, com puzzles, estrelando a mecânica Robin.
+bars_title.pt	Progresso
+about.pt	Tradução para português do Brasil de Iconoclasts no PS Vita: os arquivos da tradução de PC da Tribo Gamer e da Central de Traduções foram portados para o console. Nenhum gráfico foi redesenhado, então algumas palavras continuam em inglês.
+sec.pt	Requisitos
+item.pt	Jogo instalado no Vita (USA, PCSE01177)
+item.pt	Plugin rePatch
+item.pt	VitaShell, para criar pastas e extrair o ZIP
+sec.pt	Instalação
+item.pt	Baixe o arquivo e extraia com o VitaShell
+item.pt	Crie a pasta rePatch em ux0:
+item.pt	Copie a pasta PCSE01177 para ux0:rePatch/
+item.pt	Reinicie o Vita
+sec.pt	Problemas conhecidos
+item.pt	Alguns textos são difíceis de ler
+item.pt	Quebras de linha inadequadas
+item.pt	Erros de português e frases confusas
+sec.pt	Créditos
+item.pt	Tribo Gamer e Central de Traduções - tradução original para PC
+bar.pt	Scripts|100|
+bar.pt	Ortografia|80|
+bar.pt	Gráficos|0|
+bar.pt	Cinemáticas|100|
+bar.pt	Testes|70|
+info.pt	Status|Disponível
+info.pt	Versão do jogo|PCSE01177 (USA)
+info.pt	Atualizado em|12/01/2025
+info.pt	Senha do arquivo|wolffsroom
+link.pt	MediaFire|https://www.mediafire.com/file/gl4pa9kup40lwtu/PCSE01177.zip/file
+link.pt	Google Drive|https://drive.google.com/file/d/1MpvamxqtuDs36nCKiUClXYD7_hCNTV3W/view
+link.pt	MEGA|https://mega.nz/file/ggEWXKxb#j3McOGblU7Gz76jTtNdEUWW23NQJNzDEvw9SK5VBgko
+link.pt	Ver post original|https://wolffsroom.wordpress.com/2025/01/25/psv-iconoclasts-traducao-pt-br/
+title.en	Iconoclasts
+tag.en	PT-BR translation · PS Vita
+status.en	70% · Available
+desc.en	Pixel-art action platformer with puzzles, starring the mechanic Robin.
+feature_text.en	Pixel-art action platformer with puzzles, starring the mechanic Robin.
+bars_title.en	Progress
+about.en	Brazilian Portuguese translation of Iconoclasts on PS Vita: the PC translation files by Tribo Gamer and Central de Traduções were ported to the console. No graphics were redrawn, so some words remain in English.
+sec.en	Requirements
+item.en	Game installed on the Vita (USA, PCSE01177)
+item.en	rePatch plugin
+item.en	VitaShell, to create folders and extract the ZIP
+sec.en	Installation
+item.en	Download the archive and extract it with VitaShell
+item.en	Create the rePatch folder in ux0:
+item.en	Copy the PCSE01177 folder to ux0:rePatch/
+item.en	Restart the Vita
+sec.en	Known issues
+item.en	Some text is hard to read
+item.en	Awkward line breaks
+item.en	Portuguese mistakes and confusing sentences
+sec.en	Credits
+item.en	Tribo Gamer and Central de Traduções - original PC translation
+bar.en	Scripts|100|
+bar.en	Proofreading|80|
+bar.en	Graphics|0|
+bar.en	Cutscenes|100|
+bar.en	Testing|70|
+info.en	Status|Available
+info.en	Game version|PCSE01177 (USA)
+info.en	Updated|12/01/2025
+info.en	Archive password|wolffsroom
+link.en	MediaFire|https://www.mediafire.com/file/gl4pa9kup40lwtu/PCSE01177.zip/file
+link.en	Google Drive|https://drive.google.com/file/d/1MpvamxqtuDs36nCKiUClXYD7_hCNTV3W/view
+link.en	MEGA|https://mega.nz/file/ggEWXKxb#j3McOGblU7Gz76jTtNdEUWW23NQJNzDEvw9SK5VBgko
+link.en	Original post|https://wolffsroom.wordpress.com/2025/01/25/psv-iconoclasts-traducao-pt-br/
+cover	1
+shots	3
+end	

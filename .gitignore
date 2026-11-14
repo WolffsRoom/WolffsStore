@@ -1,0 +1,6 @@
+build-vita/
+artifacts/
+_transfer/
+__pycache__/
+# Gerado por tools/gen_data.py; o app baixa as imagens do site em runtime.
+data/posts/

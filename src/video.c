@@ -1,0 +1,269 @@
+/*
+ * Reprodutor de vídeo com o sceAvPlayer do sistema.
+ * Os quadros vêm em NV12 (YUV420 em 2 planos); o GXM converte para RGB direto no
+ * sampler (formato YVU420P2_CSC1), então o quadro é desenhado como uma textura vita2d.
+ * O áudio sai numa porta própria (tipo MAIN), em uma thread.
+ */
+#include "video.h"
+#include "fsutil.h"
+#include "net.h"
+
+#include <psp2/audioout.h>
+#include <psp2/avplayer.h>
+#include <psp2/gxm.h>
+#include <psp2/io/fcntl.h>
+#include <psp2/io/stat.h>
+#include <psp2/kernel/sysmem.h>
+#include <psp2/kernel/threadmgr.h>
+#include <psp2/sysmodule.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <malloc.h>
+#include <string.h>
+#include <vita2d.h>
+
+#define VID_DIR WS_CACHE "/video"
+
+static volatile int state = VID_OFF;
+static char err[160];
+static char path[256], url_[512];
+static NetProgress pr;
+static SceUID dl_thread = -1, audio_thread = -1;
+static SceAvPlayerHandle player;
+static volatile int audio_run;
+static vita2d_texture *frame_tex;
+static int frame_w, frame_h;
+
+/* ------------------------------------------------------------------ memória dos quadros (GPU) */
+
+#define MAX_BLOCKS 16
+static struct { void *p; SceUID uid; } blocks[MAX_BLOCKS];
+
+static void *mem_alloc(void *arg, uint32_t align, uint32_t size) {
+    (void)arg;
+    return memalign(align < 16 ? 16 : align, size);
+}
+static void mem_free(void *arg, void *p) {
+    (void)arg;
+    free(p);
+}
+
+static void *gpu_alloc(void *arg, uint32_t align, uint32_t size) {
+    (void)arg;
+    (void)align;
+    size = (size + 256 * 1024 - 1) & ~(256 * 1024 - 1); /* CDRAM: múltiplos de 256 KB */
+    SceUID uid = sceKernelAllocMemBlock("ws_video", SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW, size, NULL);
+    if (uid < 0) return NULL;
+    void *p = NULL;
+    sceKernelGetMemBlockBase(uid, &p);
+    if (sceGxmMapMemory(p, size, SCE_GXM_MEMORY_ATTRIB_READ | SCE_GXM_MEMORY_ATTRIB_WRITE) < 0) {
+        sceKernelFreeMemBlock(uid);
+        return NULL;
+    }
+    for (int i = 0; i < MAX_BLOCKS; i++)
+        if (!blocks[i].p) {
+            blocks[i].p = p;
+            blocks[i].uid = uid;
+            break;
+        }
+    return p;
+}
+
+static void gpu_free(void *arg, void *p) {
+    (void)arg;
+    for (int i = 0; i < MAX_BLOCKS; i++)
+        if (blocks[i].p == p) {
+            sceGxmUnmapMemory(p);
+            sceKernelFreeMemBlock(blocks[i].uid);
+            blocks[i].p = NULL;
+            return;
+        }
+}
+
+/* ------------------------------------------------------------------ áudio */
+
+static int audio_main(SceSize args, void *argp) {
+    (void)args;
+    (void)argp;
+    int port = -1, grain = 0, rate = 0, ch = 0;
+    while (audio_run) {
+        SceAvPlayerFrameInfo fi;
+        memset(&fi, 0, sizeof(fi));
+        if (state == VID_PLAYING && player > 0 && sceAvPlayerGetAudioData(player, &fi) && fi.pData) {
+            int r = fi.details.audio.sampleRate, c = fi.details.audio.channelCount;
+            int g = (int)(fi.details.audio.size / (c > 0 ? c * 2 : 4));
+            if (port < 0 || r != rate || c != ch || g != grain) {
+                if (port >= 0) sceAudioOutReleasePort(port);
+                rate = r;
+                ch = c;
+                grain = g;
+                port = sceAudioOutOpenPort(SCE_AUDIO_OUT_PORT_TYPE_MAIN, grain, rate,
+                                           ch == 1 ? SCE_AUDIO_OUT_MODE_MONO : SCE_AUDIO_OUT_MODE_STEREO);
+            }
+            if (port >= 0) sceAudioOutOutput(port, fi.pData);
+        } else {
+            sceKernelDelayThread(2000);
+        }
+    }
+    if (port >= 0) sceAudioOutReleasePort(port);
+    return sceKernelExitDeleteThread(0);
+}
+
+/* ------------------------------------------------------------------ início / fim */
+
+static void start_player(void) {
+    SceAvPlayerInitData in;
+    memset(&in, 0, sizeof(in));
+    in.memoryReplacement.allocate = mem_alloc;
+    in.memoryReplacement.deallocate = mem_free;
+    in.memoryReplacement.allocateTexture = gpu_alloc;
+    in.memoryReplacement.deallocateTexture = gpu_free;
+    in.basePriority = 0xA0;
+    in.numOutputVideoFrameBuffers = 2;
+    in.autoStart = 1;
+    player = sceAvPlayerInit(&in);
+    if (player <= 0 || sceAvPlayerAddSource(player, path) < 0) {
+        if (player > 0) sceAvPlayerClose(player);
+        player = 0;
+        snprintf(err, sizeof(err), "O Vita não conseguiu abrir o vídeo (use MP4 H.264 + AAC, até 960x544).");
+        ws_log("video: %s (%s)", err, url_);
+        state = VID_ERROR;
+        return;
+    }
+    audio_run = 1;
+    audio_thread = sceKernelCreateThread("ws_vid_audio", audio_main, 0x10000100, 0x4000, 0, 0, NULL);
+    if (audio_thread >= 0) sceKernelStartThread(audio_thread, 0, NULL);
+    state = VID_PLAYING;
+}
+
+static int dl_main(SceSize args, void *argp) {
+    (void)args;
+    (void)argp;
+    char part[280];
+    snprintf(part, sizeof(part), "%s.part", path);
+    int r = net_download(url_, part, &pr);
+    if (pr.cancel) {
+        sceIoRemove(part);
+    } else if (r != NET_OK) {
+        snprintf(err, sizeof(err), "%s", net_error());
+        sceIoRemove(part);
+        ws_log("video: %s (%s)", err, url_);
+        state = VID_ERROR;
+    } else {
+        sceIoRemove(path);
+        sceIoRename(part, path);
+        state = VID_LOADING + 100; /* pronto para tocar: a thread principal inicia o player */
+    }
+    dl_thread = -1;
+    return sceKernelExitDeleteThread(0);
+}
+
+void video_open(const char *url, const char *slug) {
+    if (state != VID_OFF) video_close();
+    static int mod;
+    if (!mod) mod = sceSysmoduleLoadModule(SCE_SYSMODULE_AVPLAYER) >= 0 ? 1 : -1;
+    err[0] = 0;
+    memset(&pr, 0, sizeof(pr));
+    fs_mkdir_p(VID_DIR);
+    snprintf(path, sizeof(path), VID_DIR "/%s.mp4", slug);
+    snprintf(url_, sizeof(url_), "%s", url);
+    if (mod < 0) {
+        snprintf(err, sizeof(err), "Módulo de vídeo do sistema indisponível.");
+        ws_log("video: %s (%s)", err, url_);
+        state = VID_ERROR;
+        return;
+    }
+    if (fs_exists(path)) { /* já no cache */
+        start_player();
+        return;
+    }
+    state = VID_LOADING;
+    dl_thread = sceKernelCreateThread("ws_vid_dl", dl_main, 0x10000100, 0x10000, 0, 0, NULL);
+    if (dl_thread < 0 || sceKernelStartThread(dl_thread, 0, NULL) < 0) {
+        snprintf(err, sizeof(err), "Não deu para iniciar o download do vídeo.");
+        ws_log("video: %s (%s)", err, url_);
+        state = VID_ERROR;
+    }
+}
+
+void video_close(void) {
+    if (state == VID_OFF) return;
+    if (dl_thread >= 0) {
+        pr.cancel = 1;
+        sceKernelWaitThreadEnd(dl_thread, NULL, NULL);
+        dl_thread = -1;
+    }
+    audio_run = 0;
+    if (audio_thread >= 0) {
+        sceKernelWaitThreadEnd(audio_thread, NULL, NULL);
+        audio_thread = -1;
+    }
+    if (player > 0) {
+        sceAvPlayerStop(player);
+        vita2d_wait_rendering_done(); /* a GPU pode estar lendo o último quadro */
+        sceAvPlayerClose(player);
+        player = 0;
+    }
+    if (frame_tex) {
+        vita2d_free_texture(frame_tex);
+        frame_tex = NULL;
+    }
+    state = VID_OFF;
+}
+
+int video_state(void) { return state > VID_ERROR ? VID_LOADING : state; }
+float video_load_progress(void) { return pr.total > 0 ? (float)pr.done / (float)pr.total : 0; }
+const char *video_error(void) { return err; }
+unsigned long long video_time_ms(void) { return player > 0 ? sceAvPlayerCurrentTime(player) : 0; }
+
+void video_toggle_pause(void) {
+    if (player <= 0) return;
+    if (state == VID_PLAYING) {
+        sceAvPlayerPause(player);
+        state = VID_PAUSED;
+    } else if (state == VID_PAUSED) {
+        sceAvPlayerResume(player);
+        state = VID_PLAYING;
+    }
+}
+
+void video_seek(int seconds) {
+    if (player <= 0) return;
+    long long t = (long long)sceAvPlayerCurrentTime(player) + seconds * 1000LL;
+    if (t < 0) t = 0;
+    sceAvPlayerJumpToTime(player, (uint64_t)t);
+}
+
+void video_draw(void) {
+    if (state == VID_LOADING + 100) start_player(); /* download terminou */
+    if (player <= 0) return;
+    if (state == VID_PLAYING && !sceAvPlayerIsActive(player)) { /* acabou: volta para o início, pausado */
+        sceAvPlayerJumpToTime(player, 0);
+    }
+    SceAvPlayerFrameInfo fi;
+    memset(&fi, 0, sizeof(fi));
+    if (sceAvPlayerGetVideoData(player, &fi) && fi.pData) {
+        int w = (int)fi.details.video.width, h = (int)fi.details.video.height;
+        if (!frame_tex || w != frame_w || h != frame_h) {
+            if (frame_tex) {
+                vita2d_wait_rendering_done();
+                vita2d_free_texture(frame_tex);
+            }
+            frame_tex = vita2d_create_empty_texture_format(16, 16, SCE_GXM_TEXTURE_FORMAT_A8B8G8R8);
+            frame_w = w;
+            frame_h = h;
+        }
+        if (frame_tex) {
+            /* aponta a textura para o quadro decodificado (NV12, convertido pelo sampler) */
+            sceGxmTextureInitLinear(&frame_tex->gxm_tex, fi.pData, SCE_GXM_TEXTURE_FORMAT_YVU420P2_CSC1, w, h, 0);
+            sceGxmTextureSetMinFilter(&frame_tex->gxm_tex, SCE_GXM_TEXTURE_FILTER_LINEAR);
+            sceGxmTextureSetMagFilter(&frame_tex->gxm_tex, SCE_GXM_TEXTURE_FILTER_LINEAR);
+        }
+    }
+    if (frame_tex && frame_w > 0 && frame_h > 0) {
+        float k = 960.f / frame_w;
+        if (frame_h * k > 544) k = 544.f / frame_h;
+        float dw = frame_w * k, dh = frame_h * k;
+        vita2d_draw_texture_scale(frame_tex, (960 - dw) / 2, (544 - dh) / 2, k, k);
+    }
+}
