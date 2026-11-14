@@ -3055,6 +3055,7 @@ int main(void) {
     float t_x0 = 0, t_y0 = 0, t_last = 0, t_cam0 = 0;
     double t_t0 = 0;
     int dragged = 0;
+    int music_started_after_frame = 0;
 
     for (;;) {
         now_s = clock_s() - t_start;
@@ -3301,6 +3302,12 @@ int main(void) {
         vita2d_end_drawing();
         if (ime_open) vita2d_common_dialog_update(); /* teclado do sistema por cima */
         vita2d_swap_buffers();
+        /* A primeira sincronização exibe uma tela de carregamento.
+         * Aguarde o título real ser apresentado antes de iniciar o BGM. */
+        if (!music_started_after_frame && !first_sync) {
+            audio_start_music_after_first_frame();
+            music_started_after_frame = 1;
+        }
     }
     return 0;
 }

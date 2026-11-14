@@ -28,6 +28,8 @@ typedef struct { float f0, f1, st, dur; int wave; float vol; } Note;
 static Voice voices[VOICES];
 static volatile int enabled = 1;
 static volatile int music_on = 1;
+/* Música só pode ser ouvida depois da primeira apresentação da tela inicial. */
+static volatile int music_screen_ready = 0;
 
 /* ------------------------------------------------------------------ música de fundo
  * Misteriosa, em lá menor, 72 BPM, 16 compassos (~53 s): Am F Dm E | Am Bb Dm E, duas vezes.
@@ -157,7 +159,7 @@ static int audio_thread(SceSize args, void *argp) {
                 if (++v->t >= v->len) v->state = 0;
             }
             /* música: sequenciador contínuo, sem emenda no loop */
-            if (music_on) {
+            if (music_on && music_screen_ready) {
                 if (mpos % M_STEP == 0) music_step((int)(mpos / M_STEP));
                 if (++mpos >= (unsigned)(M_STEPS * M_STEP)) mpos = 0;
             }
@@ -189,6 +191,15 @@ void audio_set_music(int on) {
     music_on = on;
 }
 int audio_music(void) { return music_on; }
+
+/* Chamar somente após vita2d_swap_buffers() apresentar a tela inicial.
+ * A configuração de música permanece intacta; o sequenciador parte do início. */
+void audio_start_music_after_first_frame(void) {
+    if (music_screen_ready) return;
+    mpos = 0;
+    __sync_synchronize();
+    music_screen_ready = 1;
+}
 
 void audio_init(void) {
     music_build();
