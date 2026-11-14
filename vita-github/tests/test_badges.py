@@ -1,4 +1,5 @@
 """Regression tests for PS Vita badge readability (no network needed)."""
+import re
 import sys
 import unittest
 from pathlib import Path
@@ -31,7 +32,7 @@ class BadgeTests(unittest.TestCase):
         self.assertEqual(["V0.30-BETA", "BETA", "PS VITA"],
                          [x.select_one(".vita-badge-value").text for x in badges])
         self.assertEqual(["#377bb5", "#4c9aff", "#6f42c1"],
-                         [x.select_one(".vita-badge-value")["style"].split(":")[-1] for x in badges])
+                         [re.search(r"background-color:(#[0-9a-f]+)", x.select_one(".vita-badge-value")["style"]).group(1) for x in badges])
         self.assertIn("align-center", soup.find("div")["class"])
         self.assertIsNotNone(soup.select_one("a .vita-badge"))
         self.assertIsNone(soup.select_one('img[src*="shields.io"]'))
