@@ -14,9 +14,18 @@ class ReleaseInvariants(unittest.TestCase):
         cls.video = (ROOT / "src/video.c").read_text(encoding="utf-8")
         cls.updater = (ROOT / "updater/main.c").read_text(encoding="utf-8")
 
-    def test_release_is_v09(self):
-        self.assertIn('set(WS_SFO_VERSION "00.90")', self.cmake)
-        self.assertIn('set(WS_FILE_VERSION "0.9")', self.cmake)
+    def test_release_is_v091(self):
+        self.assertIn('set(WS_SFO_VERSION "00.91")', self.cmake)
+        self.assertIn('set(WS_FILE_VERSION "0.91")', self.cmake)
+
+    def test_third_party_author_badge_is_optional(self):
+        catalog=(ROOT / "src/catalog.h").read_text(encoding="utf-8")
+        store=(ROOT / "src/store.c").read_text(encoding="utf-8")
+        self.assertIn("char *author;", catalog)
+        self.assertIn('p->author = S(o, "autor")', store)
+        self.assertIn('snprintf(by, sizeof(by), "by: %s", p->author)', self.main)
+        self.assertIn("p->author && p->author[0]", self.main)
+        self.assertIn('snprintf(by, sizeof(by), "by: %s", g_posts[pi].author)', self.main)
 
     def test_main_removes_the_closed_updater_after_update(self):
         install_h = (ROOT / "src/install.h").read_text(encoding="utf-8")

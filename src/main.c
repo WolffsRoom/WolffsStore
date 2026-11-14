@@ -29,7 +29,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "0.9"
+#define WS_VERSION "0.91"
 #endif
 
 /* ================================================================ textos */
@@ -439,6 +439,11 @@ static float card_height(int pi) {
     snprintf(tag, sizeof(tag), "%s", t->tag);
     upper_latin1(tag);
     h += para_lines(tag, CARD_W - 40, 2) * BODY_LINE + 10; /* tag */
+    if (g_posts[pi].author && g_posts[pi].author[0]) {
+        char by[128];
+        snprintf(by, sizeof(by), "by: %s", g_posts[pi].author);
+        h += para_lines(by, CARD_W - 56, 2) * BODY_LINE + 12 + 10;
+    }
     h += heading_lines(t->title, 2, CARD_W - 40) * 24 + 10; /* título */
     h += para_lines(t->desc, CARD_W - 40, 6) * BODY_LINE + 10;
     h += BODY_LINE + 16 + 4;                               /* status */
@@ -486,6 +491,15 @@ static void card(int pi, float x, float y, float h, double pop) {
     snprintf(tag, sizeof(tag), "%s", t->tag);
     upper_latin1(tag);
     cy += para(tag, x + 20, cy, CARD_W - 40, C_MUTED, 1, 2, 0) + 10;
+    if (p->author && p->author[0]) {
+        char by[128];
+        snprintf(by, sizeof(by), "by: %s", p->author);
+        float bh = para_lines(by, CARD_W - 56, 2) * BODY_LINE + 12;
+        rect(x + 20, cy, CARD_W - 40, bh, RGBA8(0x19, 0x19, 0x19, 0xFF));
+        frame(x + 20, cy, CARD_W - 40, bh, C_BORDER, C_BORDER, -1);
+        para(by, x + 28, cy + 5, CARD_W - 56, C_WHITE, 1, 2, 0);
+        cy += bh + 10;
+    }
     cy += heading(t->title, x + 20, cy, CARD_W - 40, 2, C_WHITE, 0, 1, 0, 24) + 10;
     cy += para(t->desc, x + 20, cy, CARD_W - 40, C_SOFT, 1, 6, 0) + 10;
     para(t->status, x + 20, y + h - 4 - 16 - BODY_LINE, CARD_W - 40, C_WHITE, 1, 1, 1);
@@ -642,7 +656,8 @@ static void build_home(void) {
     for (;;) {
         th = heading_lines(t->title, tsc, iw) * (tsc * 8 + 12);
         int n = para_lines(t->feature, iw, fl);
-        total = BODY_LINE + 10 + th + 10 + n * BODY_LINE + 16 + 48;
+        total = BODY_LINE + 10 + (p->author && p->author[0] ? BODY_LINE + 8 : 0)
+              + th + 10 + n * BODY_LINE + 16 + 48;
         if (total <= sh || (tsc == 2 && fl <= 2)) {
             fl = n;
             break;
@@ -655,6 +670,13 @@ static void build_home(void) {
     int first = nops;
     iy += para(line, ix, iy, iw, C_MUTED, 0, 1, 0) + 10;
     for (int i = first; i < nops; i++) ops[i].pop = ip;
+    if (p->author && p->author[0]) {
+        char by[128];
+        snprintf(by, sizeof(by), "by: %s", p->author);
+        first = nops;
+        iy += para(by, ix, iy, iw, C_GOLD, 0, 2, 0) + 8;
+        for (int i = first; i < nops; i++) ops[i].pop = ip + .04;
+    }
     first = nops;
     char up[512];
     snprintf(up, sizeof(up), "%s", t->title);
@@ -865,6 +887,16 @@ static void build_post(int pi) {
     snprintf(line, sizeof(line), "%s \xb7 %s", t->tag, t->status);
     upper_latin1(line);
     y += para(line, 24, y, 912, C_MUTED, 1, 2, 0) + 16;
+    if (p->author && p->author[0]) {
+        char by[128];
+        snprintf(by, sizeof(by), "by: %s", p->author);
+        float bw = body_width(by) + 28;
+        if (bw > 912) bw = 912;
+        rect(24, y, bw, 34, RGBA8(0x19, 0x19, 0x19, 0xFF));
+        frame(24, y, bw, 34, C_BORDER, C_WHITE, -1);
+        body(keep(by), 38, y + 5, C_WHITE);
+        y += 34 + 14;
+    }
     rect(24, y, 912, 4, C_LINE);
     y += 4 + 28;
 
