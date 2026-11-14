@@ -29,7 +29,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "0.6"
+#define WS_VERSION "0.7"
 #endif
 
 /* ================================================================ textos */
@@ -523,6 +523,8 @@ static const char *LOGO = "WOLFF'S STORE";
 /* colunas dos botões do topo (ícone com o nome embaixo), calculadas em header() */
 static float hdr_x[5], hdr_w[5];
 static const int HDR_ACTS[5] = {A_SYNC, A_DLS, A_SOUND, A_SETTINGS, A_SEARCH};
+#define HDR_COL_W 72
+#define HDR_GAP 10
 
 static void hdr_label(int act, char *t, int n) {
     if (act == A_SYNC) {
@@ -553,13 +555,9 @@ static float header(void) {
      * Cada um é uma coluna com o ícone e o nome centralizado embaixo; as colunas vêm da direita. */
     float right = 936;
     for (int i = 4; i >= 0; i--) {
-        char t[48];
-        hdr_label(HDR_ACTS[i], t, sizeof(t));
-        if (HDR_ACTS[i] == A_DLS) snprintf(t, sizeof(t), "%s (9)", TXT(S_LBL_DLS)); /* reserva espaço para a contagem */
-        float lw = title_width(t, 1);
-        hdr_w[i] = lw > BADGE ? lw : BADGE;
+        hdr_w[i] = HDR_COL_W;
         hdr_x[i] = right - hdr_w[i];
-        right = hdr_x[i] - 12;
+        right = hdr_x[i] - HDR_GAP;
     }
     for (int i = 0; i < 5; i++) {
         float bx = hdr_x[i] + (hdr_w[i] - BADGE) / 2, by = 18;
@@ -2961,31 +2959,44 @@ static void draw_update(void) {
     Job *j = upd_job >= 0 ? job_by_id(upd_job) : NULL;
     if (!j || j->state >= J_DONE) return;
     vita2d_draw_rectangle(0, 0, SCR_W, SCR_H, RGBA8(0, 0, 0, 0xE6));
-    float w = 640, h = 236, x = (SCR_W - w) / 2, y = (SCR_H - h) / 2 - 20;
+    float w = 680, h = 330, x = (SCR_W - w) / 2, y = (SCR_H - h) / 2;
     halo_draw(x - 28, y - 28, w + 56, h + 56, 1, 1);
     vita2d_draw_rectangle(x, y, w, h, C_PANEL);
     frame_rect(x, y, w, h, 4, C_WHITE);
+    paw_draw(x + 38, y + 26, 1, 1);
+    const char *brand = "WOLFF'S ROOM";
+    float brand_x = x + (w - title_width(brand, 3)) / 2;
+    for (int i = 0; brand[i]; i++) {
+        char ch[2] = {brand[i], 0};
+        float bounce = -fabsf(sinf((float)now_s * 4.8f - i * .48f)) * 7.f;
+        float cx = brand_x + i * 24;
+        title_draw(ch, cx + 4, y + 48 + 4 + bounce, 3, C_SHADOW);
+        title_draw(ch, cx, y + 48 + bounce, 3, C_WHITE);
+    }
     char t[96];
     snprintf(t, sizeof(t), "%s", TXT(S_UPD_TITLE));
     upper_latin1(t);
-    title_draw_shadow(t, x + (w - title_width(t, 2)) / 2, y + 28, 2, C_WHITE, C_SHADOW);
+    title_draw_shadow(t, x + (w - title_width(t, 2)) / 2, y + 96, 2, C_WHITE, C_SHADOW);
     char v[64];
     snprintf(v, sizeof(v), "v%s > v%s", WS_VERSION, app_rel.version);
-    title_draw(v, x + (w - title_width(v, 2)) / 2, y + 64, 2, C_SOFT);
+    title_draw(v, x + (w - title_width(v, 2)) / 2, y + 128, 2, C_SOFT);
     float k = job_frac(j);
     char s[96];
     if (j->state == J_DOWNLOAD) snprintf(s, sizeof(s), "%s %d%%", job_state_text(j), (int)(k * 100));
     else snprintf(s, sizeof(s), "%s", job_state_text(j));
-    body_draw(s, x + (w - body_width(s)) / 2, y + 100, C_TEXT);
-    frame_rect(x + 40, y + 132, w - 80, 32, 4, C_WHITE);
-    seg_bar(x + 48, y + 140, w - 96, 16, k, C_WHITE, RGBA8(0x24, 0x24, 0x24, 0xFF));
+    body_draw(s, x + (w - body_width(s)) / 2, y + 168, C_TEXT);
+    frame_rect(x + 40, y + 198, w - 80, 40, 4, C_WHITE);
+    seg_bar(x + 50, y + 208, w - 100, 20, k, C_WHITE, RGBA8(0x24, 0x24, 0x24, 0xFF));
+    char pc[8];
+    snprintf(pc, sizeof(pc), "%d%%", (int)(k * 100));
+    title_draw(pc, x + (w - title_width(pc, 1)) / 2, y + 246, 1, C_SOFT);
     const char *n = TXT(S_UPD_RESTART);
-    body_draw(n, x + (w - body_width(n)) / 2, y + 176, C_MUTED);
+    body_draw(n, x + (w - body_width(n)) / 2, y + 272, C_MUTED);
     char sk[64];
     snprintf(sk, sizeof(sk), "%s", TXT(S_UPD_SKIP));
     float sw = body_width(sk) + 22;
-    btn_icon(1, x + (w - sw) / 2, y + 206);
-    body_draw(sk, x + (w - sw) / 2 + 22, y + 200, C_WHITE);
+    btn_icon(1, x + (w - sw) / 2, y + 307);
+    body_draw(sk, x + (w - sw) / 2 + 22, y + 301, C_WHITE);
 }
 
 /* ================================================================ main */

@@ -33,6 +33,8 @@ static SceAvPlayerHandle player;
 static volatile int audio_run;
 static vita2d_texture *frame_tex;
 static int frame_w, frame_h;
+static SceUID video_fd = -1;
+static uint64_t video_size;
 
 static unsigned url_hash(const char *s) {
     unsigned h = 2166136261u;
@@ -42,8 +44,7 @@ static unsigned url_hash(const char *s) {
 
 /* ------------------------------------------------------------------ memória dos quadros (GPU) */
 
-#define MAX_BLOCKS 16
-static struct { void *p; SceUID uid; } blocks[MAX_BLOCKS];
+#define PHYCONT_ALIGN (1024 * 1024)
 
 static void *mem_alloc(void *arg, uint32_t align, uint32_t size) {
     (void)arg;
@@ -57,33 +58,57 @@ static void mem_free(void *arg, void *p) {
 static void *gpu_alloc(void *arg, uint32_t align, uint32_t size) {
     (void)arg;
     (void)align;
-    size = (size + 256 * 1024 - 1) & ~(256 * 1024 - 1); /* CDRAM: múltiplos de 256 KB */
-    SceUID uid = sceKernelAllocMemBlock("ws_video", SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW, size, NULL);
+    size = (size + PHYCONT_ALIGN - 1) & ~(PHYCONT_ALIGN - 1);
+    SceUID uid = sceKernelAllocMemBlock("ws_video", SCE_KERNEL_MEMBLOCK_TYPE_USER_MAIN_PHYCONT_NC_RW, size, NULL);
     if (uid < 0) return NULL;
     void *p = NULL;
-    sceKernelGetMemBlockBase(uid, &p);
+    if (sceKernelGetMemBlockBase(uid, &p) < 0 || !p) {
+        sceKernelFreeMemBlock(uid);
+        return NULL;
+    }
     if (sceGxmMapMemory(p, size, SCE_GXM_MEMORY_ATTRIB_READ | SCE_GXM_MEMORY_ATTRIB_WRITE) < 0) {
         sceKernelFreeMemBlock(uid);
         return NULL;
     }
-    for (int i = 0; i < MAX_BLOCKS; i++)
-        if (!blocks[i].p) {
-            blocks[i].p = p;
-            blocks[i].uid = uid;
-            break;
-        }
     return p;
 }
 
 static void gpu_free(void *arg, void *p) {
     (void)arg;
-    for (int i = 0; i < MAX_BLOCKS; i++)
-        if (blocks[i].p == p) {
-            sceGxmUnmapMemory(p);
-            sceKernelFreeMemBlock(blocks[i].uid);
-            blocks[i].p = NULL;
-            return;
-        }
+    if (!p) return;
+    SceUID uid = sceKernelFindMemBlockByAddr(p, 0);
+    vita2d_wait_rendering_done();
+    sceGxmUnmapMemory(p);
+    if (uid >= 0) sceKernelFreeMemBlock(uid);
+}
+
+/* O leitor próprio é o caminho usado pelo VitaShell/FMVita para arquivos em ux0:. */
+static int file_open(void *arg, const char *filename) {
+    (void)arg;
+    video_fd = sceIoOpen(filename, SCE_O_RDONLY, 0);
+    if (video_fd < 0) return -1;
+    video_size = sceIoLseek(video_fd, 0, SCE_SEEK_END);
+    sceIoLseek(video_fd, 0, SCE_SEEK_SET);
+    return 0;
+}
+
+static int file_close(void *arg) {
+    (void)arg;
+    if (video_fd >= 0) sceIoClose(video_fd);
+    video_fd = -1;
+    video_size = 0;
+    return 0;
+}
+
+static int file_read(void *arg, uint8_t *buffer, uint64_t position, uint32_t length) {
+    (void)arg;
+    if (video_fd < 0 || sceIoLseek(video_fd, position, SCE_SEEK_SET) < 0) return -1;
+    return sceIoRead(video_fd, buffer, length);
+}
+
+static uint64_t file_size(void *arg) {
+    (void)arg;
+    return video_size;
 }
 
 /* ------------------------------------------------------------------ áudio */
@@ -124,13 +149,27 @@ static void start_player(void) {
     in.memoryReplacement.deallocate = mem_free;
     in.memoryReplacement.allocateTexture = gpu_alloc;
     in.memoryReplacement.deallocateTexture = gpu_free;
+    in.fileReplacement.open = file_open;
+    in.fileReplacement.close = file_close;
+    in.fileReplacement.readOffset = file_read;
+    in.fileReplacement.size = file_size;
     in.basePriority = 0x10000100;
-    in.numOutputVideoFrameBuffers = 16;
+    in.numOutputVideoFrameBuffers = 5;
     in.autoStart = SCE_TRUE;
     player = sceAvPlayerInit(&in);
     int add = player > 0 ? sceAvPlayerAddSource(player, path) : (int)player;
+    ws_log("video: callback init/add 0x%08X/0x%08X", (int)player, add);
+    if (player > 0 && add < 0) {
+        sceAvPlayerClose(player);
+        file_close(NULL);
+        memset(&in.fileReplacement, 0, sizeof(in.fileReplacement));
+        player = sceAvPlayerInit(&in);
+        add = player > 0 ? sceAvPlayerAddSource(player, path) : (int)player;
+        ws_log("video: native init/add 0x%08X/0x%08X", (int)player, add);
+    }
     if (player <= 0 || add < 0) {
         if (player > 0) sceAvPlayerClose(player);
+        file_close(NULL);
         player = 0;
         snprintf(err, sizeof(err), "O Vita não conseguiu abrir o vídeo (use MP4 H.264 + AAC, até 960x544).");
         ws_log("video: init/add 0x%08X, path=%s, url=%s", add, path, url_);
@@ -211,6 +250,7 @@ void video_close(void) {
         sceAvPlayerClose(player);
         player = 0;
     }
+    file_close(NULL);
     if (frame_tex) {
         vita2d_free_texture(frame_tex);
         frame_tex = NULL;
@@ -262,6 +302,7 @@ void video_draw(void) {
         }
         if (frame_tex) {
             /* aponta a textura para o quadro decodificado (NV12, convertido pelo sampler) */
+            vita2d_wait_rendering_done();
             sceGxmTextureInitLinear(&frame_tex->gxm_tex, fi.pData, SCE_GXM_TEXTURE_FORMAT_YVU420P2_CSC1, w, h, 0);
             sceGxmTextureSetMinFilter(&frame_tex->gxm_tex, SCE_GXM_TEXTURE_FILTER_LINEAR);
             sceGxmTextureSetMagFilter(&frame_tex->gxm_tex, SCE_GXM_TEXTURE_FILTER_LINEAR);
