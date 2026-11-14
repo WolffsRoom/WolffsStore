@@ -14,9 +14,9 @@ class ReleaseInvariants(unittest.TestCase):
         cls.video = (ROOT / "src/video.c").read_text(encoding="utf-8")
         cls.updater = (ROOT / "updater/main.c").read_text(encoding="utf-8")
 
-    def test_release_is_v093(self):
-        self.assertIn('set(WS_SFO_VERSION "00.93")', self.cmake)
-        self.assertIn('set(WS_FILE_VERSION "0.93")', self.cmake)
+    def test_release_is_v094(self):
+        self.assertIn('set(WS_SFO_VERSION "00.94")', self.cmake)
+        self.assertIn('set(WS_FILE_VERSION "0.94")', self.cmake)
 
     def test_third_party_author_badge_is_optional(self):
         catalog=(ROOT / "src/catalog.h").read_text(encoding="utf-8")
@@ -26,6 +26,30 @@ class ReleaseInvariants(unittest.TestCase):
         self.assertIn('snprintf(by, sizeof(by), "by: %s", p->author)', self.main)
         self.assertIn("p->author && p->author[0]", self.main)
         self.assertIn('snprintf(by, sizeof(by), "by: %s", g_posts[pi].author)', self.main)
+
+    def test_updater_uses_dedicated_livearea(self):
+        import struct
+        for name, dimensions in (("icon0.png", (128,128)), ("bg0.png", (840,500)),
+                                 ("startup.png", (280,158))):
+            data=(ROOT / "assets" / "livearea_autoupdater" / name).read_bytes()
+            self.assertEqual(data[:8], bytes.fromhex("89504e470d0a1a0a"))
+            self.assertEqual(struct.unpack(">II",data[16:24]), dimensions)
+            self.assertEqual(data[25],3)
+            self.assertIn(f"assets/livearea_autoupdater/{name}",self.cmake)
+            partial="updater/sce_sys/icon0.png" if name=="icon0.png" else "updater/sce_sys/livearea/contents/"+name
+            self.assertIn(partial,self.cmake)
+            self.assertIn("app0:"+partial,self.main)
+        self.assertIn("updater/sce_sys/livearea/contents/template.xml",self.cmake)
+        self.assertIn('fs_mkdir_p(WS_PKG_UPD "/sce_sys/livearea/contents")',self.main)
+
+    def test_home_featured_github_prefers_source_and_mirrors_lite(self):
+        home=self.main[self.main.index("static void build_home("):self.main.index("static void build_cat(")]
+        self.assertIn("t->srcs[i].b",home)
+        self.assertIn('!strstr(url, "/releases/download/")',home)
+        self.assertIn("vita_github_url(gh, mapped, sizeof(mapped))",home)
+        self.assertIn("A_URL, 0, keep(url)",home)
+        self.assertNotIn('A_URL, 0, "https://github.com/WolffsRoom?tab=repositories"',self.main)
+        self.assertIn('A_URL, 0, "https://wolffsroom.github.io/WolffsStore/"',self.main)
 
     def test_author_is_only_in_cards_and_details_not_post_header(self):
         area = self.main[self.main.index("static void build_post("):self.main.index("/* barra de rolagem", self.main.index("static void build_post("))]

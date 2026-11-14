@@ -29,7 +29,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "0.93"
+#define WS_VERSION "0.94"
 #endif
 
 /* ================================================================ textos */
@@ -632,6 +632,8 @@ static double nav_pop(int i) {
     return home_pop(T_NAV + i * 0.1, .42 + i * .06);
 }
 
+static const char *vita_github_url(const char *url, char *out, size_t cap);
+
 static void build_home(void) {
     layout_begin();
     float y = header() + 32;
@@ -686,10 +688,24 @@ static void build_home(void) {
     iy += para(t->feature, ix, iy, iw, C_SOFT, 0, fl, 0) + 16;
     for (int i = first; i < nops; i++) ops[i].pop = ip + 0.16;
     int b1 = button(TXT(S_DETAILS), ix, iy, 0, 1, A_POST, feat, NULL, ip + 0.24);
+    /* A source repository is not the same as a release VPK download. */
     const char *gh = NULL;
-    for (int i = 0; i < t->nlinks; i++)
-        if (strstr(t->links[i].b, "github")) gh = t->links[i].b;
-    if (gh && b1 >= 0) button("GitHub", items[b1].x + items[b1].w + 16, iy, 0, 0, A_URL, 0, gh, ip + 0.32);
+    for (int i = 0; i < t->nsrcs && !gh; i++) {
+        const char *url = t->srcs[i].b;
+        if (url && strstr(url, "github.com/") && !strstr(url, "/releases/download/"))
+            gh = url;
+    }
+    for (int i = 0; i < t->nlinks && !gh; i++) {
+        const char *url = t->links[i].b;
+        if (url && strstr(url, "github.com/") && !strstr(url, "/releases/"))
+            gh = url;
+    }
+    if (gh && b1 >= 0) {
+        char mapped[520];
+        const char *url = vita_github_url(gh, mapped, sizeof(mapped));
+        button("GitHub", items[b1].x + items[b1].w + 16, iy, 0, 0,
+               A_URL, 0, keep(url), ip + 0.32);
+    }
 
     /* as três novidades mais recentes (o catálogo já vem do mais novo para o mais antigo) */
     y = sy + sh + 44;
@@ -806,7 +822,7 @@ static void build_cat(int c) {
     if (c == CAT_PORTS || c == CAT_TOOLS) {
         float w = title_width(keep_upper(TXT(S_REPOS)), 2) + 48;
         if (w > 912) w = 912;
-        button(TXT(S_REPOS), SCR_W / 2 - w / 2, y, w, 0, A_URL, 0, "https://github.com/WolffsRoom?tab=repositories", -1);
+        button(TXT(S_REPOS), SCR_W / 2 - w / 2, y, w, 0, A_URL, 0, "https://wolffsroom.github.io/WolffsStore/", -1);
         y += 48;
     }
     page_h = footer(y);
@@ -2812,12 +2828,16 @@ static void launch_updater(void) {
     /* instala o updater (WOLF00002) a partir do que veio no VPK e passa a vez para ele */
     fs_rm_rf(WS_PKG_UPD);
     fs_mkdir_p(WS_PKG_UPD "/sce_sys");
+    fs_mkdir_p(WS_PKG_UPD "/sce_sys/livearea/contents");
     fs_mkdir_p(WS_PKG_UPD "/data/tex");
     int ok = fs_copy("app0:updater/eboot.bin", WS_PKG_UPD "/eboot.bin") == 0 &&
              fs_copy("app0:updater/sce_sys/param.sfo", WS_PKG_UPD "/sce_sys/param.sfo") == 0 &&
              fs_copy("app0:updater/data/tex/paw4.wrt", WS_PKG_UPD "/data/tex/paw4.wrt") == 0 &&
-             fs_copy("app0:updater/data/tex/font_title.wrt", WS_PKG_UPD "/data/tex/font_title.wrt") == 0;
-    fs_copy("app0:updater/sce_sys/icon0.png", WS_PKG_UPD "/sce_sys/icon0.png");
+             fs_copy("app0:updater/data/tex/font_title.wrt", WS_PKG_UPD "/data/tex/font_title.wrt") == 0 &&
+             fs_copy("app0:updater/sce_sys/icon0.png", WS_PKG_UPD "/sce_sys/icon0.png") == 0 &&
+             fs_copy("app0:updater/sce_sys/livearea/contents/bg0.png", WS_PKG_UPD "/sce_sys/livearea/contents/bg0.png") == 0 &&
+             fs_copy("app0:updater/sce_sys/livearea/contents/startup.png", WS_PKG_UPD "/sce_sys/livearea/contents/startup.png") == 0 &&
+             fs_copy("app0:updater/sce_sys/livearea/contents/template.xml", WS_PKG_UPD "/sce_sys/livearea/contents/template.xml") == 0;
     if (ok) ok = inst_make_head_bin(WS_PKG_UPD) == 0 && inst_promote(WS_PKG_UPD) == 0;
     if (!ok) {
         char t[256];

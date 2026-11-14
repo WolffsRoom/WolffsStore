@@ -14,8 +14,8 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2 -Wall -Wno-format-truncation")
 set(WS_TITLEID "WOLF00001")
 set(WS_UPDATER_TITLEID "WOLF00002")
 # LiveArea padrão: assets/livearea (icon0 128x128, bg0 840x500, startup 280x158, PNG indexado de 8 bits)
-set(WS_SFO_VERSION "00.93")
-set(WS_FILE_VERSION "0.93")
+set(WS_SFO_VERSION "00.94")
+set(WS_FILE_VERSION "0.94")
 set(WS_VPK_NAME "WolffsStore.vpk")
 set(WS_ARTIFACTS_DIR "${CMAKE_SOURCE_DIR}/artifacts/current")
 
@@ -156,7 +156,11 @@ vita_create_vpk(${WS_VPK_NAME} ${WS_TITLEID} eboot.bin
     ${CMAKE_SOURCE_DIR}/assets/livearea/template.xml sce_sys/livearea/contents/template.xml
     ${CMAKE_CURRENT_BINARY_DIR}/updater_eboot.bin updater/eboot.bin
     ${CMAKE_CURRENT_BINARY_DIR}/updater_param.sfo updater/sce_sys/param.sfo
-    ${CMAKE_SOURCE_DIR}/assets/livearea/icon0.png updater/sce_sys/icon0.png
+    # Independent LiveArea assets for temporary updater WOLF00002.
+    ${CMAKE_SOURCE_DIR}/assets/livearea_autoupdater/icon0.png updater/sce_sys/icon0.png
+    ${CMAKE_SOURCE_DIR}/assets/livearea_autoupdater/bg0.png updater/sce_sys/livearea/contents/bg0.png
+    ${CMAKE_SOURCE_DIR}/assets/livearea_autoupdater/startup.png updater/sce_sys/livearea/contents/startup.png
+    ${CMAKE_SOURCE_DIR}/assets/livearea/template.xml updater/sce_sys/livearea/contents/template.xml
     ${CMAKE_SOURCE_DIR}/data/tex/paw4.wrt updater/data/tex/paw4.wrt
     ${CMAKE_SOURCE_DIR}/data/tex/font_title.wrt updater/data/tex/font_title.wrt
     ${ws_files}
