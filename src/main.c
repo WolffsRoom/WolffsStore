@@ -29,7 +29,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "0.98"
+#define WS_VERSION "0.99"
 #endif
 
 /* ================================================================ textos */
@@ -672,7 +672,7 @@ static void build_home(void) {
         th = heading_lines(t->title, tsc, iw) * (tsc * 8 + 12);
         int n = para_lines(t->feature, iw, fl);
         total = BODY_LINE + 10 + (p->author && p->author[0] ? BODY_LINE + 8 : 0)
-              + (p->news_kind ? 30 : 0) + th + 10 + n * BODY_LINE + 16 + 48;
+              + th + 10 + n * BODY_LINE + 16 + 48;
         if (total <= sh || (tsc == 2 && fl <= 2)) {
             fl = n;
             break;
@@ -691,10 +691,6 @@ static void build_home(void) {
         first = nops;
         iy += para(by, ix, iy, iw, C_GOLD, 0, 2, 0) + 8;
         for (int i = first; i < nops; i++) ops[i].pop = ip + .04;
-    }
-    if (p->news_kind) {
-        news_word(p->news_kind, ix + 8, iy + 12, 2, ip + .06);
-        iy += 30;
     }
     first = nops;
     char up[512];
@@ -722,6 +718,17 @@ static void build_home(void) {
         const char *url = vita_github_url(gh, mapped, sizeof(mapped));
         button("GitHub", items[b1].x + items[b1].w + 16, iy, 0, 0,
                A_URL, 0, keep(url), ip + 0.32);
+    }
+    /* Release/Update overlaps the LOWER-RIGHT border of "Ver detalhes".
+     * Draw after both buttons so the text is visible, but it is NOT a
+     * separate interactive item and never changes the button's hitbox. */
+    if (p->news_kind && b1 >= 0) {
+        const int letters = p->news_kind == 1 ? 7 : 6;
+        const int scale = 2;
+        const Item *details = &items[b1];
+        const float badge_x = details->x + details->w - letters * 8.f * scale + 8;
+        const float badge_y = details->y + details->h - 10;
+        news_word(p->news_kind, badge_x, badge_y, scale, ip + .40);
     }
 
     /* as três novidades mais recentes (o catálogo já vem do mais novo para o mais antigo) */

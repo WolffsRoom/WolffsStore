@@ -14,9 +14,9 @@ class ReleaseInvariants(unittest.TestCase):
         cls.video = (ROOT / "src/video.c").read_text(encoding="utf-8")
         cls.updater = (ROOT / "updater/main.c").read_text(encoding="utf-8")
 
-    def test_release_is_v098(self):
-        self.assertIn('set(WS_SFO_VERSION "00.98")', self.cmake)
-        self.assertIn('set(WS_FILE_VERSION "0.98")', self.cmake)
+    def test_release_is_v099(self):
+        self.assertIn('set(WS_SFO_VERSION "00.99")', self.cmake)
+        self.assertIn('set(WS_FILE_VERSION "0.99")', self.cmake)
 
     def test_third_party_author_badge_is_optional(self):
         catalog=(ROOT / "src/catalog.h").read_text(encoding="utf-8")
@@ -47,7 +47,7 @@ class ReleaseInvariants(unittest.TestCase):
         import xml.etree.ElementTree as ET
         tmpl = ROOT / "assets/livearea_autoupdater/template.xml"
         xml = ET.parse(tmpl).getroot()
-        self.assertEqual(xml.attrib.get("content-rev"), "98")
+        self.assertEqual(xml.attrib.get("content-rev"), "99")
         self.assertEqual(xml.findtext("livearea-background/image"), "bg0.png")
         self.assertEqual(xml.findtext("gate/startup-image"), "startup.png")
         self.assertIn("assets/livearea_autoupdater/template.xml",self.cmake)
@@ -93,6 +93,13 @@ class ReleaseInvariants(unittest.TestCase):
         hero=self.main[self.main.index("static void build_home("):
                        self.main.index("static void build_cat(")]
         self.assertIn("news_word(p->news_kind",hero)
+        self.assertIn('const Item *details = &items[b1];',hero)
+        self.assertIn('details->x + details->w - letters * 8.f * scale + 8',hero)
+        self.assertIn('details->y + details->h - 10',hero)
+        self.assertIn('news_word(p->news_kind, badge_x, badge_y, scale, ip + .40)',hero)
+        self.assertLess(hero.index('button(TXT(S_DETAILS)'),hero.index('news_word(p->news_kind, badge_x'))
+        self.assertNotIn('if (p->news_kind ? 30',hero)
+
         card=self.main[self.main.index("static void card("):
                        self.main.index("static float header(")]
         post=self.main[self.main.index("static void build_post("):
