@@ -294,20 +294,22 @@ class ReleaseInvariants(unittest.TestCase):
 
     def test_video_uses_proven_vita_buffer_contract(self):
         self.assertIn("SCE_KERNEL_MEMBLOCK_TYPE_USER_MAIN_PHYCONT_NC_RW", self.video)
-        self.assertRegex(self.video, r"numOutputVideoFrameBuffers\s*=\s*5")
+        self.assertIn("numOutputVideoFrameBuffers = VIDEO_BUFFERS", self.video)
+        self.assertIn("#define VIDEO_BUFFERS 5", self.video)
         self.assertIn("1024 * 1024", self.video)
 
-    def test_video_has_file_callbacks_and_native_fallback(self):
+    def test_video_prefers_native_and_falls_back_to_file_callbacks(self):
         for member in ("open", "close", "readOffset", "size"):
-            self.assertIn(f"in.fileReplacement.{member}", self.video)
-        self.assertIn("memset(&in.fileReplacement, 0", self.video)
-        self.assertGreaterEqual(self.video.count("sceAvPlayerAddSource"), 2)
+            self.assertIn(f"init.fileReplacement.{member}", self.video)
+        self.assertIn("!open_decoder(0) && !open_decoder(1)", self.video)
+        self.assertIn("sceAvPlayerAddSource(candidate, path)", self.video)
 
-    def test_video_waits_before_repointing_frame_texture(self):
+    def test_video_uses_five_frame_descriptors_without_owning_decoder_memory(self):
         draw = self.video[self.video.index("void video_draw") :]
-        wait = draw.index("vita2d_wait_rendering_done()")
-        repoint = draw.index("sceGxmTextureInitLinear")
-        self.assertLess(wait, repoint)
+        self.assertIn("(frame_slot + 1) % VIDEO_BUFFERS", draw)
+        self.assertIn("SCE_GXM_TEXTURE_FORMAT_YVU420P2_CSC1", draw)
+        self.assertNotIn("vita2d_free_texture(", draw)
+        self.assertIn("free(frames[i])", self.video)
 
 
 if __name__ == "__main__":
