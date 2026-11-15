@@ -45,6 +45,15 @@ static int cpu_w, cpu_h;
 #define VIDEO_TRACE WS_DATA "/video_diagnostic.txt"
 
 static SceAvPlayerHandle player;
+/* sceAvPlayerInit returns a pointer-like integer handle (e.g. 0x81962860)
+ * on real hardware. C's signed int sees that valid pointer as negative.
+ * Only null and SCE error-code values in 0x80xxxxxx are invalid.
+ * Testing 'handle <= 0' rejects every legitimate 0x81xxxxxx handle. */
+static int avplayer_handle_valid(SceAvPlayerHandle handle) {
+    uint32_t bits = (uint32_t)handle;
+    return bits != 0 && (bits & 0xFF000000u) != 0x80000000u;
+}
+
 static vita2d_texture *frames[VIDEO_BUFFERS]; /* GXM descriptor only, not owned frame data */
 static int frame_slot, frame_w, frame_h, have_frame, ended;
 static SceUID video_fd = -1;
@@ -128,7 +137,7 @@ static int video_audio_main(SceSize args, void *argp) {
     while (video_audio_run) {
         SceAvPlayerFrameInfo frame;
         memset(&frame, 0, sizeof(frame));
-        if (player > 0 && sceAvPlayerGetAudioData(player, &frame) && frame.pData) {
+        if (avplayer_handle_valid(player) && sceAvPlayerGetAudioData(player, &frame) && frame.pData) {
             int rate = frame.details.audio.sampleRate;
             int channels = frame.details.audio.channelCount;
             int grain = (int)(frame.details.audio.size / ((channels > 0 ? channels : 2) * 2));
@@ -271,7 +280,7 @@ static int open_decoder(int mode) {
     }
     const char *names[] = {"native-GXM", "callback-GXM", "callback-CPU"};
     SceAvPlayerHandle handle = sceAvPlayerInit(&init);
-    if (handle <= 0) {
+    if (!avplayer_handle_valid(handle)) {
         decoder_errors[mode] = (int)handle;
         video_trace("%s: sceAvPlayerInit error 0x%08X",names[mode],(int)handle);
         return 0;
@@ -284,6 +293,7 @@ static int open_decoder(int mode) {
         file_close(NULL);
         return 0;
     }
+    video_trace("%s: valid player handle 0x%08X",names[mode],(uint32_t)handle);
     decoder_mode = mode;
     decoder_errors[mode] = 0;
     decoder_started_us = sceKernelGetSystemTimeWide();
@@ -408,7 +418,7 @@ void video_close(void) {
         dl_thread = -1;
     }
     stop_video_audio();
-    if (player > 0) {
+    if (avplayer_handle_valid(player)) {
         /* Flush GXM BEFORE the decoder is allowed to release frame memory. */
         vita2d_wait_rendering_done();
         sceAvPlayerStop(player);
@@ -432,10 +442,10 @@ void video_close(void) {
 int video_state(void) { return state == VID_DOWNLOAD_READY ? VID_LOADING : state; }
 float video_load_progress(void) { return pr.total > 0 ? (float)pr.done / (float)pr.total : 0; }
 const char *video_error(void) { return err; }
-unsigned long long video_time_ms(void) { return player > 0 ? sceAvPlayerCurrentTime(player) : 0; }
+unsigned long long video_time_ms(void) { return avplayer_handle_valid(player) ? sceAvPlayerCurrentTime(player) : 0; }
 
 void video_toggle_pause(void) {
-    if (player <= 0) return;
+    if (!avplayer_handle_valid(player)) return;
     if (state == VID_PLAYING) {
         int r = sceAvPlayerPause(player);
         if (r >= 0) state = VID_PAUSED;
@@ -453,7 +463,7 @@ void video_toggle_pause(void) {
 }
 
 void video_seek(int seconds) {
-    if (player <= 0) return;
+    if (!avplayer_handle_valid(player)) return;
     long long t = (long long)sceAvPlayerCurrentTime(player) + seconds * 1000LL;
     if (t < 0) t = 0;
     int r = sceAvPlayerJumpToTime(player, (uint64_t)t);
@@ -467,7 +477,7 @@ static void try_fallback_if_stalled(void) {
     video_trace("No video frame in 5 seconds, switching from decoder mode %d",decoder_mode);
     stop_video_audio();
     vita2d_wait_rendering_done();
-    if (player > 0) {
+    if (avplayer_handle_valid(player)) {
         sceAvPlayerStop(player);
         sceAvPlayerClose(player);
         player = 0;
@@ -490,9 +500,9 @@ void video_draw(void) {
         }
         start_player();
     }
-    if (player <= 0) return;
+    if (!avplayer_handle_valid(player)) return;
     try_fallback_if_stalled();
-    if (player <= 0) return;
+    if (!avplayer_handle_valid(player)) return;
 
     if (state == VID_PLAYING && have_frame && !sceAvPlayerIsActive(player)) {
         /* Do not seek every frame: AvPlayer may have reached EOF. */

@@ -29,7 +29,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "0.99.6"
+#define WS_VERSION "0.99.7"
 #endif
 
 /* ================================================================ textos */
@@ -3061,18 +3061,86 @@ static void apply_sync(void) {
 
 static unsigned jobs_seen_version;
 
+/* Deleting a registered app may briefly refresh SceShell. Keep the first
+ * Store session usable by delaying cleanup until Home is fully stable.
+ * Verify both TITLE_ID and TITLE from installed param.sfo; never delete a
+ * different homebrew occupying a previously used helper ID. */
+static SceUID updater_cleanup_thread = -1;
+static int updater_cleanup_owned(const char *id) {
+    char sfo[140], installed_id[32] = "", installed_title[100] = "";
+    snprintf(sfo, sizeof(sfo), "ux0:app/%s/sce_sys/param.sfo", id);
+    return fs_exists(sfo) &&
+           sfo_get(sfo, "TITLE_ID", installed_id, sizeof(installed_id)) == 0 &&
+           strcmp(installed_id, id) == 0 &&
+           sfo_get(sfo, "TITLE", installed_title, sizeof(installed_title)) == 0 &&
+           strcmp(installed_title, "Wolff's Store Updater") == 0;
+}
+static int updater_cleanup_run(SceSize arglen, void *args) {
+    (void)arglen; (void)args;
+    int pending=0;
+    const char *ids[]={"WFFS00043", "WOLF00002"};
+    const int requested[]={updater_cleanup_pending, legacy_updater_cleanup_pending};
+    for (int i=0;i<2;i++) {
+        if (!requested[i]) continue;
+        char sfo[140];
+        snprintf(sfo, sizeof(sfo),"ux0:app/%s/sce_sys/param.sfo",ids[i]);
+        if (!fs_exists(sfo)) continue;
+        if (!updater_cleanup_owned(ids[i])) {
+            ws_log("updater: refusing cleanup of unverified title %s",ids[i]);
+            pending=1;
+            continue;
+        }
+        ws_log("updater: Home stable, removing verified helper %s",ids[i]);
+        int r=inst_delete(ids[i]);
+        ws_log("updater: delayed DeletePkg(%s) -> 0x%08X",ids[i],r);
+        if (r < 0 || fs_exists(sfo)) pending=1;
+    }
+    if (!pending) {
+        fs_rm_rf(WS_DATA "/updater_cleanup.pending");
+        updater_cleanup_pending=legacy_updater_cleanup_pending=0;
+        ws_log("updater: delayed cleanup completed, marker removed");
+    } else ws_log("updater: some helpers remain; marker retained for later retry");
+    return sceKernelExitDeleteThread(0);
+}
+static void start_updater_cleanup_once(void) {
+    if (updater_cleanup_thread >= 0) return;
+    updater_cleanup_thread = sceKernelCreateThread(
+        "ws_updater_cleanup", updater_cleanup_run, 0x10000100, 0x8000, 0, 0, NULL);
+    if (updater_cleanup_thread < 0) {
+        ws_log("updater: unable to create cleanup worker 0x%08X",updater_cleanup_thread);
+        return;
+    }
+    int r=sceKernelStartThread(updater_cleanup_thread,0,NULL);
+    if (r < 0) {
+        ws_log("updater: unable to start cleanup worker 0x%08X",r);
+        sceKernelDeleteThread(updater_cleanup_thread);
+        updater_cleanup_thread=-1;
+    } else ws_log("updater: deferred cleanup started after stable Home");
+}
+
 static void tick_store(void) {
     int intro_done = started && now_s - intro_t0 >= T_DONE;
-    /* v0.99.5 diagnostic: NEVER delete WFFS00043 or WOLF00002 while this
-     * Store process is running. A ScePromoterUtilityDeletePkg on another
-     * installed title may cause SceShell to suspend our first session.
-     * Preserve pending markers and helper bubbles to isolate the issue.
-     * Future cleanup must be off-session, with ownership checks. */
-    static int cleanup_suspension_logged = 0;
-    if (!cleanup_suspension_logged &&
-        (updater_cleanup_pending || legacy_updater_cleanup_pending)) {
-        ws_log("updater: v0.99.5 diagnostic - helper deletion DISABLED while Store runs");
-        cleanup_suspension_logged = 1;
+    /* Remove only our updater, only after the Home has been continuously
+     * stable. This avoids SceShell refresh during the fragile first frames
+     * after the updater -> new Store handoff. The deletion happens once,
+     * on a worker so it cannot freeze the main input/render loop. */
+    static double cleanup_stable_since = -1;
+    static int cleanup_attempted_this_session = 0;
+    int stable_home = !first_sync && started && intro_done &&
+        view == V_HOME && viewer < 0 && !settings_open &&
+        !vid_open && !ime_open && upd_job < 0 && jobs_active() == 0;
+    if (updater_cleanup_pending || legacy_updater_cleanup_pending) {
+        if (stable_home) {
+            if (cleanup_stable_since < 0) {
+                cleanup_stable_since = now_s;
+                ws_log("updater: Home stable, starting guarded 45-second grace period");
+            }
+            if (!cleanup_attempted_this_session &&
+                now_s - cleanup_stable_since >= 45.0) {
+                cleanup_attempted_this_session = 1;
+                start_updater_cleanup_once();
+            }
+        } else if (!cleanup_attempted_this_session) cleanup_stable_since = -1;
     }
     int st = sync_state();
     if (first_sync && st == SYNC_READY) {

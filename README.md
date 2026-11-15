@@ -127,7 +127,7 @@ evitando execução durante AFK na tela de abertura.
 
 1. Suba `WS_FILE_VERSION`/`WS_SFO_VERSION` no `CMakeLists.txt`.
 2. Crie e envie a tag correspondente, no formato `v0.8`, `v0.9`… ou `v1.0`:
-   `git tag v0.99.6 && git push origin v0.99.6`
+   `git tag v0.99.7 && git push origin v0.99.7`
 3. O workflow publica a release em `WolffsRoom/WolffsStore` com o asset fixo `WolffsStore.vpk`.
    A URL permanente da versão mais recente é
    `https://github.com/WolffsRoom/WolffsStore/releases/latest/download/WolffsStore.vpk`.
@@ -181,3 +181,18 @@ possibilitar coleta mesmo quando a pasta logs/ nao for copiada.
 A limpeza do updater segue desativada na sessao ativa; isso evita o
 retorno observado a LiveArea. Remocao off-session requer confirmacao
 no Vita fisico para nao reintroduzir o problema.
+
+
+### v0.99.7 - fix signed AvPlayer handles and guarded helper cleanup
+
+Video: the Vita returns pointer-like AvPlayer handles in the 0x81xxxxxx
+memory range, but the SDK declares SceAvPlayerHandle as signed int. Old
+code used <= 0 and rejected legitimate 0x819xxxxx values from the Vita
+video_diagnostic log. Now it distinguishes 0x80xxxxxx error codes from
+valid player handles in playback, pause, seek, audio and close.
+
+Auto-updater is removed only once the Home has remained stable for
+45 consecutive seconds, without active jobs, modals, videos or IME.
+The worker checks exact installed TITLE_ID and TITLE before deletion.
+Markers are retained when deletion fails. Test the impact of
+SceShell LiveArea refresh on actual Vita hardware after updating.
