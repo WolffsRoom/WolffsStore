@@ -14,9 +14,9 @@ class ReleaseInvariants(unittest.TestCase):
         cls.video = (ROOT / "src/video.c").read_text(encoding="utf-8")
         cls.updater = (ROOT / "updater/main.c").read_text(encoding="utf-8")
 
-    def test_release_is_v0995(self):
+    def test_release_is_v0996(self):
         self.assertIn('set(WS_SFO_VERSION "00.99")', self.cmake)
-        self.assertIn('set(WS_FILE_VERSION "0.99.5")', self.cmake)
+        self.assertIn('set(WS_FILE_VERSION "0.99.6")', self.cmake)
 
     def test_featured_update_suffix_follows_app_title(self):
         hero=self.main[self.main.index("static void build_home("):
@@ -38,9 +38,9 @@ class ReleaseInvariants(unittest.TestCase):
     def test_title_id_migration_keeps_old_bubble_safe(self):
         self.assertIn('set(WS_TITLEID "WFFS00042")', self.cmake)
         self.assertIn('set(WS_UPDATER_TITLEID "WFFS00043")', self.cmake)
-        self.assertIn('set(WS_FILE_VERSION "0.99.5")', self.cmake)
+        self.assertIn('set(WS_FILE_VERSION "0.99.6")', self.cmake)
         self.assertIn('set(WS_SFO_VERSION "00.99")', self.cmake)
-        self.assertIn('#define WS_VERSION "0.99.5"', self.main)
+        self.assertIn('#define WS_VERSION "0.99.6"', self.main)
         self.assertIn('#define MAIN_TITLE "WFFS00042"', self.updater)
         self.assertNotIn('set(WS_TITLEID "WOLF00001")',self.cmake)
         self.assertNotIn('#define MAIN_TITLE "WOLF00001"',self.updater)
@@ -253,6 +253,31 @@ class ReleaseInvariants(unittest.TestCase):
                          self.main.index("static void maybe_self_update(")]
         self.assertIn('inst_delete("WFFS00043")',launch)
 
+    def test_settings_has_compact_nested_pages(self):
+        self.assertIn("enum { SETTINGS_ROOT, SETTINGS_AUDIO, SETTINGS_VISUAL, SETTINGS_GENERAL }",self.main)
+        self.assertIn("148 + settings_rows() * *rh",self.main)
+        self.assertIn("settings_page = SETTINGS_ROOT",self.main)
+        self.assertIn("settings_page = settings_row == 0 ? SETTINGS_AUDIO",self.main)
+        self.assertIn("if (down & SCE_CTRL_CIRCLE) settings_back()",self.main)
+        self.assertIn("settings_geometry(&x, &y, &w, &h, &rh)",self.main)
+        self.assertIn("row < settings_rows()",self.main)
+        self.assertIn("SET_OST",self.main)
+        self.assertIn("S_SET_CAT_AUDIO",self.main)
+        self.assertIn("S_SET_CAT_VISUAL",self.main)
+        self.assertIn("S_SET_CAT_GENERAL",self.main)
+        self.assertNotIn("96 + SET_COUNT * rh + 100",self.main)
+
+    def test_video_root_diagnostics_and_last_resort_player(self):
+        self.assertIn('WS_DATA "/video_diagnostic.txt"',self.video)
+        self.assertIn("static void video_trace_new_session",self.video)
+        self.assertIn("try_decoder_from(0)",self.video)
+        self.assertIn("mode == 2 ? cpu_frame_alloc : gpu_alloc",self.video)
+        self.assertIn("SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW",self.video)
+        self.assertIn("nv12_to_rgba",self.video)
+        self.assertIn("sceAudioOutOpenPort",self.video)
+        self.assertIn("try_fallback_if_stalled",self.video)
+        self.assertIn("decoder_errors[3]",self.video)
+
     def test_settings_touch_does_not_scroll_page_behind_modal(self):
         self.assertIn("dragged && viewer < 0 && !vid_open && !settings_open", self.main)
 
@@ -284,24 +309,24 @@ class ReleaseInvariants(unittest.TestCase):
         self.assertIn("SCE_KERNEL_MEMBLOCK_TYPE_USER_MAIN_PHYCONT_NC_RW",self.video)
         self.assertIn("VIDEO_BUFFERS 5",self.video)
         self.assertIn("init.basePriority = 0xA0",self.video)
-        self.assertIn("init.numOutputVideoFrameBuffers = VIDEO_BUFFERS",self.video)
+        self.assertIn("init.numOutputVideoFrameBuffers = mode == 2 ? 8 : VIDEO_BUFFERS",self.video)
         self.assertIn("SCE_GXM_TEXTURE_FORMAT_YVU420P2_CSC1",self.video)
-        self.assertNotIn("sceAudioOutOpenPort",self.video)
+        self.assertIn("SCE_AUDIO_OUT_PORT_TYPE_MAIN",self.video)
 
     def test_video_has_file_callbacks_and_native_fallback(self):
         for member in ("open", "close", "readOffset", "size"):
             self.assertIn(f"init.fileReplacement.{member}", self.video)
-        self.assertIn("if (custom_reader)", self.video)
-        self.assertIn("open_decoder(0) && !open_decoder(1)", self.video)
+        self.assertIn("if (mode != 0)", self.video)
+        self.assertIn("for (int mode = first; mode < 3; ++mode)", self.video)
 
     def test_native_video_frame_ownership_and_cache_recovery(self):
         self.assertIn("sceGxmTextureInitLinear",self.video)
         self.assertIn("vita2d_wait_rendering_done()",self.video)
         self.assertIn("video: invalid cache, downloading a fresh copy",self.video)
-        self.assertIn("video: %s AddSource",self.video)
+        self.assertIn("AddSource=0x%08X",self.video)
         self.assertIn("video: GPU memblock allocation failed",self.video)
         self.assertIn('init.basePriority = 0xA0',self.video)
-        self.assertIn("video: first",self.video)
+        self.assertIn("First GXM frame",self.video)
         catalog=(ROOT/"data/catalog.txt").read_bytes().decode("latin-1")
         for slug in ("pizza","delta"):
             self.assertIn(f"/posts/{slug}/trailer-vita-v2.mp4",catalog)

@@ -29,7 +29,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "0.99.5"
+#define WS_VERSION "0.99.6"
 #endif
 
 /* ================================================================ textos */
@@ -47,7 +47,7 @@ enum {
     S_SYNC_FAIL, S_UPD_TITLE, S_UPD_SKIP, S_SAVED_TO, S_H_DLS, S_H_SYNC, S_T_INSTALLED, S_T_TRANS, S_T_SAVED,
     S_T_FAILED, S_UPD_RESTART, S_CHIP_UPDATE, S_CHIP_TRANS, S_SEE_DLS, S_BACK_TO,
     S_HOME, S_TIP_SYNC, S_TIP_DLS, S_TIP_LANG, S_TIP_SOUND_ON, S_TIP_SOUND_OFF, S_PROJECTS,
-    S_TIP_SET, S_TIP_SEARCH, S_SETTINGS, S_SET_SFX, S_SET_MUSIC, S_SET_OST, S_SET_LANG, S_SET_BRIGHT, S_ON, S_OFF, S_LANG_NAME, S_AUTO_OST,
+    S_TIP_SET, S_TIP_SEARCH, S_SETTINGS, S_SET_SFX, S_SET_MUSIC, S_SET_OST, S_SET_LANG, S_SET_BRIGHT, S_ON, S_OFF, S_LANG_NAME, S_AUTO_OST, S_SET_CAT_AUDIO, S_SET_CAT_VISUAL, S_SET_CAT_GENERAL,
     S_SET_HINT, S_SET_KEYS, S_H_MOVE, S_H_SELECT, S_SEARCH, S_SEARCH_FOR, S_RESULTS, S_NO_RESULTS, S_SEARCH_EMPTY,
     S_EDIT_SEARCH, S_ST_UPTODATE, S_ST_NEWVER, S_ST_INSTALLED, S_CHIP_INSTALLED, S_INSTALLED_LIST, S_OPEN_PROJECT,
     S_QUEUE, S_SOURCE, S_CLOCK, S_DL_DATA, S_DATA_TO, S_SYNC_SHORT, S_MUSIC, S_SFX, S_TIP_AUDIO, S_VID_LOAD,
@@ -75,7 +75,7 @@ static const char *UI_UTF8[2][S_COUNT] = {
         "The app will close and reopen on its own.", "Update", "Translation", "See downloads", "Back",
         "Home", "Sync", "Downloads", "Language: English", "Sound: on", "Sound: off", "projects",
         "Settings", "Search", "Settings", "Sound effects", "Background music", "Background OST", "Language", "Brightness", "On", "Off",
-        "English", "Automatic", "Left/Right: change", "Shortcuts: Triangle sync \xb7 Square downloads \xb7 SELECT search \xb7 START settings",
+        "English", "Automatic", "Audio", "Visual", "General", "Left/Right: change", "Shortcuts: Triangle sync \xb7 Square downloads \xb7 SELECT search \xb7 START settings",
         "Move", "Select", "Search", "Search for", "results", "Nothing found. Try another word.",
         "Search ports, translations, tools and reviews.", "Edit search", "Up to date", "New version: v", "Installed",
         "Installed", "Installed", "Open project", "Queue",
@@ -105,7 +105,7 @@ static const char *UI_UTF8[2][S_COUNT] = {
         "O app vai fechar e abrir de novo sozinho.", "Atualizar", "Tradução", "Ver downloads", "Voltar",
         "Início", "Sincronizar", "Downloads", "Idioma: português", "Som: ligado", "Som: desligado", "projetos",
         "Configurações", "Pesquisar", "Configurações", "Efeitos sonoros", "Música de fundo", "Background OST", "Idioma", "Brilho", "Ligado",
-        "Desligado", "Português (BR)", "Automático", "Esquerda/direita: muda",
+        "Desligado", "Português (BR)", "Automático", "Áudio", "Visual", "Geral", "Esquerda/direita: muda",
         "Atalhos: Triângulo sincroniza \xb7 Quadrado downloads \xb7 SELECT pesquisa \xb7 START configurações",
         "Mover", "Selecionar", "Pesquisa", "Pesquisar", "resultados", "Nada encontrado. Tente outra palavra.",
         "Procure ports, traduções, ferramentas e reviews.", "Editar pesquisa", "Atualizado", "Nova versão: v", "Instalado",
@@ -128,7 +128,7 @@ static int view = V_HOME, view_cat = 0, view_post = -1, from_view = V_HOME, peek
 static int dls_from = V_HOME, dls_from_arg = 0;
 static float hint_h = 36; /* barra de dicas (+ faixa de status quando aparece) */
 static int brightness = 100;  /* % (escurece a imagem do app; 40..100) */
-static int settings_open = 0, settings_row = 0;
+static int settings_open = 0, settings_row = 0, settings_page = 0, settings_root_row = 0;
 static double settings_t0 = -10;
 static char search_q[128] = "";
 static int ime_open = 0;
@@ -2182,22 +2182,62 @@ static void start_sync(int manual) {
 /* ---------------------------------------------------------------- janela de configurações */
 
 enum { SET_SFX, SET_MUSIC, SET_OST, SET_LANG, SET_BRIGHT, SET_COUNT };
+enum { SETTINGS_ROOT, SETTINGS_AUDIO, SETTINGS_VISUAL, SETTINGS_GENERAL };
 
+static int settings_rows(void) {
+    return settings_page == SETTINGS_ROOT || settings_page == SETTINGS_AUDIO ? 3 : 1;
+}
+/* Visual and General have independent row lists so future settings can be
+ * added without growing the root modal. */
+static int settings_option(int row) {
+    static const int audio_rows[] = {SET_SFX, SET_MUSIC, SET_OST};
+    if (settings_page == SETTINGS_AUDIO && row >= 0 && row < 3)
+        return audio_rows[row];
+    if (settings_page == SETTINGS_VISUAL && row == 0) return SET_BRIGHT;
+    if (settings_page == SETTINGS_GENERAL && row == 0) return SET_LANG;
+    return -1;
+}
+static void settings_geometry(float *x, float *y, float *w, float *h, float *rh) {
+    *w = 624;
+    *rh = 58;
+    *h = 148 + settings_rows() * *rh; /* 322 px max: always inside 960x544 */
+    *x = (SCR_W - *w) / 2;
+    *y = (SCR_H - *h) / 2;
+}
 static void open_settings(void) {
     settings_open = 1;
-    settings_row = 0;
+    settings_page = SETTINGS_ROOT;
+    settings_row = settings_root_row = 0;
     settings_t0 = now_s;
     sfx("open");
 }
-
 static void close_settings(void) {
     settings_open = 0;
     settings_save();
     sfx("back");
 }
-
+static void settings_back(void) {
+    if (settings_page != SETTINGS_ROOT) {
+        settings_page = SETTINGS_ROOT;
+        settings_row = settings_root_row;
+        settings_t0 = now_s;
+        settings_save();
+        sfx("back");
+    } else close_settings();
+}
 static void settings_change(int dir) {
-    switch (settings_row) {
+    if (settings_page == SETTINGS_ROOT) {
+        if (dir == 0) {
+            settings_root_row = settings_row;
+            settings_page = settings_row == 0 ? SETTINGS_AUDIO :
+                            settings_row == 1 ? SETTINGS_VISUAL : SETTINGS_GENERAL;
+            settings_row = 0;
+            settings_t0 = now_s;
+            sfx("open");
+        }
+        return;
+    }
+    switch (settings_option(settings_row)) {
     case SET_SFX:
         audio_set_enabled(!audio_enabled());
         if (audio_enabled()) sfx("on");
@@ -2216,7 +2256,7 @@ static void settings_change(int dir) {
     }
     case SET_LANG: toggle_lang(); break;
     case SET_BRIGHT:
-        if (dir == 0) brightness = brightness >= 100 ? 40 : brightness + 10; /* ✕ dá a volta */
+        if (dir == 0) brightness = brightness >= 100 ? 40 : brightness + 10;
         else brightness += dir * 10;
         if (brightness > 100) brightness = 100;
         if (brightness < 40) brightness = 40;
@@ -2225,76 +2265,85 @@ static void settings_change(int dir) {
     }
     settings_save();
 }
-
 static void draw_settings(void) {
     if (!settings_open) return;
     double e = now_s - settings_t0;
-    float k = e >= .16 ? 1 : ((int)(e / .04) + 1) / 4.f; /* entra em 4 passos, como o wr-pop */
+    float k = e >= .16 ? 1 : ((int)(e / .04) + 1) / 4.f;
     vita2d_draw_rectangle(0, 0, SCR_W, SCR_H, RGBA8(0, 0, 0, (int)(0xD0 * k)));
-    float w = 600, rh = 60, h = 96 + SET_COUNT * rh + 100, x = (SCR_W - w) / 2, y = (SCR_H - h) / 2 + 16 * (1 - k);
-    halo_draw(x - 28, y - 28, w + 56, h + 56, 1, k);
+    float x, y, w, h, rh;
+    settings_geometry(&x, &y, &w, &h, &rh);
+    y += 12 * (1 - k);
+    halo_draw(x - 24, y - 24, w + 48, h + 48, 1, k);
     vita2d_draw_rectangle(x, y, w, h, col_alpha(C_PANEL, k));
     frame_rect(x, y, w, h, 4, col_alpha(C_WHITE, k));
+
+    int category = settings_page == SETTINGS_AUDIO ? S_SET_CAT_AUDIO :
+                   settings_page == SETTINGS_VISUAL ? S_SET_CAT_VISUAL : S_SET_CAT_GENERAL;
+    const char *heading = settings_page == SETTINGS_ROOT ? TXT(S_SETTINGS) : TXT(category);
     char t[64];
-    snprintf(t, sizeof(t), "%s", TXT(S_SETTINGS));
+    snprintf(t, sizeof(t), "%s", heading);
     upper_latin1(t);
-    icon8(ICON_GEAR, x + 32, y + 28, 3, col_alpha(C_WHITE, k));
-    title_draw_shadow(t, x + 72, y + 32, 2, col_alpha(C_WHITE, k), col_alpha(C_SHADOW, k));
+    icon8(ICON_GEAR, x + 24, y + 26, 3, col_alpha(C_WHITE, k));
+    title_draw_shadow(t, x + 68, y + 32, 2, col_alpha(C_WHITE, k), col_alpha(C_SHADOW, k));
     const char *ver = "Wolff's Store v" WS_VERSION;
-    body_draw(ver, x + w - 28 - body_width(ver), y + 34, col_alpha(C_SOFT, k));
-    vita2d_draw_rectangle(x + 24, y + 72, w - 48, 4, col_alpha(C_LINE, k));
-    for (int r = 0; r < SET_COUNT; r++) {
-        float ry = y + 92 + r * rh, rx = x + 24, rw = w - 48;
-        int f = r == settings_row;
-        if (f) vita2d_draw_rectangle(rx, ry, rw, rh - 8, col_alpha(C_WHITE, k));
-        unsigned tc = col_alpha(f ? C_DARK : C_WHITE, k);
-        static const int lab[SET_COUNT] = {S_SET_SFX, S_SET_MUSIC, S_SET_OST, S_SET_LANG, S_SET_BRIGHT};
-        body_draw_bold(TXT(lab[r]), rx + 20, ry + 13, tc);
-        /* valor à direita: ◀ valor ▶ */
-        float vx = rx + rw - 20;
-        for (int i = 0; i < 4; i++) vita2d_draw_rectangle(vx - 12 + i * 3, ry + 18 + i * 2, 3, 16 - i * 4, tc); /* ▶ */
-        vx -= 24;
-        if (r == SET_BRIGHT) {
+    body_draw(ver, x + w - 24 - body_width(ver), y + 34, col_alpha(C_SOFT, k));
+    vita2d_draw_rectangle(x + 24, y + 74, w - 48, 4, col_alpha(C_LINE, k));
+    const int rows = settings_rows();
+    static const int groups[3] = {S_SET_CAT_AUDIO, S_SET_CAT_VISUAL, S_SET_CAT_GENERAL};
+    static const int options[SET_COUNT] = {S_SET_SFX, S_SET_MUSIC, S_SET_OST, S_SET_LANG, S_SET_BRIGHT};
+    static const char *tracks[] = {"", "Original", "Morning Pixels", "Afternoon Arcade", "Night Shift"};
+
+    for (int r = 0; r < rows; ++r) {
+        float ry = y + 90 + r * rh, rx = x + 24, rw = w - 48;
+        int focus_row = r == settings_row;
+        if (focus_row) vita2d_draw_rectangle(rx, ry, rw, rh - 7, col_alpha(C_WHITE, k));
+        unsigned tc = col_alpha(focus_row ? C_DARK : C_WHITE, k);
+        int option = settings_option(r);
+        const char *label = option < 0 ? TXT(groups[r]) : TXT(options[option]);
+        body_draw_bold(label, rx + 18, ry + 15, tc);
+
+        float vx = rx + rw - 19;
+        /* Tiny pixel arrows stay consistent with the Store interface. */
+        for (int i = 0; i < 4; ++i)
+            vita2d_draw_rectangle(vx - 12 + i * 3, ry + 18 + i * 2, 3, 16 - i * 4, tc);
+        if (settings_page == SETTINGS_ROOT) continue; /* submenu ▶, not switch */
+        vx -= 22;
+        if (option == SET_BRIGHT) {
             char pct[8];
             snprintf(pct, sizeof(pct), "%d%%", brightness);
             float pw = title_width(pct, 2);
             title_draw(pct, vx - pw, ry + 18, 2, tc);
             vx -= pw + 16;
-            for (int s = 6; s >= 0; s--) { /* 7 blocos: 40..100 */
+            for (int step = 6; step >= 0; --step) {
                 vx -= 12;
-                vita2d_draw_rectangle(vx, ry + 18, 8, 16, (40 + s * 10) <= brightness ? tc : col_alpha(f ? C_SOFT : C_LINE, k));
+                vita2d_draw_rectangle(vx, ry + 18, 8, 16,
+                    (40 + step * 10) <= brightness ? tc : col_alpha(focus_row ? C_SOFT : C_LINE, k));
             }
         } else {
-            static const char *tracks[] = {
-                "", "Original", "Morning Pixels", "Afternoon Arcade", "Night Shift"};
-            const char *v = r == SET_SFX ? TXT(audio_enabled() ? S_ON : S_OFF)
-                          : r == SET_MUSIC ? TXT(audio_music() ? S_ON : S_OFF)
-                          : r == SET_OST ? (audio_ost_mode() == 0 ? TXT(S_AUTO_OST)
-                                        : tracks[audio_ost_mode()])
-                          : (lang == LANG_EN ? "English" : "Portugu\xeas (BR)");
+            const char *value = option == SET_SFX ? TXT(audio_enabled() ? S_ON : S_OFF) :
+                                option == SET_MUSIC ? TXT(audio_music() ? S_ON : S_OFF) :
+                                option == SET_OST ? (audio_ost_mode() == 0 ? TXT(S_AUTO_OST) : tracks[audio_ost_mode()]) :
+                                (lang == LANG_EN ? "English" : "Portugu\xeas (BR)");
             char up[48];
-            snprintf(up, sizeof(up), "%s", v);
+            snprintf(up, sizeof(up), "%s", value);
             upper_latin1(up);
             float vw = title_width(up, 2);
             title_draw(up, vx - vw, ry + 18, 2, tc);
             vx -= vw;
         }
-        vx -= 28;
-        for (int i = 0; i < 4; i++) vita2d_draw_rectangle(vx + 9 - i * 3, ry + 18 + i * 2, 3, 16 - i * 4, tc); /* ◀ */
+        vx -= 26;
+        for (int i = 0; i < 4; ++i)
+            vita2d_draw_rectangle(vx + 9 - i * 3, ry + 18 + i * 2, 3, 16 - i * 4, tc);
     }
-    float fy = y + 92 + SET_COUNT * rh + 8;
+    float fy = y + 98 + rows * rh;
     vita2d_draw_rectangle(x + 24, fy, w - 48, 4, col_alpha(C_LINE, k));
-    const char *hint = TXT(S_SET_HINT);
-    body_draw(hint, x + 32, fy + 16, col_alpha(C_SOFT, k));
-    float cx = x + 32 + body_width(hint) + 24;
-    btn_icon(1, cx, fy + 21);
-    body_draw(TXT(S_H_CLOSE), cx + 22, fy + 16, col_alpha(C_SOFT, k));
-    char *lines[2];
-    static char buf[256];
-    int n = wrap_body(TXT(S_SET_KEYS), (int)w - 64, lines, 2, buf, sizeof(buf));
-    for (int i = 0; i < n; i++) body_draw(lines[i], x + 32, fy + 44 + i * 22, col_alpha(C_MUTED, k));
+    const char *hint = settings_page == SETTINGS_ROOT ?
+                        (lang == LANG_PT ? "X abre submenu" : "X opens submenu") : TXT(S_SET_HINT);
+    body_draw(hint, x + 32, fy + 18, col_alpha(C_SOFT, k));
+    float cx = x + w - 126;
+    btn_icon(1, cx, fy + 24);
+    body_draw(TXT(S_H_BACK), cx + 22, fy + 18, col_alpha(C_SOFT, k));
 }
-
 
 /* ---------------------------------------------------------------- menu de áudio (como o do site) */
 
@@ -3351,11 +3400,12 @@ int main(void) {
             if (pad.ly < 40 && !(prev_ly < 40)) dir = 0;
             if (pad.ly > 216 && !(prev_ly > 216)) dir = 1;
             if (dir == 0 && settings_row > 0) { settings_row--; sfx("hover"); }
-            if (dir == 1 && settings_row < SET_COUNT - 1) { settings_row++; sfx("hover"); }
+            if (dir == 1 && settings_row < settings_rows() - 1) { settings_row++; sfx("hover"); }
             if (down & SCE_CTRL_LEFT) settings_change(-1);
             if (down & SCE_CTRL_RIGHT) settings_change(1);
             if (down & SCE_CTRL_CROSS) settings_change(0);
-            if (down & (SCE_CTRL_CIRCLE | SCE_CTRL_START)) close_settings();
+            if (down & SCE_CTRL_CIRCLE) settings_back();
+            if (down & SCE_CTRL_START) close_settings();
         } else if (upd_job >= 0 && job_by_id(upd_job) && job_by_id(upd_job)->state < J_DONE) {
             /* atualização do app na tela: ○ deixa para depois */
             if (down & SCE_CTRL_CIRCLE) {
@@ -3470,12 +3520,13 @@ int main(void) {
                     }
                 } else if (ime_open) {
                 } else if (settings_open) {
-                    float w = 600, rh = 60, h = 96 + SET_COUNT * rh + 100, x = (SCR_W - w) / 2, y = (SCR_H - h) / 2;
-                    int row = (int)((t_y0 - (y + 92)) / rh);
-                    if (t_x0 < x || t_x0 > x + w || t_y0 < y || t_y0 > y + h) close_settings();
-                    else if (t_y0 >= y + 92 && row >= 0 && row < SET_COUNT) {
+                    float x, y, w, h, rh;
+                    settings_geometry(&x, &y, &w, &h, &rh);
+                    int row = (int)((t_y0 - (y + 90)) / rh);
+                    if (t_x0 < x || t_x0 > x + w || t_y0 < y || t_y0 > y + h) settings_back();
+                    else if (t_y0 >= y + 90 && row >= 0 && row < settings_rows()) {
                         settings_row = row;
-                        settings_change(t_x0 < x + w / 2 ? -1 : 1);
+                        settings_change(settings_page == SETTINGS_ROOT ? 0 : (t_x0 < x + w / 2 ? -1 : 1));
                     }
                 } else if (viewer >= 0) back();
                 else {

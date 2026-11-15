@@ -127,7 +127,7 @@ evitando execução durante AFK na tela de abertura.
 
 1. Suba `WS_FILE_VERSION`/`WS_SFO_VERSION` no `CMakeLists.txt`.
 2. Crie e envie a tag correspondente, no formato `v0.8`, `v0.9`… ou `v1.0`:
-   `git tag v0.99.5 && git push origin v0.99.5`
+   `git tag v0.99.6 && git push origin v0.99.6`
 3. O workflow publica a release em `WolffsRoom/WolffsStore` com o asset fixo `WolffsStore.vpk`.
    A URL permanente da versão mais recente é
    `https://github.com/WolffsRoom/WolffsStore/releases/latest/download/WolffsStore.vpk`.
@@ -164,3 +164,20 @@ prioridade valida, MP4s otimizados v2 e logs de codec/primeiros frames.
 
 Empacotamento v0.99.5: as tres faixas sao adicionadas ao VPK apenas
 pela lista ws_files, evitando duplicacao no vita-create-vpk de Linux CI.
+
+
+### v0.99.6 — menu de configuracoes compacto, video com diagnostico
+
+A tela de Configuracoes agora possui as categorias Audio, Visual e Geral.
+A raiz tem apenas tres linhas e cada submenu abre ate tres ajustes; o botao
+O volta um nivel e START encerra Configuracoes. O ajuste OST continua gravado.
+
+Video: tres metodos de tentativa (native GXM; callback GXM; callback
+CDRAM/CPU), audio PCM independente e timeout com troca automatica
+de decoder sem quadros. A mensagem mostra os erros em hexadecimal,
+e video_diagnostic.txt fica diretamente em ux0:data/WolffsStore para
+possibilitar coleta mesmo quando a pasta logs/ nao for copiada.
+
+A limpeza do updater segue desativada na sessao ativa; isso evita o
+retorno observado a LiveArea. Remocao off-session requer confirmacao
+no Vita fisico para nao reintroduzir o problema.
