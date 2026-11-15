@@ -77,7 +77,7 @@ cat	ports
 group	0
 date	2026-11-13
 pixel	1
-video_arquivo	https://wolffsroom.github.io/WolffsRoomSite/posts/pizza/trailer.mp4
+video_arquivo	https://wolffsroom.github.io/WolffsRoomSite/posts/pizza/trailer-vita-v2.mp4
 title.pt	Pizza Tower - SAGE 2019 Demo
 tag.pt	Port · PS Vita
 status.pt	Em andamento
@@ -212,7 +212,7 @@ group	0
 date	2026-11-10
 pixel	1
 trofeus	1
-video_arquivo	https://wolffsroom.github.io/WolffsRoomSite/posts/delta/trailer.mp4
+video_arquivo	https://wolffsroom.github.io/WolffsRoomSite/posts/delta/trailer-vita-v2.mp4
 progress	81
 title.pt	DeltaruneVita
 tag.pt	Port · C

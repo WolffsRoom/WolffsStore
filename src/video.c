@@ -1,14 +1,14 @@
 /*
- * Reprodutor de vídeo com o sceAvPlayer do sistema.
- * Os quadros vêm em NV12 (YUV420 em 2 planos); o GXM converte para RGB direto no
- * sampler (formato YVU420P2_CSC1), então o quadro é desenhado como uma textura vita2d.
- * O áudio sai numa porta própria (tipo MAIN), em uma thread.
+ * Cached MP4 playback through the PS Vita hardware decoder (SceAvPlayer).
+ *
+ * Mirrors the proven local-file path used by VitaDB Downloader: native file
+ * I/O first, five physically contiguous video buffers and GXM NV12 sampling.
+ * The network download finishes before the decoder opens the local file.
  */
 #include "video.h"
 #include "fsutil.h"
 #include "net.h"
 
-#include <psp2/audioout.h>
 #include <psp2/avplayer.h>
 #include <psp2/gxm.h>
 #include <psp2/io/fcntl.h>
@@ -16,23 +16,25 @@
 #include <psp2/kernel/sysmem.h>
 #include <psp2/kernel/threadmgr.h>
 #include <psp2/sysmodule.h>
+#include <malloc.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <malloc.h>
 #include <string.h>
 #include <vita2d.h>
 
 #define VID_DIR WS_CACHE "/video"
+#define VIDEO_BUFFERS 5
+#define FRAME_ALIGN (1024 * 1024)
+#define VID_DOWNLOAD_READY (VID_LOADING + 100)
 
 static volatile int state = VID_OFF;
 static char err[160];
 static char path[256], url_[512];
 static NetProgress pr;
-static SceUID dl_thread = -1, audio_thread = -1;
+static SceUID dl_thread = -1;
 static SceAvPlayerHandle player;
-static volatile int audio_run;
-static vita2d_texture *frame_tex;
-static int frame_w, frame_h;
+static vita2d_texture *frames[VIDEO_BUFFERS]; /* GXM descriptor only, not owned frame data */
+static int frame_slot, frame_w, frame_h, have_frame, ended;
 static SceUID video_fd = -1;
 static uint64_t video_size;
 
@@ -42,13 +44,11 @@ static unsigned url_hash(const char *s) {
     return h;
 }
 
-/* ------------------------------------------------------------------ memória dos quadros (GPU) */
-
-#define PHYCONT_ALIGN (1024 * 1024)
-
+/* AvPlayer allocates decoder textures in contiguous physical RAM. */
 static void *mem_alloc(void *arg, uint32_t align, uint32_t size) {
     (void)arg;
-    return memalign(align < 16 ? 16 : align, size);
+    if (align < 16) align = 16;
+    return memalign(align, size);
 }
 static void mem_free(void *arg, void *p) {
     (void)arg;
@@ -57,41 +57,56 @@ static void mem_free(void *arg, void *p) {
 
 static void *gpu_alloc(void *arg, uint32_t align, uint32_t size) {
     (void)arg;
-    (void)align;
-    size = (size + PHYCONT_ALIGN - 1) & ~(PHYCONT_ALIGN - 1);
+    uint32_t a = align > FRAME_ALIGN ? align : FRAME_ALIGN;
+    size = (size + a - 1) & ~(a - 1);
     SceUID uid = sceKernelAllocMemBlock("ws_video", SCE_KERNEL_MEMBLOCK_TYPE_USER_MAIN_PHYCONT_NC_RW, size, NULL);
-    if (uid < 0) return NULL;
+    if (uid < 0) {
+        ws_log("video: GPU memblock allocation failed 0x%08X (%u bytes)", uid, size);
+        return NULL;
+    }
     void *p = NULL;
-    if (sceKernelGetMemBlockBase(uid, &p) < 0 || !p) {
+    int r = sceKernelGetMemBlockBase(uid, &p);
+    if (r < 0 || !p) {
+        ws_log("video: GPU memblock base failed 0x%08X", r);
         sceKernelFreeMemBlock(uid);
         return NULL;
     }
-    if (sceGxmMapMemory(p, size, SCE_GXM_MEMORY_ATTRIB_READ | SCE_GXM_MEMORY_ATTRIB_WRITE) < 0) {
+    r = sceGxmMapMemory(p, size, SCE_GXM_MEMORY_ATTRIB_READ | SCE_GXM_MEMORY_ATTRIB_WRITE);
+    if (r < 0) {
+        ws_log("video: GXM map failed 0x%08X", r);
         sceKernelFreeMemBlock(uid);
         return NULL;
     }
     return p;
 }
-
 static void gpu_free(void *arg, void *p) {
     (void)arg;
     if (!p) return;
-    SceUID uid = sceKernelFindMemBlockByAddr(p, 0);
+    /* The last frame may still be consumed by a GXM draw call. */
     vita2d_wait_rendering_done();
+    SceUID uid = sceKernelFindMemBlockByAddr(p, 0);
     sceGxmUnmapMemory(p);
     if (uid >= 0) sceKernelFreeMemBlock(uid);
 }
 
-/* O leitor próprio é o caminho usado pelo VitaShell/FMVita para arquivos em ux0:. */
+/* Fallback only: some firmware variants require an explicit ux0 file reader. */
 static int file_open(void *arg, const char *filename) {
     (void)arg;
     video_fd = sceIoOpen(filename, SCE_O_RDONLY, 0);
-    if (video_fd < 0) return -1;
-    video_size = sceIoLseek(video_fd, 0, SCE_SEEK_END);
+    if (video_fd < 0) {
+        ws_log("video: callback open failed 0x%08X: %s", video_fd, filename);
+        return -1;
+    }
+    SceOff size = sceIoLseek(video_fd, 0, SCE_SEEK_END);
+    if (size < 0) {
+        sceIoClose(video_fd);
+        video_fd = -1;
+        return -1;
+    }
+    video_size = (uint64_t)size;
     sceIoLseek(video_fd, 0, SCE_SEEK_SET);
     return 0;
 }
-
 static int file_close(void *arg) {
     (void)arg;
     if (video_fd >= 0) sceIoClose(video_fd);
@@ -99,86 +114,60 @@ static int file_close(void *arg) {
     video_size = 0;
     return 0;
 }
-
-static int file_read(void *arg, uint8_t *buffer, uint64_t position, uint32_t length) {
+static int file_read(void *arg, uint8_t *buffer, uint64_t pos, uint32_t length) {
     (void)arg;
-    if (video_fd < 0 || sceIoLseek(video_fd, position, SCE_SEEK_SET) < 0) return -1;
+    if (video_fd < 0 || pos > 0x7FFFFFFF) return -1;
+    if (sceIoLseek(video_fd, (SceOff)pos, SCE_SEEK_SET) < 0) return -1;
     return sceIoRead(video_fd, buffer, length);
 }
-
 static uint64_t file_size(void *arg) {
     (void)arg;
     return video_size;
 }
 
-/* ------------------------------------------------------------------ áudio */
+static int open_decoder(int custom_reader) {
+    SceAvPlayerInitData init;
+    memset(&init, 0, sizeof(init));
+    init.memoryReplacement.allocate = mem_alloc;
+    init.memoryReplacement.deallocate = mem_free;
+    init.memoryReplacement.allocateTexture = gpu_alloc;
+    init.memoryReplacement.deallocateTexture = gpu_free;
+    init.basePriority = 0xA0; /* Valid AvPlayer priority (cf. VitaDB), NOT 0x10000100. */
+    init.numOutputVideoFrameBuffers = VIDEO_BUFFERS;
+    init.autoStart = SCE_TRUE;
 
-static int audio_main(SceSize args, void *argp) {
-    (void)args;
-    (void)argp;
-    int port = -1, grain = 0, rate = 0, ch = 0;
-    while (audio_run) {
-        SceAvPlayerFrameInfo fi;
-        memset(&fi, 0, sizeof(fi));
-        if (state == VID_PLAYING && player > 0 && sceAvPlayerGetAudioData(player, &fi) && fi.pData) {
-            int r = fi.details.audio.sampleRate, c = fi.details.audio.channelCount;
-            int g = (int)(fi.details.audio.size / (c > 0 ? c * 2 : 4));
-            if (port < 0 || r != rate || c != ch || g != grain) {
-                if (port >= 0) sceAudioOutReleasePort(port);
-                rate = r;
-                ch = c;
-                grain = g;
-                port = sceAudioOutOpenPort(SCE_AUDIO_OUT_PORT_TYPE_MAIN, grain, rate,
-                                           ch == 1 ? SCE_AUDIO_OUT_MODE_MONO : SCE_AUDIO_OUT_MODE_STEREO);
-            }
-            if (port >= 0) sceAudioOutOutput(port, fi.pData);
-        } else {
-            sceKernelDelayThread(2000);
-        }
+    if (custom_reader) {
+        init.fileReplacement.open = file_open;
+        init.fileReplacement.close = file_close;
+        init.fileReplacement.readOffset = file_read;
+        init.fileReplacement.size = file_size;
     }
-    if (port >= 0) sceAudioOutReleasePort(port);
-    return sceKernelExitDeleteThread(0);
+    SceAvPlayerHandle candidate = sceAvPlayerInit(&init);
+    if (candidate <= 0) {
+        ws_log("video: %s AvPlayerInit failed 0x%08X", custom_reader ? "custom" : "native", candidate);
+        return 0;
+    }
+    int r = sceAvPlayerAddSource(candidate, path);
+    ws_log("video: %s AddSource = 0x%08X (%s)", custom_reader ? "custom" : "native", r, path);
+    if (r < 0) {
+        sceAvPlayerClose(candidate);
+        file_close(NULL);
+        return 0;
+    }
+    player = candidate;
+    return 1;
 }
 
-/* ------------------------------------------------------------------ início / fim */
-
 static void start_player(void) {
-    SceAvPlayerInitData in;
-    memset(&in, 0, sizeof(in));
-    in.memoryReplacement.allocate = mem_alloc;
-    in.memoryReplacement.deallocate = mem_free;
-    in.memoryReplacement.allocateTexture = gpu_alloc;
-    in.memoryReplacement.deallocateTexture = gpu_free;
-    in.fileReplacement.open = file_open;
-    in.fileReplacement.close = file_close;
-    in.fileReplacement.readOffset = file_read;
-    in.fileReplacement.size = file_size;
-    in.basePriority = 0x10000100;
-    in.numOutputVideoFrameBuffers = 5;
-    in.autoStart = SCE_TRUE;
-    player = sceAvPlayerInit(&in);
-    int add = player > 0 ? sceAvPlayerAddSource(player, path) : (int)player;
-    ws_log("video: callback init/add 0x%08X/0x%08X", (int)player, add);
-    if (player > 0 && add < 0) {
-        sceAvPlayerClose(player);
-        file_close(NULL);
-        memset(&in.fileReplacement, 0, sizeof(in.fileReplacement));
-        player = sceAvPlayerInit(&in);
-        add = player > 0 ? sceAvPlayerAddSource(player, path) : (int)player;
-        ws_log("video: native init/add 0x%08X/0x%08X", (int)player, add);
-    }
-    if (player <= 0 || add < 0) {
-        if (player > 0) sceAvPlayerClose(player);
-        file_close(NULL);
+    ended = have_frame = frame_slot = frame_w = frame_h = 0;
+    /* VitaDB's local player uses native file access. Try it before callbacks. */
+    if (!open_decoder(0) && !open_decoder(1)) {
         player = 0;
-        snprintf(err, sizeof(err), "O Vita não conseguiu abrir o vídeo (use MP4 H.264 + AAC, até 960x544).");
-        ws_log("video: init/add 0x%08X, path=%s, url=%s", add, path, url_);
+        snprintf(err, sizeof(err), "Falha no AvPlayer. MP4 H.264 Baseline + AAC recomendado. Veja o log.");
+        ws_log("video: failed both decoder paths, source=%s, file=%s", url_, path);
         state = VID_ERROR;
         return;
     }
-    audio_run = 1;
-    audio_thread = sceKernelCreateThread("ws_vid_audio", audio_main, 0x10000100, 0x4000, 0, 0, NULL);
-    if (audio_thread >= 0) sceKernelStartThread(audio_thread, 0, NULL);
     state = VID_PLAYING;
 }
 
@@ -193,43 +182,72 @@ static int dl_main(SceSize args, void *argp) {
     } else if (r != NET_OK) {
         snprintf(err, sizeof(err), "%s", net_error());
         sceIoRemove(part);
-        ws_log("video: %s (%s)", err, url_);
+        ws_log("video: download failed: %s (%s)", err, url_);
         state = VID_ERROR;
     } else {
         sceIoRemove(path);
-        sceIoRename(part, path);
-        state = VID_LOADING + 100; /* pronto para tocar: a thread principal inicia o player */
+        int renamed = sceIoRename(part, path);
+        if (renamed < 0) {
+            snprintf(err, sizeof(err), "Nao foi possivel salvar o video no cache (0x%08X).", renamed);
+            ws_log("video: rename failed 0x%08X (%s)", renamed, path);
+            sceIoRemove(part);
+            state = VID_ERROR;
+        } else {
+            state = VID_DOWNLOAD_READY;
+        }
     }
-    dl_thread = -1;
     return sceKernelExitDeleteThread(0);
+}
+
+static void start_download(void) {
+    state = VID_LOADING;
+    dl_thread = sceKernelCreateThread("ws_vid_dl", dl_main, 0x10000100, 0x10000, 0, 0, NULL);
+    if (dl_thread < 0) {
+        snprintf(err, sizeof(err), "Falha ao criar thread de download (0x%08X).", dl_thread);
+        ws_log("video: %s", err);
+        state = VID_ERROR;
+    } else {
+        int r = sceKernelStartThread(dl_thread, 0, NULL);
+        if (r < 0) {
+            snprintf(err, sizeof(err), "Falha ao iniciar download (0x%08X).", r);
+            ws_log("video: %s", err);
+            sceKernelDeleteThread(dl_thread);
+            dl_thread = -1;
+            state = VID_ERROR;
+        }
+    }
 }
 
 void video_open(const char *url, const char *slug) {
     if (state != VID_OFF) video_close();
-    static int mod;
-    if (!mod) mod = sceSysmoduleLoadModule(SCE_SYSMODULE_AVPLAYER) >= 0 ? 1 : -1;
     err[0] = 0;
     memset(&pr, 0, sizeof(pr));
     fs_mkdir_p(VID_DIR);
-    snprintf(url_, sizeof(url_), "%s", url);
-    snprintf(path, sizeof(path), VID_DIR "/%s-%08X.mp4", slug, url_hash(url_));
-    if (mod < 0) {
-        snprintf(err, sizeof(err), "Módulo de vídeo do sistema indisponível.");
-        ws_log("video: %s (%s)", err, url_);
+    snprintf(url_, sizeof(url_), "%s", url ? url : "");
+    snprintf(path, sizeof(path), VID_DIR "/%s-%08X.mp4", slug ? slug : "post", url_hash(url_));
+    if (!url_[0]) {
+        snprintf(err, sizeof(err), "Video sem URL.");
         state = VID_ERROR;
         return;
     }
-    if (fs_exists(path)) { /* já no cache */
+
+    /* IsLoaded == 0 means success; loading an already loaded module can fail. */
+    if (sceSysmoduleIsLoaded(SCE_SYSMODULE_AVPLAYER) < 0) {
+        int r = sceSysmoduleLoadModule(SCE_SYSMODULE_AVPLAYER);
+        if (r < 0) ws_log("video: sysmodule load 0x%08X; attempting playback anyway", r);
+    }
+
+    SceIoStat st;
+    if (sceIoGetstat(path, &st) >= 0 && st.st_size > 0) {
+        ws_log("video: using cache %s (%llu bytes)", path, (unsigned long long)st.st_size);
         start_player();
-        return;
+        if (state != VID_ERROR) return;
+        /* A partially written old cache must not permanently block playback. */
+        ws_log("video: invalid cache, downloading a fresh copy");
+        sceIoRemove(path);
+        err[0] = 0;
     }
-    state = VID_LOADING;
-    dl_thread = sceKernelCreateThread("ws_vid_dl", dl_main, 0x10000100, 0x10000, 0, 0, NULL);
-    if (dl_thread < 0 || sceKernelStartThread(dl_thread, 0, NULL) < 0) {
-        snprintf(err, sizeof(err), "Não deu para iniciar o download do vídeo.");
-        ws_log("video: %s (%s)", err, url_);
-        state = VID_ERROR;
-    }
+    start_download();
 }
 
 void video_close(void) {
@@ -239,26 +257,25 @@ void video_close(void) {
         sceKernelWaitThreadEnd(dl_thread, NULL, NULL);
         dl_thread = -1;
     }
-    audio_run = 0;
-    if (audio_thread >= 0) {
-        sceKernelWaitThreadEnd(audio_thread, NULL, NULL);
-        audio_thread = -1;
-    }
     if (player > 0) {
+        /* Flush GXM BEFORE the decoder is allowed to release frame memory. */
+        vita2d_wait_rendering_done();
         sceAvPlayerStop(player);
-        vita2d_wait_rendering_done(); /* a GPU pode estar lendo o último quadro */
         sceAvPlayerClose(player);
         player = 0;
     }
     file_close(NULL);
-    if (frame_tex) {
-        vita2d_free_texture(frame_tex);
-        frame_tex = NULL;
+    vita2d_wait_rendering_done();
+    for (int i = 0; i < VIDEO_BUFFERS; i++) {
+        /* These wrappers only alias AvPlayer-owned decoder memory. */
+        free(frames[i]);
+        frames[i] = NULL;
     }
+    have_frame = frame_w = frame_h = frame_slot = ended = 0;
     state = VID_OFF;
 }
 
-int video_state(void) { return state > VID_ERROR ? VID_LOADING : state; }
+int video_state(void) { return state == VID_DOWNLOAD_READY ? VID_LOADING : state; }
 float video_load_progress(void) { return pr.total > 0 ? (float)pr.done / (float)pr.total : 0; }
 const char *video_error(void) { return err; }
 unsigned long long video_time_ms(void) { return player > 0 ? sceAvPlayerCurrentTime(player) : 0; }
@@ -266,11 +283,18 @@ unsigned long long video_time_ms(void) { return player > 0 ? sceAvPlayerCurrentT
 void video_toggle_pause(void) {
     if (player <= 0) return;
     if (state == VID_PLAYING) {
-        sceAvPlayerPause(player);
-        state = VID_PAUSED;
+        int r = sceAvPlayerPause(player);
+        if (r >= 0) state = VID_PAUSED;
+        else ws_log("video: pause failed 0x%08X", r);
     } else if (state == VID_PAUSED) {
-        sceAvPlayerResume(player);
-        state = VID_PLAYING;
+        if (ended) {
+            int r = sceAvPlayerJumpToTime(player, 0);
+            ws_log("video: replay jump 0x%08X", r);
+            ended = 0;
+        }
+        int r = sceAvPlayerResume(player);
+        if (r >= 0) state = VID_PLAYING;
+        else ws_log("video: resume failed 0x%08X", r);
     }
 }
 
@@ -278,40 +302,59 @@ void video_seek(int seconds) {
     if (player <= 0) return;
     long long t = (long long)sceAvPlayerCurrentTime(player) + seconds * 1000LL;
     if (t < 0) t = 0;
-    sceAvPlayerJumpToTime(player, (uint64_t)t);
+    int r = sceAvPlayerJumpToTime(player, (uint64_t)t);
+    if (r < 0) ws_log("video: seek %d s failed 0x%08X", seconds, r);
 }
 
 void video_draw(void) {
-    if (state == VID_LOADING + 100) start_player(); /* download terminou */
+    if (state == VID_DOWNLOAD_READY) {
+        if (dl_thread >= 0) {
+            sceKernelWaitThreadEnd(dl_thread, NULL, NULL);
+            dl_thread = -1;
+        }
+        start_player();
+    }
     if (player <= 0) return;
-    if (state == VID_PLAYING && !sceAvPlayerIsActive(player)) { /* acabou: volta para o início, pausado */
-        sceAvPlayerJumpToTime(player, 0);
+
+    if (state == VID_PLAYING && have_frame && !sceAvPlayerIsActive(player)) {
+        /* Do not seek every frame: AvPlayer may have reached EOF. */
+        ended = 1;
+        state = VID_PAUSED;
     }
-    SceAvPlayerFrameInfo fi;
-    memset(&fi, 0, sizeof(fi));
-    if (sceAvPlayerGetVideoData(player, &fi) && fi.pData) {
-        int w = (int)fi.details.video.width, h = (int)fi.details.video.height;
-        if (!frame_tex || w != frame_w || h != frame_h) {
-            if (frame_tex) {
-                vita2d_wait_rendering_done();
-                vita2d_free_texture(frame_tex);
+    if (state == VID_PLAYING) {
+        SceAvPlayerFrameInfo fi;
+        memset(&fi, 0, sizeof(fi));
+        if (sceAvPlayerGetVideoData(player, &fi) && fi.pData) {
+            int w = (int)fi.details.video.width, h = (int)fi.details.video.height;
+            if (w <= 0 || h <= 0 || w > 1920 || h > 1088) {
+                ws_log("video: invalid frame size %dx%d", w, h);
+            } else {
+                int next = (frame_slot + 1) % VIDEO_BUFFERS;
+                if (!frames[next]) frames[next] = calloc(1, sizeof(*frames[next]));
+                if (frames[next]) {
+                    /* Never copy NV12 to CPU RAM; GXM converts it on sampling. */
+                    int r = sceGxmTextureInitLinear(&frames[next]->gxm_tex, fi.pData,
+                                                    SCE_GXM_TEXTURE_FORMAT_YVU420P2_CSC1,
+                                                    w, h, 0);
+                    if (r >= 0) {
+                        sceGxmTextureSetMinFilter(&frames[next]->gxm_tex, SCE_GXM_TEXTURE_FILTER_LINEAR);
+                        sceGxmTextureSetMagFilter(&frames[next]->gxm_tex, SCE_GXM_TEXTURE_FILTER_LINEAR);
+                        frame_slot = next;
+                        frame_w = w;
+                        frame_h = h;
+                        if (!have_frame) ws_log("video: first frame %dx%d", w, h);
+                        have_frame = 1;
+                    } else {
+                        ws_log("video: GXM texture init failed 0x%08X", r);
+                    }
+                }
             }
-            frame_tex = vita2d_create_empty_texture_format(16, 16, SCE_GXM_TEXTURE_FORMAT_A8B8G8R8);
-            frame_w = w;
-            frame_h = h;
-        }
-        if (frame_tex) {
-            /* aponta a textura para o quadro decodificado (NV12, convertido pelo sampler) */
-            vita2d_wait_rendering_done();
-            sceGxmTextureInitLinear(&frame_tex->gxm_tex, fi.pData, SCE_GXM_TEXTURE_FORMAT_YVU420P2_CSC1, w, h, 0);
-            sceGxmTextureSetMinFilter(&frame_tex->gxm_tex, SCE_GXM_TEXTURE_FILTER_LINEAR);
-            sceGxmTextureSetMagFilter(&frame_tex->gxm_tex, SCE_GXM_TEXTURE_FILTER_LINEAR);
         }
     }
-    if (frame_tex && frame_w > 0 && frame_h > 0) {
+    if (have_frame && frames[frame_slot]) {
         float k = 960.f / frame_w;
         if (frame_h * k > 544) k = 544.f / frame_h;
         float dw = frame_w * k, dh = frame_h * k;
-        vita2d_draw_texture_scale(frame_tex, (960 - dw) / 2, (544 - dh) / 2, k, k);
+        vita2d_draw_texture_scale(frames[frame_slot], (960 - dw) / 2, (544 - dh) / 2, k, k);
     }
 }
