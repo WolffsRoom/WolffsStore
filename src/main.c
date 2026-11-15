@@ -29,7 +29,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "0.99.2"
+#define WS_VERSION "0.99.3"
 #endif
 
 /* ================================================================ textos */
