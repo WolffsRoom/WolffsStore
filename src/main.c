@@ -29,7 +29,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "0.99.4"
+#define WS_VERSION "0.99.5"
 #endif
 
 /* ================================================================ textos */
@@ -3014,7 +3014,7 @@ static unsigned jobs_seen_version;
 
 static void tick_store(void) {
     int intro_done = started && now_s - intro_t0 >= T_DONE;
-    /* v0.99.4 diagnostic: NEVER delete WFFS00043 or WOLF00002 while this
+    /* v0.99.5 diagnostic: NEVER delete WFFS00043 or WOLF00002 while this
      * Store process is running. A ScePromoterUtilityDeletePkg on another
      * installed title may cause SceShell to suspend our first session.
      * Preserve pending markers and helper bubbles to isolate the issue.
@@ -3022,7 +3022,7 @@ static void tick_store(void) {
     static int cleanup_suspension_logged = 0;
     if (!cleanup_suspension_logged &&
         (updater_cleanup_pending || legacy_updater_cleanup_pending)) {
-        ws_log("updater: v0.99.4 diagnostic - helper deletion DISABLED while Store runs");
+        ws_log("updater: v0.99.5 diagnostic - helper deletion DISABLED while Store runs");
         cleanup_suspension_logged = 1;
     }
     int st = sync_state();

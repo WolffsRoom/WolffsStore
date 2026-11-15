@@ -15,7 +15,7 @@ set(WS_TITLEID "WFFS00042")
 set(WS_UPDATER_TITLEID "WFFS00043")
 # LiveArea padrão: assets/livearea (icon0 128x128, bg0 840x500, startup 280x158, PNG indexado de 8 bits)
 set(WS_SFO_VERSION "00.99")
-set(WS_FILE_VERSION "0.99.4")
+set(WS_FILE_VERSION "0.99.5")
 set(WS_VPK_NAME "WolffsStore.vpk")
 set(WS_ARTIFACTS_DIR "${CMAKE_SOURCE_DIR}/artifacts/current")
 
@@ -190,9 +190,6 @@ vita_create_vpk(${WS_VPK_NAME} ${WS_TITLEID} eboot.bin
     ${CMAKE_SOURCE_DIR}/assets/livearea_autoupdater/template.xml updater_v2/sce_sys/livearea/contents/template.xml
     ${CMAKE_SOURCE_DIR}/data/tex/paw4.wrt updater_v2/data/tex/paw4.wrt
     ${CMAKE_SOURCE_DIR}/data/tex/font_title.wrt updater_v2/data/tex/font_title.wrt
-    ${CMAKE_SOURCE_DIR}/data/music/morning.pcm data/music/morning.pcm
-    ${CMAKE_SOURCE_DIR}/data/music/afternoon.pcm data/music/afternoon.pcm
-    ${CMAKE_SOURCE_DIR}/data/music/night.pcm data/music/night.pcm
     ${ws_files}
 )
 add_dependencies(${WS_VPK_NAME}-vpk updater_eboot.bin-self ws_updater_sfo ws_legacy_updater_sfo)
