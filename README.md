@@ -127,7 +127,7 @@ evitando execução durante AFK na tela de abertura.
 
 1. Suba `WS_FILE_VERSION`/`WS_SFO_VERSION` no `CMakeLists.txt`.
 2. Crie e envie a tag correspondente, no formato `v0.8`, `v0.9`… ou `v1.0`:
-   `git tag v0.99.2 && git push origin v0.99.2`
+   `git tag v0.99.4 && git push origin v0.99.4`
 3. O workflow publica a release em `WolffsRoom/WolffsStore` com o asset fixo `WolffsStore.vpk`.
    A URL permanente da versão mais recente é
    `https://github.com/WolffsRoom/WolffsStore/releases/latest/download/WolffsStore.vpk`.
@@ -144,3 +144,20 @@ mais nova. Da v0.5 em diante, o app também consulta o GitHub diretamente e não
 - Fontes: Press Start 2P (CodeMan38) e Pixelify Sans (Stefie Justprince), ambas SIL Open Font License 1.1
   (ver `assets/fonts/*OFL*.txt`).
 - Capas e capturas de tela pertencem aos respectivos jogos e projetos.
+
+### v0.99.4 - Background OST e diagnostico de LiveArea
+
+A musica acompanha o horario local do Vita em Automatico: 06-11 Morning
+Pixels; 12-17 Afternoon Arcade; 18-05 Night Shift. Em Configuracoes,
+Background OST alterna Automatico, Original (sintetizador antigo),
+Morning Pixels, Afternoon Arcade e Night Shift. Os .pcm 24 kHz mono 16-bit
+sao transmitidos em loop sem carregar os arquivos inteiros na RAM;
+mudancas de faixa fazem fade-out/fade-in. A preferencia fica em settings.txt.
+
+DIAGNOSTICO: a Store NAO desinstala WFFS00043 nem WOLF00002 enquanto
+estiver executando; os helpers podem permanecer na LiveArea para isolar
+o bug da primeira abertura. Os marcadores de cleanup permanecem intactos.
+No proximo release, a limpeza devera ser feita fora da sessao da Store.
+
+Inclui a correcao de video da v0.99.3: modo nativo do SceAvPlayer,
+prioridade valida, MP4s otimizados v2 e logs de codec/primeiros frames.

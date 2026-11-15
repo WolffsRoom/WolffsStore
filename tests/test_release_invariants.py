@@ -14,9 +14,9 @@ class ReleaseInvariants(unittest.TestCase):
         cls.video = (ROOT / "src/video.c").read_text(encoding="utf-8")
         cls.updater = (ROOT / "updater/main.c").read_text(encoding="utf-8")
 
-    def test_release_is_v0993(self):
+    def test_release_is_v0994(self):
         self.assertIn('set(WS_SFO_VERSION "00.99")', self.cmake)
-        self.assertIn('set(WS_FILE_VERSION "0.99.3")', self.cmake)
+        self.assertIn('set(WS_FILE_VERSION "0.99.4")', self.cmake)
 
     def test_featured_update_suffix_follows_app_title(self):
         hero=self.main[self.main.index("static void build_home("):
@@ -38,13 +38,13 @@ class ReleaseInvariants(unittest.TestCase):
     def test_title_id_migration_keeps_old_bubble_safe(self):
         self.assertIn('set(WS_TITLEID "WFFS00042")', self.cmake)
         self.assertIn('set(WS_UPDATER_TITLEID "WFFS00043")', self.cmake)
-        self.assertIn('set(WS_FILE_VERSION "0.99.3")', self.cmake)
+        self.assertIn('set(WS_FILE_VERSION "0.99.4")', self.cmake)
         self.assertIn('set(WS_SFO_VERSION "00.99")', self.cmake)
-        self.assertIn('#define WS_VERSION "0.99.3"', self.main)
+        self.assertIn('#define WS_VERSION "0.99.4"', self.main)
         self.assertIn('#define MAIN_TITLE "WFFS00042"', self.updater)
         self.assertNotIn('set(WS_TITLEID "WOLF00001")',self.cmake)
         self.assertNotIn('#define MAIN_TITLE "WOLF00001"',self.updater)
-        self.assertIn('inst_delete("WOLF00002")', self.main)
+        self.assertNotIn('inst_delete("WOLF00002")', self.main)
         self.assertNotIn('"psgm:play?titleid=WOLF00002"', self.main)
         self.assertIn('inst_delete("WFFS00043")', self.main)
         self.assertNotIn('inst_delete("WOLF00001")', self.main)
@@ -83,14 +83,13 @@ class ReleaseInvariants(unittest.TestCase):
         self.assertNotIn('inst_delete("WOLF00001")',self.main)
         self.assertIn('f = fopen(LEGACY_MIGRATION_MARKER, "wb")',self.updater)
 
-    def test_legacy_updater_cleanup_is_guarded_by_installed_sfo(self):
+    def test_legacy_updater_ownership_detection_is_retained_without_delete(self):
+        self.assertIn('sfo_get("ux0:app/WOLF00002/sce_sys/param.sfo"',self.main)
+        self.assertIn('strcmp(title, "Wolff\'s Store Updater") == 0',self.main)
         tick=self.main[self.main.index("static void tick_store("):
                        self.main.index("/* ================================================================ main */")]
-        self.assertIn('sfo_get("ux0:app/WOLF00002/sce_sys/param.sfo"',tick)
-        self.assertIn('strcmp(title, "Wolff\'s Store Updater") == 0',tick)
-        self.assertLess(tick.index('strcmp(title, "Wolff\'s Store Updater")'),
-                        tick.index('inst_delete("WOLF00002")'))
-        self.assertIn('if (owned)',tick)
+        self.assertNotIn('inst_delete("WOLF00002")',tick)
+        self.assertNotIn('inst_delete("WFFS00043")',tick)
         self.assertNotIn('inst_delete("WOLF00001")',tick)
 
     def test_legacy_updater_migration_bridge(self):
@@ -241,29 +240,18 @@ class ReleaseInvariants(unittest.TestCase):
             self.assertIn(name,launch)
         self.assertIn('updater: installed bubble missing custom LiveArea files',launch)
 
-    def test_cleanup_happens_on_first_updated_store_session(self):
-        self.assertIn('last_started_version.txt',self.main)
-        self.assertIn('WS_DATA "/updater_cleanup.pending"',self.main)
-        self.assertIn('updater_cleanup_pending =',self.main)
+    def test_cleanup_is_disabled_while_updated_store_is_running(self):
         tick=self.main[self.main.index("static void tick_store("):
                        self.main.index("/* ================================================================ main */")]
-        self.assertNotIn("now_s >= 9.0",tick)
-        self.assertIn("updater_cleanup_pending && !first_sync && intro_done",tick)
-        self.assertIn("legacy_updater_cleanup_pending && !first_sync && intro_done",tick)
-        self.assertIn("now_s - intro_t0 >= T_DONE + 2.0 && jobs_active() == 0",tick)
-        self.assertIn('inst_delete("WFFS00043")',tick)
-        self.assertIn("updater_cleanup_pending = 0;",tick)
-        self.assertIn("fs_rm_rf(WS_DATA",tick)
+        self.assertIn("helper deletion DISABLED while Store runs",tick)
+        self.assertNotIn('inst_delete("WFFS00043")',tick)
+        self.assertNotIn('inst_delete("WOLF00002")',tick)
+        self.assertNotIn("fs_rm_rf(WS_DATA \"/updater_cleanup.pending\")",tick)
         self.assertIn('updater_cleanup.pending',self.updater)
-        self.assertIn("if (r < 0)",self.updater)
-        self.assertIn('sceKernelExitProcess(1);',self.updater)
-
-    def test_main_removes_the_closed_updater_after_update(self):
-        install_h = (ROOT / "src/install.h").read_text(encoding="utf-8")
-        install_c = (ROOT / "src/install.c").read_text(encoding="utf-8")
-        self.assertIn("int inst_delete(const char *titleid);", install_h)
-        self.assertIn("scePromoterUtilityDeletePkg(titleid)", install_c)
-        self.assertIn('inst_delete("WFFS00043")', self.main)
+        # The INSTALLER may still replace an outdated helper before leaving.
+        launch=self.main[self.main.index("static void launch_updater("):
+                         self.main.index("static void maybe_self_update(")]
+        self.assertIn('inst_delete("WFFS00043")',launch)
 
     def test_settings_touch_does_not_scroll_page_behind_modal(self):
         self.assertIn("dragged && viewer < 0 && !vid_open && !settings_open", self.main)
@@ -292,24 +280,64 @@ class ReleaseInvariants(unittest.TestCase):
         self.assertIn('updater/data/tex/paw4.wrt', self.cmake)
         self.assertIn('updater/data/tex/font_title.wrt', self.cmake)
 
-    def test_video_uses_proven_vita_buffer_contract(self):
-        self.assertIn("SCE_KERNEL_MEMBLOCK_TYPE_USER_MAIN_PHYCONT_NC_RW", self.video)
-        self.assertIn("numOutputVideoFrameBuffers = VIDEO_BUFFERS", self.video)
-        self.assertIn("#define VIDEO_BUFFERS 5", self.video)
-        self.assertIn("1024 * 1024", self.video)
+    def test_vitadb_native_video_buffer_and_decoder_contract(self):
+        self.assertIn("SCE_KERNEL_MEMBLOCK_TYPE_USER_MAIN_PHYCONT_NC_RW",self.video)
+        self.assertIn("VIDEO_BUFFERS 5",self.video)
+        self.assertIn("init.basePriority = 0xA0",self.video)
+        self.assertIn("init.numOutputVideoFrameBuffers = VIDEO_BUFFERS",self.video)
+        self.assertIn("SCE_GXM_TEXTURE_FORMAT_YVU420P2_CSC1",self.video)
+        self.assertNotIn("sceAudioOutOpenPort",self.video)
 
-    def test_video_prefers_native_and_falls_back_to_file_callbacks(self):
+    def test_video_has_file_callbacks_and_native_fallback(self):
         for member in ("open", "close", "readOffset", "size"):
             self.assertIn(f"init.fileReplacement.{member}", self.video)
-        self.assertIn("!open_decoder(0) && !open_decoder(1)", self.video)
-        self.assertIn("sceAvPlayerAddSource(candidate, path)", self.video)
+        self.assertIn("if (custom_reader)", self.video)
+        self.assertIn("open_decoder(0) && !open_decoder(1)", self.video)
 
-    def test_video_uses_five_frame_descriptors_without_owning_decoder_memory(self):
-        draw = self.video[self.video.index("void video_draw") :]
-        self.assertIn("(frame_slot + 1) % VIDEO_BUFFERS", draw)
-        self.assertIn("SCE_GXM_TEXTURE_FORMAT_YVU420P2_CSC1", draw)
-        self.assertNotIn("vita2d_free_texture(", draw)
-        self.assertIn("free(frames[i])", self.video)
+    def test_native_video_frame_ownership_and_cache_recovery(self):
+        self.assertIn("sceGxmTextureInitLinear",self.video)
+        self.assertIn("vita2d_wait_rendering_done()",self.video)
+        self.assertIn("video: invalid cache, downloading a fresh copy",self.video)
+        self.assertIn("video: %s AddSource",self.video)
+        self.assertIn("video: GPU memblock allocation failed",self.video)
+        self.assertIn('init.basePriority = 0xA0',self.video)
+        self.assertIn("video: first",self.video)
+        catalog=(ROOT/"data/catalog.txt").read_bytes().decode("latin-1")
+        for slug in ("pizza","delta"):
+            self.assertIn(f"/posts/{slug}/trailer-vita-v2.mp4",catalog)
+
+    def test_audio_daypart_and_fixed_ost_options(self):
+        aud=(ROOT/"src/audio.c").read_text(encoding="utf-8")
+        header=(ROOT/"src/audio.h").read_text(encoding="utf-8")
+        self.assertIn("audio_ost_refresh_clock()", self.main)
+        self.assertIn("audio_ost_mode()",self.main)
+        self.assertIn("ost=%d",self.main)
+        self.assertIn('if (!strncmp(l, "ost=", 4))',self.main)
+        self.assertIn("SET_OST",self.main)
+        self.assertIn("S_AUTO_OST",self.main)
+        self.assertIn("Background OST",self.main)
+        self.assertIn("Morning Pixels",self.main)
+        self.assertIn("Afternoon Arcade",self.main)
+        self.assertIn("Night Shift",self.main)
+        self.assertIn("static void switch_track(int next)",aud)
+        self.assertIn("OST_FADE_SAMPLES",aud)
+        self.assertIn("music_mix * ost_gain_step()",aud)
+        self.assertIn("ost_hour >= 6 && ost_hour < 12",aud)
+        self.assertIn("ost_hour >= 12 && ost_hour < 18",aud)
+        for name,frames in (
+            ("morning", 921600),
+            ("afternoon", 768000),
+            ("night", 822857),
+        ):
+            pcm=ROOT/"data/music"/(name+".pcm")
+            self.assertTrue(pcm.exists(),name)
+            self.assertEqual(pcm.stat().st_size,frames*2)
+            self.assertIn("data/music/"+name+".pcm",self.cmake)
+            self.assertIn("data/music/"+name+".pcm",aud)
+        self.assertIn("void audio_set_ost_mode(int mode)",header)
+        self.assertIn("int audio_ost_mode(void)",header)
+        self.assertIn("void audio_ost_refresh_clock(void)",header)
+
 
 
 if __name__ == "__main__":

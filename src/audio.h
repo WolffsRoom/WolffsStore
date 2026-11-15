@@ -8,6 +8,10 @@ void audio_init(void);
 void audio_start_music_after_first_frame(void); /* libera a música só após o primeiro frame da tela inicial */
 void audio_set_enabled(int on);   /* efeitos sonoros */
 int audio_enabled(void);
+/* Background OST: 0 Auto, 1 Original, 2 Morning, 3 Afternoon, 4 Night. */
+void audio_set_ost_mode(int mode);
+int audio_ost_mode(void);
+void audio_ost_refresh_clock(void);
 void audio_set_music(int on);     /* música de fundo (chiptune em loop) */
 int audio_music(void);
 void sfx(const char *name);

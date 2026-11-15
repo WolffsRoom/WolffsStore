@@ -29,7 +29,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "0.99.3"
+#define WS_VERSION "0.99.4"
 #endif
 
 /* ================================================================ textos */
@@ -47,7 +47,7 @@ enum {
     S_SYNC_FAIL, S_UPD_TITLE, S_UPD_SKIP, S_SAVED_TO, S_H_DLS, S_H_SYNC, S_T_INSTALLED, S_T_TRANS, S_T_SAVED,
     S_T_FAILED, S_UPD_RESTART, S_CHIP_UPDATE, S_CHIP_TRANS, S_SEE_DLS, S_BACK_TO,
     S_HOME, S_TIP_SYNC, S_TIP_DLS, S_TIP_LANG, S_TIP_SOUND_ON, S_TIP_SOUND_OFF, S_PROJECTS,
-    S_TIP_SET, S_TIP_SEARCH, S_SETTINGS, S_SET_SFX, S_SET_MUSIC, S_SET_LANG, S_SET_BRIGHT, S_ON, S_OFF, S_LANG_NAME,
+    S_TIP_SET, S_TIP_SEARCH, S_SETTINGS, S_SET_SFX, S_SET_MUSIC, S_SET_OST, S_SET_LANG, S_SET_BRIGHT, S_ON, S_OFF, S_LANG_NAME, S_AUTO_OST,
     S_SET_HINT, S_SET_KEYS, S_H_MOVE, S_H_SELECT, S_SEARCH, S_SEARCH_FOR, S_RESULTS, S_NO_RESULTS, S_SEARCH_EMPTY,
     S_EDIT_SEARCH, S_ST_UPTODATE, S_ST_NEWVER, S_ST_INSTALLED, S_CHIP_INSTALLED, S_INSTALLED_LIST, S_OPEN_PROJECT,
     S_QUEUE, S_SOURCE, S_CLOCK, S_DL_DATA, S_DATA_TO, S_SYNC_SHORT, S_MUSIC, S_SFX, S_TIP_AUDIO, S_VID_LOAD,
@@ -74,8 +74,8 @@ static const char *UI_UTF8[2][S_COUNT] = {
         "Saved to", "Downloads", "Sync", "installed", "translation installed", "saved to ux0:Downloads", "failed",
         "The app will close and reopen on its own.", "Update", "Translation", "See downloads", "Back",
         "Home", "Sync", "Downloads", "Language: English", "Sound: on", "Sound: off", "projects",
-        "Settings", "Search", "Settings", "Sound effects", "Background music", "Language", "Brightness", "On", "Off",
-        "English", "Left/Right: change", "Shortcuts: Triangle sync \xb7 Square downloads \xb7 SELECT search \xb7 START settings",
+        "Settings", "Search", "Settings", "Sound effects", "Background music", "Background OST", "Language", "Brightness", "On", "Off",
+        "English", "Automatic", "Left/Right: change", "Shortcuts: Triangle sync \xb7 Square downloads \xb7 SELECT search \xb7 START settings",
         "Move", "Select", "Search", "Search for", "results", "Nothing found. Try another word.",
         "Search ports, translations, tools and reviews.", "Edit search", "Up to date", "New version: v", "Installed",
         "Installed", "Installed", "Open project", "Queue",
@@ -104,8 +104,8 @@ static const char *UI_UTF8[2][S_COUNT] = {
         "Downloads", "Sincronizar", "instalado", "tradução instalada", "salvo em ux0:Downloads", "falhou",
         "O app vai fechar e abrir de novo sozinho.", "Atualizar", "Tradução", "Ver downloads", "Voltar",
         "Início", "Sincronizar", "Downloads", "Idioma: português", "Som: ligado", "Som: desligado", "projetos",
-        "Configurações", "Pesquisar", "Configurações", "Efeitos sonoros", "Música de fundo", "Idioma", "Brilho", "Ligado",
-        "Desligado", "Português (BR)", "Esquerda/direita: muda",
+        "Configurações", "Pesquisar", "Configurações", "Efeitos sonoros", "Música de fundo", "Background OST", "Idioma", "Brilho", "Ligado",
+        "Desligado", "Português (BR)", "Automático", "Esquerda/direita: muda",
         "Atalhos: Triângulo sincroniza \xb7 Quadrado downloads \xb7 SELECT pesquisa \xb7 START configurações",
         "Mover", "Selecionar", "Pesquisa", "Pesquisar", "resultados", "Nada encontrado. Tente outra palavra.",
         "Procure ports, traduções, ferramentas e reviews.", "Editar pesquisa", "Atualizado", "Nova versão: v", "Instalado",
@@ -2001,7 +2001,8 @@ static void settings_save(void) {
     sceIoMkdir("ux0:data/WolffsStore", 0777);
     FILE *f = fopen("ux0:data/WolffsStore/settings.txt", "w");
     if (!f) return;
-    fprintf(f, "lang=%s\nsound=%d\nmusic=%d\nbright=%d\n", lang == LANG_EN ? "en" : "pt", audio_enabled(), audio_music(), brightness);
+    fprintf(f, "lang=%s\nsound=%d\nmusic=%d\nost=%d\nbright=%d\n",
+            lang == LANG_EN ? "en" : "pt", audio_enabled(), audio_music(), audio_ost_mode(), brightness);
     fclose(f);
 }
 
@@ -2014,6 +2015,10 @@ static void settings_load(void) {
         if (!strncmp(l, "lang=en", 7)) lang = LANG_EN;
         if (!strncmp(l, "sound=0", 7)) audio_set_enabled(0);
         if (!strncmp(l, "music=0", 7)) audio_set_music(0);
+        if (!strncmp(l, "ost=", 4)) {
+            int mode = atoi(l + 4);
+            if (mode >= 0 && mode <= 4) audio_set_ost_mode(mode);
+        }
         if (!strncmp(l, "bright=", 7)) {
             brightness = atoi(l + 7);
             if (brightness < 40 || brightness > 100) brightness = 100;
@@ -2176,7 +2181,7 @@ static void start_sync(int manual) {
 
 /* ---------------------------------------------------------------- janela de configurações */
 
-enum { SET_SFX, SET_MUSIC, SET_LANG, SET_BRIGHT, SET_COUNT };
+enum { SET_SFX, SET_MUSIC, SET_OST, SET_LANG, SET_BRIGHT, SET_COUNT };
 
 static void open_settings(void) {
     settings_open = 1;
@@ -2201,6 +2206,14 @@ static void settings_change(int dir) {
         audio_set_music(!audio_music());
         sfx("tick");
         break;
+    case SET_OST: {
+        int mode = audio_ost_mode();
+        mode = (mode + (dir < 0 ? 4 : 1)) % 5;
+        audio_ost_refresh_clock();
+        audio_set_ost_mode(mode);
+        sfx("tick");
+        break;
+    }
     case SET_LANG: toggle_lang(); break;
     case SET_BRIGHT:
         if (dir == 0) brightness = brightness >= 100 ? 40 : brightness + 10; /* ✕ dá a volta */
@@ -2235,7 +2248,7 @@ static void draw_settings(void) {
         int f = r == settings_row;
         if (f) vita2d_draw_rectangle(rx, ry, rw, rh - 8, col_alpha(C_WHITE, k));
         unsigned tc = col_alpha(f ? C_DARK : C_WHITE, k);
-        static const int lab[SET_COUNT] = {S_SET_SFX, S_SET_MUSIC, S_SET_LANG, S_SET_BRIGHT};
+        static const int lab[SET_COUNT] = {S_SET_SFX, S_SET_MUSIC, S_SET_OST, S_SET_LANG, S_SET_BRIGHT};
         body_draw_bold(TXT(lab[r]), rx + 20, ry + 13, tc);
         /* valor à direita: ◀ valor ▶ */
         float vx = rx + rw - 20;
@@ -2252,8 +2265,13 @@ static void draw_settings(void) {
                 vita2d_draw_rectangle(vx, ry + 18, 8, 16, (40 + s * 10) <= brightness ? tc : col_alpha(f ? C_SOFT : C_LINE, k));
             }
         } else {
-            const char *v = r == SET_SFX ? TXT(audio_enabled() ? S_ON : S_OFF) : r == SET_MUSIC ? TXT(audio_music() ? S_ON : S_OFF)
-                                                                                                : (lang == LANG_EN ? "English" : "Portugu\xeas (BR)");
+            static const char *tracks[] = {
+                "", "Original", "Morning Pixels", "Afternoon Arcade", "Night Shift"};
+            const char *v = r == SET_SFX ? TXT(audio_enabled() ? S_ON : S_OFF)
+                          : r == SET_MUSIC ? TXT(audio_music() ? S_ON : S_OFF)
+                          : r == SET_OST ? (audio_ost_mode() == 0 ? TXT(S_AUTO_OST)
+                                        : tracks[audio_ost_mode()])
+                          : (lang == LANG_EN ? "English" : "Portugu\xeas (BR)");
             char up[48];
             snprintf(up, sizeof(up), "%s", v);
             upper_latin1(up);
@@ -2996,37 +3014,16 @@ static unsigned jobs_seen_version;
 
 static void tick_store(void) {
     int intro_done = started && now_s - intro_t0 >= T_DONE;
-    /* Once the new Store is running normally, the helper process has had
-     * time to exit. Uninstall its bubble without requiring a second boot. */
-    if (updater_cleanup_pending && !first_sync && intro_done &&
-        now_s - intro_t0 >= T_DONE + 2.0 && jobs_active() == 0) {
-        updater_cleanup_pending = 0;
-        int r = inst_delete("WFFS00043");
-        ws_log("updater: cleanup after successful update -> 0x%08X", r);
-        if (r >= 0 || !fs_exists("ux0:app/WFFS00043/sce_sys/param.sfo")) {
-            if (!legacy_updater_cleanup_pending)
-                fs_rm_rf(WS_DATA "/updater_cleanup.pending");
-        } else {
-            ws_log("updater: cleanup failed; pending marker kept for next startup");
-        }
-    }
-    if (legacy_updater_cleanup_pending && !first_sync && intro_done &&
-        now_s - intro_t0 >= T_DONE + 2.0 && jobs_active() == 0) {
-        legacy_updater_cleanup_pending = 0;
-        char title[128] = "";
-        int owned = sfo_get("ux0:app/WOLF00002/sce_sys/param.sfo",
-                            "TITLE", title, sizeof(title)) == 0 &&
-                    strcmp(title, "Wolff's Store Updater") == 0;
-        if (owned) {
-            int r = inst_delete("WOLF00002");
-            ws_log("updater: remove verified WOLF00002 compatibility helper -> 0x%08X",r);
-            if (r >= 0 || !fs_exists("ux0:app/WOLF00002/sce_sys/param.sfo")) {
-                if (!fs_exists("ux0:app/WFFS00043/sce_sys/param.sfo"))
-                    fs_rm_rf(WS_DATA "/updater_cleanup.pending");
-            }
-        } else {
-            ws_log("updater: old WOLF00002 is not ours; leaving it untouched");
-        }
+    /* v0.99.4 diagnostic: NEVER delete WFFS00043 or WOLF00002 while this
+     * Store process is running. A ScePromoterUtilityDeletePkg on another
+     * installed title may cause SceShell to suspend our first session.
+     * Preserve pending markers and helper bubbles to isolate the issue.
+     * Future cleanup must be off-session, with ownership checks. */
+    static int cleanup_suspension_logged = 0;
+    if (!cleanup_suspension_logged &&
+        (updater_cleanup_pending || legacy_updater_cleanup_pending)) {
+        ws_log("updater: v0.99.4 diagnostic - helper deletion DISABLED while Store runs");
+        cleanup_suspension_logged = 1;
     }
     int st = sync_state();
     if (first_sync && st == SYNC_READY) {
@@ -3300,6 +3297,13 @@ int main(void) {
 
     for (;;) {
         now_s = clock_s() - t_start;
+        /* Vita RTC is local: select the daypart automatically and refresh
+         * only occasionally, including when the console clock changes. */
+        static double ost_clock_next = 0;
+        if (now_s >= ost_clock_next) {
+            audio_ost_refresh_clock();
+            ost_clock_next = now_s + 20.0;
+        }
         SceCtrlData pad;
         memset(&pad, 0, sizeof(pad));
         sceCtrlPeekBufferPositive(0, &pad, 1);

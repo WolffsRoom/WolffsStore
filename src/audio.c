@@ -1,8 +1,11 @@
 #include "audio.h"
 
 #include <psp2/audioout.h>
+#include <psp2/rtc.h>
+#include <psp2/io/fcntl.h>
 #include <psp2/kernel/threadmgr.h>
 #include <math.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -103,6 +106,125 @@ static void music_step(int step) {
         }
     }
 }
+
+/* Background OST modes: 0=Automatic, 1=Original (built-in synth),
+ * 2=Morning Pixels, 3=Afternoon Arcade, 4=Night Shift.
+ * PCM source: 24 kHz mono signed 16-bit, read in blocks from app0.
+ * Resampling to the Vita's 48 kHz port uses 2x linear interpolation.
+ * The original synthesized soundtrack is left untouched and selectable. */
+#define OST_AUTO 0
+#define OST_ORIGINAL 1
+#define OST_MORNING 2
+#define OST_AFTERNOON 3
+#define OST_NIGHT 4
+#define PCM_BLOCK 4096
+#define OST_FADE_SAMPLES (RATE / 6)
+static volatile int ost_mode = OST_AUTO;
+static volatile int ost_desired = OST_NIGHT;
+static volatile int ost_restart;
+static int ost_hour = -1;
+static int active_track = -1;       /* owns PCM state: audio thread only */
+static int missing_track = -1;      /* avoid rapid reopening on failure */
+static int fade_phase = 0;          /* 0=stable, 1=out, 2=in */
+static float music_gain = 0;
+static SceUID pcm_fd = -1;
+static int16_t pcm_block[PCM_BLOCK];
+static int pcm_used, pcm_at;
+static int16_t pcm_a, pcm_b;
+static int pcm_half;
+
+static int pcm_next(void) {
+    if (pcm_fd < 0) return 0;
+    if (pcm_at >= pcm_used) {
+        int rd = sceIoRead(pcm_fd, pcm_block, sizeof(pcm_block));
+        if (rd <= 0) {
+            sceIoLseek(pcm_fd, 0, SCE_SEEK_SET);
+            rd = sceIoRead(pcm_fd, pcm_block, sizeof(pcm_block));
+        }
+        if (rd <= 0) return 0;
+        pcm_used = rd / (int)sizeof(pcm_block[0]);
+        pcm_at = 0;
+    }
+    return pcm_block[pcm_at++];
+}
+static float pcm_value(void) {
+    if (!pcm_half) {
+        pcm_a = pcm_b;
+        pcm_b = (int16_t)pcm_next();
+        pcm_half = 1;
+        return pcm_a / 32768.f;
+    }
+    pcm_half = 0;
+    return ((int)pcm_a + (int)pcm_b) / 65536.f;
+}
+static void pcm_close(void) {
+    if (pcm_fd >= 0) sceIoClose(pcm_fd);
+    pcm_fd = -1;
+    pcm_used = pcm_at = pcm_half = 0;
+    pcm_a = pcm_b = 0;
+}
+static void switch_track(int next) {
+    static const char *paths[5] = {
+        NULL, NULL, "app0:data/music/morning.pcm",
+        "app0:data/music/afternoon.pcm", "app0:data/music/night.pcm"};
+    pcm_close();
+    for (int i = 0; i < M_VOICES; i++) mvoices[i].state = 0;
+    mpos = 0;
+    active_track = next;
+    if (next >= OST_MORNING && next <= OST_NIGHT) {
+        pcm_fd = sceIoOpen(paths[next], SCE_O_RDONLY, 0);
+        if (pcm_fd < 0) {
+            /* Fallback to original if data files are inaccessible. */
+            missing_track = next;
+            active_track = OST_ORIGINAL;
+        } else {
+            missing_track = -1;
+            pcm_used = pcm_at = 0;
+            pcm_b = (int16_t)pcm_next();
+        }
+    }
+}
+int audio_ost_mode(void) { return ost_mode; }
+void audio_set_ost_mode(int mode) {
+    if (mode < 0 || mode > OST_NIGHT) mode = OST_AUTO;
+    ost_mode = mode;
+    int wanted = mode == OST_AUTO
+        ? (ost_hour >= 6 && ost_hour < 12 ? OST_MORNING
+           : ost_hour >= 12 && ost_hour < 18 ? OST_AFTERNOON : OST_NIGHT)
+        : mode;
+    ost_desired = wanted;
+    __sync_synchronize();
+}
+void audio_ost_refresh_clock(void) {
+    SceDateTime t;
+    if (sceRtcGetCurrentClockLocalTime(&t) >= 0) {
+        if (ost_hour != (int)t.hour) {
+            ost_hour = t.hour;
+            if (ost_mode == OST_AUTO) audio_set_ost_mode(OST_AUTO);
+        }
+    }
+}
+static void ost_mix_begin_buffer(void) {
+    int wanted = music_on ? ost_desired : 0;
+    if (ost_restart) { ost_restart = 0; active_track = -1; music_gain = 0; }
+    if (wanted == missing_track) wanted = OST_ORIGINAL;
+    if (wanted && active_track != wanted && fade_phase != 1) fade_phase = 1;
+}
+static float ost_gain_step(void) {
+    if (fade_phase == 1) {
+        music_gain -= 1.f / OST_FADE_SAMPLES;
+        if (music_gain <= 0.f) {
+            music_gain = 0.f;
+            switch_track(ost_desired == missing_track ? OST_ORIGINAL : ost_desired);
+            fade_phase = 2;
+        }
+    } else if (fade_phase == 2) {
+        music_gain += 1.f / OST_FADE_SAMPLES;
+        if (music_gain >= 1.f) { music_gain = 1.f; fade_phase = 0; }
+    }
+    return music_gain;
+}
+
 static float echo[ECHO_LEN];
 static int echo_pos;
 
@@ -148,6 +270,7 @@ static int audio_thread(SceSize args, void *argp) {
     int cur = 0;
     for (;;) {
         short *out = buf[cur];
+        if (music_screen_ready) ost_mix_begin_buffer();
         for (int i = 0; i < GRAIN; i++) {
             float mix = 0;
             for (int k = 0; k < VOICES; k++) {
@@ -158,16 +281,21 @@ static int audio_thread(SceSize args, void *argp) {
                 mix += osc(v);
                 if (++v->t >= v->len) v->state = 0;
             }
-            /* música: sequenciador contínuo, sem emenda no loop */
+            float music_mix = 0;
             if (music_on && music_screen_ready) {
-                if (mpos % M_STEP == 0) music_step((int)(mpos / M_STEP));
-                if (++mpos >= (unsigned)(M_STEPS * M_STEP)) mpos = 0;
-            }
-            for (int k = 0; k < M_VOICES; k++) {
-                Voice *v = &mvoices[k];
-                if (v->state != 2) continue;
-                mix += osc(v) * .55f; /* baixinha */
-                if (++v->t >= v->len) v->state = 0;
+                if (active_track == OST_ORIGINAL) {
+                    if (mpos % M_STEP == 0) music_step((int)(mpos / M_STEP));
+                    if (++mpos >= (unsigned)(M_STEPS * M_STEP)) mpos = 0;
+                }
+                for (int k = 0; k < M_VOICES; k++) {
+                    Voice *v = &mvoices[k];
+                    if (v->state != 2) continue;
+                    music_mix += osc(v) * .55f;
+                    if (++v->t >= v->len) v->state = 0;
+                }
+                if (active_track >= OST_MORNING && active_track <= OST_NIGHT)
+                    music_mix += pcm_value() * 2.1f;
+                mix += music_mix * ost_gain_step();
             }
             float dry = mix * .16f;                  /* ganho geral */
             float wet = echo[echo_pos];
@@ -189,6 +317,7 @@ void audio_set_music(int on) {
     if (!on)
         for (int k = 0; k < M_VOICES; k++) mvoices[k].state = 0;
     music_on = on;
+    if (on) ost_restart = 1;
 }
 int audio_music(void) { return music_on; }
 
@@ -197,12 +326,15 @@ int audio_music(void) { return music_on; }
 void audio_start_music_after_first_frame(void) {
     if (music_screen_ready) return;
     mpos = 0;
+    ost_restart = 1;
     __sync_synchronize();
     music_screen_ready = 1;
 }
 
 void audio_init(void) {
     music_build();
+    audio_ost_refresh_clock();
+    audio_set_ost_mode(OST_AUTO);
     SceUID th = sceKernelCreateThread("ws_audio", audio_thread, 0x10000100 - 10, 0x4000, 0, 0, NULL);
     if (th >= 0) sceKernelStartThread(th, 0, NULL);
 }
