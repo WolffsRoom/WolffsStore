@@ -10,7 +10,7 @@
 #include <string.h>
 
 #define RATE 48000
-#define GRAIN 256
+#define GRAIN 1024
 #define VOICES 48
 #define ECHO_LEN (RATE * 11 / 100) /* 0,11 s, como o delay do site */
 
@@ -118,6 +118,16 @@ static void music_step(int step) {
 #define OST_AFTERNOON 3
 #define OST_NIGHT 4
 #define PCM_BLOCK 4096
+#define PCM_PRELOAD_MAX (4 * 1024 * 1024)
+/* The Vita shares its storage bus with massive ZIP extraction. Reading
+ * 8 KB from app0 every 170 ms can block the realtime audio thread when
+ * the install worker is extracting files to ux0. Keep all three small
+ * PCM files in main RAM (~5 MiB total) BEFORE starting the audio thread.
+ * Never perform filesystem reads from the BGM mixer if preloading succeeded. */
+static int16_t *ost_pcm[5];
+static unsigned ost_pcm_samples[5];
+static const int16_t *pcm_memory;
+static unsigned pcm_memory_samples, pcm_memory_pos;
 #define OST_FADE_SAMPLES (RATE / 6)
 static volatile int ost_mode = OST_AUTO;
 static volatile int ost_desired = OST_NIGHT;
@@ -132,8 +142,43 @@ static int16_t pcm_block[PCM_BLOCK];
 static int pcm_used, pcm_at;
 static int16_t pcm_a, pcm_b;
 static int pcm_half;
+static void ost_preload_pcm(void) {
+    static const char *paths[5] = {
+        NULL, NULL, "app0:data/music/morning.pcm",
+        "app0:data/music/afternoon.pcm", "app0:data/music/night.pcm"
+    };
+    for (int track=OST_MORNING; track<=OST_NIGHT; track++) {
+        SceUID fd=sceIoOpen(paths[track],SCE_O_RDONLY,0);
+        if (fd<0) continue;
+        SceOff bytes=sceIoLseek(fd,0,SCE_SEEK_END);
+        sceIoLseek(fd,0,SCE_SEEK_SET);
+        if (bytes<=0 || bytes>PCM_PRELOAD_MAX || (bytes&1)) {
+            sceIoClose(fd);
+            continue;
+        }
+        int16_t *data=malloc((size_t)bytes);
+        if (!data) { sceIoClose(fd); continue; }
+        unsigned offset=0;
+        while (offset<(unsigned)bytes) {
+            int rd=sceIoRead(fd,(char*)data+offset,
+                              ((unsigned)bytes-offset)>32768 ? 32768 : (unsigned)bytes-offset);
+            if (rd<=0) break;
+            offset+=(unsigned)rd;
+        }
+        sceIoClose(fd);
+        if (offset!=(unsigned)bytes) { free(data); continue; }
+        ost_pcm[track]=data;
+        ost_pcm_samples[track]=(unsigned)bytes/sizeof(int16_t);
+    }
+}
+
 
 static int pcm_next(void) {
+    if (pcm_memory && pcm_memory_samples) {
+        /* Exact sample count, no storage access and no gap at loop boundary. */
+        if (pcm_memory_pos>=pcm_memory_samples) pcm_memory_pos=0;
+        return pcm_memory[pcm_memory_pos++];
+    }
     if (pcm_fd < 0) return 0;
     if (pcm_at >= pcm_used) {
         int rd = sceIoRead(pcm_fd, pcm_block, sizeof(pcm_block));
@@ -160,6 +205,8 @@ static float pcm_value(void) {
 static void pcm_close(void) {
     if (pcm_fd >= 0) sceIoClose(pcm_fd);
     pcm_fd = -1;
+    pcm_memory = NULL;
+    pcm_memory_samples = pcm_memory_pos = 0;
     pcm_used = pcm_at = pcm_half = 0;
     pcm_a = pcm_b = 0;
 }
@@ -172,15 +219,24 @@ static void switch_track(int next) {
     mpos = 0;
     active_track = next;
     if (next >= OST_MORNING && next <= OST_NIGHT) {
-        pcm_fd = sceIoOpen(paths[next], SCE_O_RDONLY, 0);
-        if (pcm_fd < 0) {
-            /* Fallback to original if data files are inaccessible. */
-            missing_track = next;
-            active_track = OST_ORIGINAL;
-        } else {
+        if (ost_pcm[next] && ost_pcm_samples[next]) {
+            pcm_memory = ost_pcm[next];
+            pcm_memory_samples = ost_pcm_samples[next];
+            pcm_memory_pos = 0;
             missing_track = -1;
-            pcm_used = pcm_at = 0;
             pcm_b = (int16_t)pcm_next();
+        } else {
+            /* Low-memory fallback: preserve playback using the old streaming
+             * reader rather than failing to start music. */
+            pcm_fd = sceIoOpen(paths[next], SCE_O_RDONLY, 0);
+            if (pcm_fd < 0) {
+                missing_track = next;
+                active_track = OST_ORIGINAL;
+            } else {
+                missing_track = -1;
+                pcm_used = pcm_at = 0;
+                pcm_b = (int16_t)pcm_next();
+            }
         }
     }
 }
@@ -333,6 +389,7 @@ void audio_start_music_after_first_frame(void) {
 
 void audio_init(void) {
     music_build();
+    ost_preload_pcm(); /* ~5 MB loaded once, not during unzip/write bursts */
     audio_ost_refresh_clock();
     audio_set_ost_mode(OST_AUTO);
     SceUID th = sceKernelCreateThread("ws_audio", audio_thread, 0x10000100 - 10, 0x4000, 0, 0, NULL);

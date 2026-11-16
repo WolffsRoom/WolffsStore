@@ -15,7 +15,7 @@ set(WS_TITLEID "WFFS00042")
 set(WS_UPDATER_TITLEID "WFFS00043")
 # LiveArea padrão: assets/livearea (icon0 128x128, bg0 840x500, startup 280x158, PNG indexado de 8 bits)
 set(WS_SFO_VERSION "00.99")
-set(WS_FILE_VERSION "0.99.7")
+set(WS_FILE_VERSION "0.99.8")
 set(WS_VPK_NAME "WolffsStore.vpk")
 set(WS_ARTIFACTS_DIR "${CMAKE_SOURCE_DIR}/artifacts/current")
 

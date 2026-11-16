@@ -1,8 +1,400 @@
+post	pokemon-emerald
+cat	ports
+group	3
+date	2026-11-16
+feat	1
+title.pt	Pokémon Emerald Voxel 3DS - with PT/BR
+tag.pt	Port nativo · PS Vita · PT-BR
+status.pt	Disponível · PT-BR
+desc.pt	Port nativo de Pokémon Emerald para PS Vita, agora com português brasileiro, LiveArea personalizada e manual.
+feature_text.pt	Pokémon Emerald no PS Vita, com mundo voxel 3D, batalhas 3D e tradução brasileira da Wolff's Room.
+about.pt	Pokémon Emerald recebeu um port nativo não oficial para PS Vita, desenvolvido por HctrRB a partir da descompilação pret/pokeemerald. Não é um emulador: o código C do jogo é compilado para o processador ARM do Vita, com uma camada de plataforma que substitui as funções do hardware do GBA. Com vitaGL e recursos do Emerald 3DS, o port transforma a experiência clássica com cenários e batalhas 3D, mantendo a aventura original.
+sec.pt	Recursos do port
+item.pt	Mundo voxel 3D gerado em tempo real a partir dos mapas, com sol, sombras, ciclo de dia e noite e clima
+item.pt	Batalhas 3D em cenários derivados da área em que o confronto começa
+item.pt	Interface de toque sobre o mundo 3D, substituindo menus e caixas originais do GBA, com cinco temas
+item.pt	Pokémon seguidores no estilo HGSS, relógio acelerado, encontros por horário e melhorias opcionais de qualidade de vida
+sec.pt	Wolff's Room - versão PT-BR
+item.pt	Suporte ao português brasileiro, incluindo textos, menus e interfaces
+item.pt	Elementos traduzidos na tela inicial, incluindo Versão Esmeralda e PRESSIONE START
+item.pt	Novos assets da LiveArea
+item.pt	Manual integrado à LiveArea
+item.pt	Arte da tela inicial com paleta adaptada para o sprite do jogo
+sec.pt	Instalação
+item.pt	Baixe o VPK desta página ou pelo espelho do Google Drive
+item.pt	Instale pelo VitaShell em um PS Vita desbloqueado
+item.pt	Inicie o jogo pela LiveArea
+item.pt	Antes de atualizar uma instalação anterior, faça backup dos seus saves
+sec.pt	Créditos e referências
+item.pt	Port original: HctrRB
+item.pt	Versão PT-BR e personalização: Wolff's Room
+item.pt	Tradução de referência: Pokebat
+item.pt	Descompilação: pret/pokeemerald
+item.pt	Recursos 3D: Emerald 3DS
+item.pt	Fontes consultadas: Pokémon Classic e Font Meme - Pokémon
+item.pt	Referência dos assets da LiveArea: ícones de Pokémon Geração 3 para 3DS
+sec.pt	Observações
+item.pt	Port não oficial, sem vínculo com Nintendo, Game Freak ou The Pokémon Company.
+item.pt	A compilação VitaSDK foi concluída; a correção mais recente da faixa de título ainda aguarda conferência visual em hardware.
+info.pt	Port original|HctrRB
+info.pt	Versão Wolff's Room|PT-BR · LiveArea · Manual
+info.pt	Plataforma|PS Vita / PSTV
+info.pt	Tecnologia|Código nativo ARM · vitaGL
+link.pt	Download VPK|https://github.com/WolffsRoom/WolffsRoomSite/releases/download/pokemon-emerald-ptbr-v1.0/Pokemon-Emerald-PTBR-WolffsRoom.vpk
+link.pt	Download alternativo (Google Drive)|https://drive.google.com/file/d/1prXPQgulczBJYybvY5nbaaWHtEIMPe7-/view?usp=sharing
+title.en	Pokémon Emerald Voxel 3DS - with PT/BR
+tag.en	Native port · PS Vita · PT-BR
+status.en	Available · PT-BR
+desc.en	Native Pokémon Emerald port for PS Vita, now with Brazilian Portuguese, custom LiveArea assets and an included manual.
+feature_text.en	Pokémon Emerald on PS Vita, featuring a 3D voxel world, 3D battles, and Brazilian Portuguese localization.
+about.en	Pokémon Emerald has an unofficial native PS Vita port developed by HctrRB, based on the pret/pokeemerald decompilation. It is not an emulator: the game's C code is compiled for Vita ARM, while a platform layer replaces GBA hardware functions. Using vitaGL and features from Emerald 3DS, the port offers a modern 3D presentation of the original adventure.
+sec.en	Original port features
+item.en	Live voxel 3D overworld built from maps, with sun, shadows, day/night, and weather
+item.en	3D battle stages drawn from the map where battles start
+item.en	Touch menus with five themes, replacing the GBA's menus and dialog boxes
+item.en	HGSS-style follower Pokémon, accelerated clock, time-based encounters, and optional QoL features
+sec.en	Wolff's Room edition
+item.en	Brazilian Portuguese localization for game text, menus, and UI
+item.en	Translated title-screen elements, including Versão Esmeralda and PRESSIONE START
+item.en	New LiveArea artwork and an included LiveArea manual
+item.en	Title artwork converted to the game's native sprite palette
+sec.en	Installation
+item.en	Download the VPK here or use the Google Drive mirror
+item.en	Install it with VitaShell on a homebrew-enabled PS Vita
+item.en	Launch the game from LiveArea
+item.en	Back up existing saves before replacing an earlier version
+sec.en	Credits and references
+item.en	Original port: HctrRB
+item.en	PT-BR edition: Wolff's Room
+item.en	Translation reference: Pokebat
+item.en	Game decompilation: pret/pokeemerald
+item.en	3D features: Emerald 3DS
+item.en	Fonts referenced: Pokémon Classic and Pokémon Font Meme
+item.en	LiveArea art reference: Gen 3 Pokémon 3DS-style icons
+sec.en	Notes
+item.en	Unofficial port, not affiliated with Nintendo, Game Freak, or The Pokémon Company.
+item.en	VitaSDK build completed; the latest title-banner palette fix has not yet been visually confirmed on hardware.
+info.en	Original port|HctrRB
+info.en	Wolff's Room edition|PT-BR · LiveArea · Manual
+info.en	Platform|PS Vita / PSTV
+info.en	Technology|Native ARM code · vitaGL
+link.en	Download VPK|https://github.com/WolffsRoom/WolffsRoomSite/releases/download/pokemon-emerald-ptbr-v1.0/Pokemon-Emerald-PTBR-WolffsRoom.vpk
+link.en	Alternative download (Google Drive)|https://drive.google.com/file/d/1prXPQgulczBJYybvY5nbaaWHtEIMPe7-/view?usp=sharing
+cover	1
+shots	8
+end	-
+post	pizza
+cat	ports
+group	1
+date	2026-11-14
+pixel	1
+video_arquivo	https://wolffsroom.github.io/WolffsRoomSite/posts/pizza/trailer-vita-v2.mp4
+progress	95
+title.pt	Pizza Tower - SAGE 2019 Demo
+tag.pt	Port · GameMaker · PS Vita
+status.pt	v0.55 · Jogável
+desc.pt	Novo lançamento v0.55 do port de Pizza Tower SAGE 2019 Demo (v14) para PS Vita.
+feature_text.pt	Pizza Tower SAGE 2019 chegou ao PS Vita! Demo v14 jogável em 60 FPS com Pizzascape, Oregano Desert e Snick Challenge.
+about.pt	Port não oficial da demo gratuita Pizza Tower SAGE 2019 (v14) para PlayStation Vita, lançado na versão v0.55. Utiliza o runner Butterscotch com VitaGL e OpenAL. O projeto relata jogabilidade completa do início ao fim, com 95% de progresso geral.
+sec.pt	Novidades da v0.55
+item.pt	Três fases jogáveis: Pizzascape, Oregano Desert e The Snick Challenge
+item.pt	Renderização acelerada pelo VitaGL a 60 FPS nos testes em hardware
+item.pt	Super Jump corrigido: acione com X (Pular) ou soltando o direcional
+item.pt	Deadzone do analógico corrigida para evitar movimentos involuntários
+item.pt	Shader de troca de cores adaptado à GPU SGX543
+item.pt	Streaming de áudio OpenAL com menor consumo de memória e menos distorções
+item.pt	Fontes do menu de opções e glifos PlayStation revisados
+item.pt	LiveArea e manual próprios, separados do port do jogo completo
+sec.pt	Instalação
+item.pt	Baixe o VPK v0.55 e instale pelo VitaShell
+item.pt	Obtenha a demo original gratuita na página oficial do Pizza Tower no itch.io
+item.pt	Extraia o arquivo data.win e copie-o para ux0:data/pizzatowersage/data.win
+item.pt	O botão Baixar dados mantém o arquivo externo já disponibilizado; confira se ele corresponde à demo v14
+item.pt	Abra o jogo pela LiveArea
+sec.pt	Requisitos
+item.pt	PS Vita desbloqueado (HENkaku ou Ens?)
+item.pt	Plugins kubridge.suprx, FdFix e libshacccg.suprx
+item.pt	Arquivo original data.win da demo SAGE 2019 (v14), não incluído no VPK
+sec.pt	Créditos
+item.pt	Port de PS Vita: Wolff's Room
+item.pt	Jogo original: Tour de Pizza
+item.pt	Runner: Butterscotch com VitaGL e OpenAL
+info.pt	Status|Lançado · Jogável (95% de progresso)
+info.pt	Versão|v0.55
+info.pt	Demo original|Pizza Tower SAGE 2019 (v14)
+info.pt	Criadores|Tour de Pizza
+info.pt	Engine original|GameMaker
+info.pt	Runtime|Butterscotch + VitaGL + OpenAL
+info.pt	Title ID|PTSAGE001
+info.pt	Dados|ux0:data/pizzatowersage/data.win
+link.pt	Baixar VPK|https://github.com/WolffsRoom/PizzaTowerSage2019Vita/releases/download/v0.55/PizzaTowerSAGE-v0.55.vpk
+link.pt	Baixar dados|https://drive.google.com/file/d/1CBof60EExpF4IrZMhyix6CvRicqSONRA/view?usp=sharing
+title.en	Pizza Tower - SAGE 2019 Demo
+tag.en	Port · GameMaker · PS Vita
+status.en	v0.55 · Playable
+desc.en	New v0.55 release of the Pizza Tower SAGE 2019 Demo (v14) PS Vita port.
+feature_text.en	Pizza Tower SAGE 2019 is now on PS Vita! Three playable v14 demo stages at 60 FPS.
+about.en	Unofficial PlayStation Vita port of the free Pizza Tower SAGE 2019 Demo (v14), newly released as v0.55. Powered by Butterscotch, VitaGL, and OpenAL. The demo is playable from start to finish, with 95% overall project progress.
+sec.en	What's new in v0.55
+item.en	Three playable stages: Pizzascape, Oregano Desert, and The Snick Challenge
+item.en	60 FPS in hardware tests with VitaGL rendering
+item.en	Fixed Super Jump launch on Cross (Jump) or directional release
+item.en	Analog stick deadzone calibration fixes accidental ducking
+item.en	SGX543-compatible palette shader and restored colors
+item.en	Streaming OpenAL audio to reduce memory usage and distortion
+item.en	Cleaner settings fonts, PlayStation glyphs, custom LiveArea and manual
+sec.en	Installation
+item.en	Download the v0.55 VPK and install via VitaShell
+item.en	Get the original free demo from the official Pizza Tower itch.io page
+item.en	Extract data.win and copy to ux0:data/pizzatowersage/data.win
+item.en	The Download data button preserves the previously shared external archive; verify it contains v14 demo data
+item.en	Launch the game from LiveArea
+sec.en	Requirements
+item.en	Homebrew-enabled PS Vita with HENkaku/Ens?
+item.en	kubridge.suprx, FdFix and libshacccg.suprx
+item.en	Original SAGE 2019 Demo (v14) data.win, not included with the VPK
+sec.en	Credits
+item.en	PS Vita port: Wolff's Room
+item.en	Original game: Tour de Pizza
+item.en	Runner: Butterscotch with VitaGL and OpenAL
+info.en	Status|Released · Playable (95% progress)
+info.en	Version|v0.55
+info.en	Original demo|Pizza Tower SAGE 2019 (v14)
+info.en	Original game|Tour de Pizza
+info.en	Original engine|GameMaker
+info.en	Runtime|Butterscotch + VitaGL + OpenAL
+info.en	Title ID|PTSAGE001
+info.en	Data|ux0:data/pizzatowersage/data.win
+link.en	Download VPK|https://github.com/WolffsRoom/PizzaTowerSage2019Vita/releases/download/v0.55/PizzaTowerSAGE-v0.55.vpk
+link.en	Download data|https://drive.google.com/file/d/1CBof60EExpF4IrZMhyix6CvRicqSONRA/view?usp=sharing
+cover	1
+shots	6
+end	-
+post	vampire-survivors-vita
+cat	ports
+group	3
+date	2026-11-14
+trofeus	1
+title.pt	Vampire Survivors Vita
+tag.pt	Port · Native · PS Vita
+status.pt	v1.2.1 · Jogável
+desc.pt	Port nativo de Vampire Survivors para PS Vita, desenvolvido por RazorGaToR.
+feature_text.pt	Port nativo de Vampire Survivors para PS Vita, desenvolvido por RazorGaToR.
+about.pt	Port nativo de Vampire Survivors para PlayStation Vita criado e mantido por RazorGaToR. A Wolff's Room divulga o projeto; Wolff contribuiu com sugestões de interface (UI) e jogabilidade, além dos frames da animação de abertura creditados na release v1.2.1.
+sec.pt	Destaques
+item.pt	Port nativo reescrito em C, com suporte a controles do PS Vita
+item.pt	Co-op local entre dois consoles PS Vita
+item.pt	Fases, personagens, itens, Arcanas, DLCs compatíveis e importação de saves de PC
+item.pt	Troféus nativos, incluindo platina (requer NoTrpDrm)
+item.pt	Interface adaptada ao Vita e animação de abertura
+sec.pt	Instalação
+item.pt	Instale o VPK v1.2.1 de RazorGaToR
+item.pt	O jogo não inclui seus arquivos comerciais de dados no VPK; obtenha os dados da sua própria cópia legítima do Vampire Survivors para PC, seguindo a ferramenta de extração do repositório original
+item.pt	Alternativamente, há links externos de dados compartilhados para consulta: Google Drive ou MediaFire; a Wolff's Room não hospeda nem verifica a autorização de redistribuição desses arquivos
+item.pt	Caso use um ZIP de dados compatível, extraia a pasta `VampireSurvivors` dentro de `ux0:data/`, resultando em `ux0:data/VampireSurvivors/`
+item.pt	O ZIP do Drive foi verificado quanto à estrutura e contém essa pasta na raiz; o MediaFire exige baixar pelo navegador, pois não fornece um link direto estável
+item.pt	Instale `libshacccg.suprx` conforme o README; troféus requerem o plugin `NoTrpDrm`
+sec.pt	Créditos
+item.pt	Port e desenvolvimento: RazorGaToR
+item.pt	Sugestões de UI e jogabilidade / frames da abertura: Wolff (Wolff's Room)
+item.pt	Jogo original: poncle
+info.pt	Desenvolvedor|RazorGaToR
+info.pt	Versão|v1.2.1
+info.pt	Title ID|VSPH00001
+info.pt	Motor|C / raylib / vitaGL
+info.pt	Troféus|Sim (NoTrpDrm)
+info.pt	Dados|Necessita jogo original
+link.pt	Baixar VPK|https://github.com/Federicoilgrandebardo/vampire-survivors-vita/releases/download/v1.2.1/VampireSurvivors-Vita-v1.2.1.vpk
+link.pt	Baixar dados|https://drive.google.com/file/d/1oKKnLI7tvSPWEDa0kmUkbIHeTsWXw4VF/view?usp=sharing
+title.en	Vampire Survivors Vita
+tag.en	Port · Native · PS Vita
+status.en	v1.2.1 · Playable
+desc.en	Native PS Vita port of Vampire Survivors, developed by RazorGaToR.
+feature_text.en	Native PS Vita port of Vampire Survivors, developed by RazorGaToR.
+about.en	A native PlayStation Vita port of Vampire Survivors, developed and maintained by RazorGaToR. Wolff's Room showcases the project; Wolff provided UI and gameplay suggestions as well as the opening animation frames credited in the v1.2.1 release.
+sec.en	Highlights
+item.en	Native C port with PlayStation Vita controls
+item.en	Local co-op across two PS Vita consoles
+item.en	Stages, characters, Arcanas, supported DLCs and PC save import
+item.en	Native trophies including platinum (NoTrpDrm required)
+item.en	Vita-specific user interface and animated boot screen
+sec.en	Installation
+item.en	Install the v1.2.1 VPK from RazorGaToR
+item.en	The VPK does not contain the commercial game data. You need your own legitimate PC copy of Vampire Survivors; follow the original repository's extraction instructions
+item.en	The two externally supplied data links (Google Drive and MediaFire) are third-party alternatives; Wolff's Room does not host these archives or certify redistribution rights
+item.en	Compatible data ZIP archives must contain the `VampireSurvivors` folder placed inside `ux0:data/`, resulting in `ux0:data/VampireSurvivors/`
+item.en	The Drive ZIP root layout was verified; MediaFire opens an intermediate webpage rather than a stable direct download
+item.en	Install `libshacccg.suprx` as described by the original project; trophies require `NoTrpDrm`
+sec.en	Credits
+item.en	Port and development: RazorGaToR
+item.en	UI/gameplay suggestions and boot animation frames: Wolff (Wolff's Room)
+item.en	Original game: poncle
+info.en	Developer|RazorGaToR
+info.en	Version|v1.2.1
+info.en	Title ID|VSPH00001
+info.en	Engine|C / raylib / vitaGL
+info.en	Trophies|Yes (NoTrpDrm)
+info.en	Game data|Original game required
+link.en	Download VPK|https://github.com/Federicoilgrandebardo/vampire-survivors-vita/releases/download/v1.2.1/VampireSurvivors-Vita-v1.2.1.vpk
+link.en	Download data|https://drive.google.com/file/d/1oKKnLI7tvSPWEDa0kmUkbIHeTsWXw4VF/view?usp=sharing
+cover	1
+shots	6
+end	-
+post	shinokai
+cat	ferramentas
+group	3
+date	2026-11-14
+title.pt	ShinoKaiVita
+tag.pt	Entretenimento · Anime
+status.pt	Disponível · Brasil
+desc.pt	App gratuito de entretenimento voltado a fãs de anime, disponível somente no Brasil.
+feature_text.pt	App gratuito de entretenimento voltado a fãs de anime, disponível somente no Brasil.
+about.pt	ShinoKaiVita, desenvolvido por MeninoSung, é um app gratuito de entretenimento voltado a fãs de anime. A proposta lembra serviços de streaming como o Crunchyroll, com acesso gratuito ao conteúdo oferecido pelo aplicativo.
+sec.pt	Disponibilidade
+item.pt	Funciona somente no Brasil
+item.pt	Requer conexão com a internet
+item.pt	O projeto não disponibiliza código-fonte
+sec.pt	Instalação
+item.pt	Baixe o VPK pelo Google Drive ou pelo espelho no MediaFire
+item.pt	Transfira o arquivo para o PS Vita e instale com um gerenciador de VPKs
+item.pt	Abra o ShinoKaiVita pela LiveArea
+sec.pt	Aviso
+para.pt	A disponibilidade do catálogo e dos serviços depende dos servidores do aplicativo. A Wolff's Room apenas cataloga o app e não hospeda nem controla seu conteúdo.
+info.pt	Desenvolvedor|MeninoSung
+info.pt	Plataforma|PS Vita / PSTV
+info.pt	Disponibilidade|Somente Brasil
+info.pt	Versão|v0.2
+info.pt	Title ID|SHNK00001
+link.pt	Baixar pelo Google Drive|https://drive.google.com/file/d/17OO0Q2Zmd4hpylLoXJinRJW15tYZTOs8/view?usp=sharing
+link.pt	Espelho no MediaFire|https://www.mediafire.com/file/w6kzbmi3uhmo2f6/ShinokaiVita.vpk/
+title.en	ShinoKaiVita
+tag.en	Entertainment · Anime
+status.en	Available · Brazil
+desc.en	Free entertainment app for anime fans, available only in Brazil.
+feature_text.en	Free entertainment app for anime fans, available only in Brazil.
+about.en	ShinoKaiVita, developed by MeninoSung, is a free entertainment app aimed at anime fans. Its proposal resembles streaming services such as Crunchyroll, with free access to the content offered by the application.
+sec.en	Availability
+item.en	Works only in Brazil
+item.en	Requires an internet connection
+item.en	No source code is available
+sec.en	Installation
+item.en	Download the VPK from Google Drive or the MediaFire mirror
+item.en	Transfer it to the PS Vita and install it with a VPK-capable file manager
+item.en	Launch ShinoKaiVita from LiveArea
+sec.en	Notice
+para.en	Catalog and service availability depend on the app's servers. Wolff's Room only catalogs the app and does not host or control its content.
+info.en	Developer|MeninoSung
+info.en	Platform|PS Vita / PSTV
+info.en	Availability|Brazil only
+info.en	Version|v0.2
+info.en	Title ID|SHNK00001
+link.en	Download from Google Drive|https://drive.google.com/file/d/17OO0Q2Zmd4hpylLoXJinRJW15tYZTOs8/view?usp=sharing
+link.en	MediaFire mirror|https://www.mediafire.com/file/w6kzbmi3uhmo2f6/ShinokaiVita.vpk/
+cover	1
+shots	3
+end	-
+post	file-manager
+cat	ferramentas
+group	0
+date	2026-11-14
+progress	70
+title.pt	File Manager
+tag.pt	Ferramenta · Arquivos
+status.pt	Em desenvolvimento
+desc.pt	Gerenciador de arquivos nativo para PS Vita com a interface, sons e transições do próprio sistema.
+feature_text.pt	Gerenciador de arquivos nativo para PS Vita com a interface, sons e transições do próprio sistema.
+about.pt	File Manager é um explorador de arquivos criado especialmente para o PS Vita. A nova interface usa ScePaf, o mesmo framework dos aplicativos do sistema, para oferecer widgets, sons, transições e diálogos nativos.
+sec.pt	Em desenvolvimento
+item.pt	Ainda não há uma release pública para download
+item.pt	O projeto está em desenvolvimento e deve ser testado com cautela quando uma versão pública estiver disponível
+item.pt	O Title ID próprio permitirá instalação ao lado do VitaShell e do FMVita
+sec.pt	Recursos planejados e em teste
+item.pt	Copiar, mover, excluir, renomear e criar pastas
+item.pt	Visualização de imagens, textos, áudio e vídeos
+item.pt	Instalação e inspeção de VPKs
+item.pt	FTP, pesquisa, seleção múltipla e suporte a toque
+item.pt	Temas, fundos personalizados e interface em português e inglês
+info.pt	Estado|Em desenvolvimento
+info.pt	Interface|ScePaf
+info.pt	Title ID planejado|FILEMGR01
+title.en	File Manager
+tag.en	Tool · Files
+status.en	In development
+desc.en	Native PS Vita file manager using the system's own interface, sounds and transitions.
+feature_text.en	Native PS Vita file manager using the system's own interface, sounds and transitions.
+bars_title.en	Progress
+about.en	File Manager is a file explorer designed specifically for PS Vita. Its new interface uses ScePaf, the framework behind the system applications, to provide native widgets, sounds, transitions and dialogs.
+sec.en	In development
+item.en	There is no public release available for download yet
+item.en	The project is under development and should be tested carefully when a public build becomes available
+item.en	Its own Title ID will allow installation alongside VitaShell and FMVita
+sec.en	Planned and testing features
+item.en	Copy, move, delete, rename and create folders
+item.en	Image, text, audio and video previews
+item.en	VPK inspection and installation
+item.en	FTP, search, multi-selection and touch support
+item.en	Themes, custom backgrounds and Portuguese/English interfaces
+info.en	Status|In development
+info.en	Interface|ScePaf
+info.en	Planned Title ID|FILEMGR01
+cover	1
+shots	2
+end	-
+post	fm
+cat	ferramentas
+group	1
+date	2026-11-14
+title.pt	FMVita
+tag.pt	Ferramenta · Arquivos
+status.pt	v0.6.2
+desc.pt	Gerenciador de arquivos com interface moderna e suporte a toque. Fork do VitaShell.
+feature_text.pt	Gerenciador de arquivos com interface moderna e suporte a toque. Fork do VitaShell.
+about.pt	File Manager Vita é um fork aprimorado do VitaShell (criado por TheFloW), focado em usabilidade. Tem Title ID próprio e pasta dedicada em ux0:FMVita/, então pode ser instalado lado a lado com o VitaShell ou outro gerenciador.
+sec.pt	Destaques
+item.pt	Suporte ampliado à tela de toque
+item.pt	Fundos animados e temas, incluindo tema Custom por colors.txt
+item.pt	Layouts em grade, 2 e 3 colunas
+item.pt	Instalação de vários VPKs em sequência
+item.pt	Servidor FTP com progresso de 0 a 100%
+item.pt	Visualizador de imagens
+item.pt	Sistema de desfazer
+sec.pt	Instalação
+item.pt	Transfira o .vpk do FMVita para o console (FTP ou USB)
+item.pt	Instale pelo VitaShell ou outro gerenciador
+info.pt	Versão|v0.6.2
+info.pt	Title ID|FILEMNGR1
+info.pt	Base|VitaShell
+link.pt	Ver no GitHub|https://github.com/WolffsRoom/FMVita
+link.pt	Releases|https://github.com/WolffsRoom/FMVita/releases
+title.en	FMVita
+tag.en	Tool · Files
+status.en	v0.6.2
+desc.en	File manager with a modern interface and touch support. A VitaShell fork.
+feature_text.en	File manager with a modern interface and touch support. A VitaShell fork.
+about.en	File Manager Vita is an improved fork of VitaShell (by TheFloW) focused on usability. It has its own Title ID and a dedicated folder at ux0:FMVita/, so it can be installed side by side with VitaShell or another manager.
+sec.en	Highlights
+item.en	Extended touchscreen support
+item.en	Animated backgrounds and themes, including a Custom theme via colors.txt
+item.en	Grid, 2-column and 3-column layouts
+item.en	Install several VPKs in a row
+item.en	FTP server with 0-100% progress
+item.en	Image viewer
+item.en	Undo system
+sec.en	Installation
+item.en	Transfer the FMVita .vpk to the console (FTP or USB)
+item.en	Install it with VitaShell or another manager
+info.en	Version|v0.6.2
+info.en	Title ID|FILEMNGR1
+info.en	Base|VitaShell
+link.en	View on GitHub|https://github.com/WolffsRoom/FMVita
+link.en	Releases|https://github.com/WolffsRoom/FMVita/releases
+cover	1
+shots	3
+end	-
 post	godot-v03
 cat	ferramentas
 group	0
 date	2026-11-13
-feat	1
 title.pt	Godot 4 Vita - Release v0.3
 tag.pt	Engine · C++
 status.pt	v0.3 lançada
@@ -71,68 +463,7 @@ info.en	Requirements|HENkaku/Ens? and kubridge
 link.en	Download Showcase (VPK)|https://github.com/WolffsRoom/godot4-psvita/releases/download/v0.3/Godot4Vita-v0.3-Showcase.vpk
 cover	1
 shots	0
-end	
-post	pizza
-cat	ports
-group	0
-date	2026-11-13
-pixel	1
-video_arquivo	https://wolffsroom.github.io/WolffsRoomSite/posts/pizza/trailer-vita-v2.mp4
-title.pt	Pizza Tower - SAGE 2019 Demo
-tag.pt	Port · PS Vita
-status.pt	Em andamento
-desc.pt	Port da demo da SAGE 2019 para o PS Vita.
-feature_text.pt	Port não oficial da demo de Pizza Tower lançada na SAGE 2019, com Peppino e Snick, para o PS Vita.
-about.pt	Port não oficial da demo de Pizza Tower lançada na Sonic Amateur Games Expo (SAGE) de 2019 para o PS Vita. A demo é gratuita e feita em GameMaker.
-sec.pt	Sobre a demo
-item.pt	Lançada durante a SAGE 2019, com fases novas, o modo Snick Challenge e bastante conteúdo não usado
-item.pt	Snick the Porcupine é jogável só nesta demo
-item.pt	Moedas de pizza caem dos blocos e servem para comprar a espingarda na Pizzamart
-sec.pt	Instalação
-item.pt	Baixe o VPK e instale com o VitaShell
-item.pt	Baixe os dados, extraia o .zip e copie a pasta extraída para ux0:data/
-item.pt	Abra o jogo pela LiveArea
-sec.pt	Requisitos
-item.pt	PS Vita desbloqueado
-item.pt	Plugin kubridge.suprx
-item.pt	libshacccg.suprx
-item.pt	Pasta game-data em ux0:data/ (baixada no botão Baixar dados)
-info.pt	Status|Em andamento
-info.pt	Jogo|Pizza Tower - SAGE 2019 Demo
-info.pt	Criadores|Tour de Pizza
-info.pt	Engine original|GameMaker
-info.pt	Dados|pasta em ux0:data/
-link.pt	Baixar VPK|https://drive.google.com/file/d/1EgVvq6LYAK5bxLwH1CLnedn7eMGqDFZ9/view?usp=sharing
-link.pt	Baixar dados|https://drive.google.com/file/d/1CBof60EExpF4IrZMhyix6CvRicqSONRA/view?usp=sharing
-title.en	Pizza Tower - SAGE 2019 Demo
-tag.en	Port · PS Vita
-status.en	In progress
-desc.en	Port of the SAGE 2019 demo to PS Vita.
-feature_text.en	Unofficial PS Vita port of the Pizza Tower demo released at SAGE 2019, with Peppino and Snick.
-about.en	Unofficial PS Vita port of the Pizza Tower demo released at the 2019 Sonic Amateur Games Expo (SAGE). The demo is free and made in GameMaker.
-sec.en	About the demo
-item.en	Released during SAGE 2019, with new levels, the Snick Challenge mode and plenty of unused content
-item.en	Snick the Porcupine is playable only in this demo
-item.en	Pizza coins drop from blocks and buy the shotgun at the Pizzamart
-sec.en	Installation
-item.en	Download the VPK and install it with VitaShell
-item.en	Download the data, extract the .zip and copy the extracted folder to ux0:data/
-item.en	Start the game from the LiveArea
-sec.en	Requirements
-item.en	Hacked PS Vita
-item.en	kubridge.suprx plugin
-item.en	libshacccg.suprx
-item.en	game-data folder in ux0:data/ (from the Download data button)
-info.en	Status|In progress
-info.en	Game|Pizza Tower - SAGE 2019 Demo
-info.en	Creators|Tour de Pizza
-info.en	Original engine|GameMaker
-info.en	Data|folder in ux0:data/
-link.en	Download VPK|https://drive.google.com/file/d/1EgVvq6LYAK5bxLwH1CLnedn7eMGqDFZ9/view?usp=sharing
-link.en	Download data|https://drive.google.com/file/d/1CBof60EExpF4IrZMhyix6CvRicqSONRA/view?usp=sharing
-cover	1
-shots	6
-end	
+end	-
 post	void
 cat	ports
 group	0
@@ -140,7 +471,7 @@ date	2026-11-11
 pixel	1
 progress	95
 title.pt	Void Stranger - PS Vita Edition
-tag.pt	Port · C
+tag.pt	Port · GameMaker · PS Vita
 status.pt	95% · Jogável
 desc.pt	Port nativo não oficial de Void Stranger para o PS Vita.
 feature_text.pt	Port nativo não oficial de Void Stranger para o PS Vita.
@@ -172,7 +503,7 @@ info.pt	Troféus|30, nativos
 link.pt	Ver no GitHub|https://github.com/WolffsRoom/VoidStrangerVita
 link.pt	Releases|https://github.com/WolffsRoom/VoidStrangerVita/releases
 title.en	Void Stranger - PS Vita Edition
-tag.en	Port · C
+tag.en	Port · GameMaker · PS Vita
 status.en	95% · Playable
 desc.en	Unofficial native port of Void Stranger to PS Vita.
 feature_text.en	Unofficial native port of Void Stranger to PS Vita.
@@ -205,7 +536,7 @@ link.en	View on GitHub|https://github.com/WolffsRoom/VoidStrangerVita
 link.en	Releases|https://github.com/WolffsRoom/VoidStrangerVita/releases
 cover	1
 shots	0
-end	
+end	-
 post	delta
 cat	ports
 group	0
@@ -215,7 +546,7 @@ trofeus	1
 video_arquivo	https://wolffsroom.github.io/WolffsRoomSite/posts/delta/trailer-vita-v2.mp4
 progress	81
 title.pt	DeltaruneVita
-tag.pt	Port · C
+tag.pt	Port · GameMaker · PS Vita
 status.pt	81% · Jogável
 desc.pt	Deltarune, capítulos 1 a 5, no PS Vita.
 feature_text.pt	Deltarune, capítulos 1 a 5, no PS Vita.
@@ -259,7 +590,7 @@ info.pt	Build|Deltarune-v0.81.vpk
 info.pt	Troféus|Sim (NoTrpDrm)
 link.pt	Baixar VPK (v0.81)|https://github.com/WolffsRoom/DeltaruneVita/releases/download/v0.81/Deltarune-v0.81.vpk
 title.en	DeltaruneVita
-tag.en	Port · C
+tag.en	Port · GameMaker · PS Vita
 status.en	81% · Playable
 desc.en	Deltarune, chapters 1 to 5, on PS Vita.
 feature_text.en	Deltarune, chapters 1 to 5, on PS Vita.
@@ -304,58 +635,7 @@ info.en	Trophies|Yes (NoTrpDrm)
 link.en	Download VPK (v0.81)|https://github.com/WolffsRoom/DeltaruneVita/releases/download/v0.81/Deltarune-v0.81.vpk
 cover	1
 shots	8
-end	
-post	fm
-cat	ferramentas
-group	1
-date	2026-06-17
-title.pt	FMVita
-tag.pt	Ferramenta · C
-status.pt	v0.5.0
-desc.pt	Gerenciador de arquivos com interface moderna e suporte a toque. Fork do VitaShell.
-feature_text.pt	Gerenciador de arquivos com interface moderna e suporte a toque. Fork do VitaShell.
-about.pt	File Manager Vita é um fork aprimorado do VitaShell (criado por TheFloW), focado em usabilidade. Tem Title ID próprio e pasta dedicada em ux0:FMVita/, então pode ser instalado lado a lado com o VitaShell ou outro gerenciador.
-sec.pt	Destaques
-item.pt	Suporte ampliado à tela de toque
-item.pt	Fundos animados e temas, incluindo tema Custom por colors.txt
-item.pt	Layouts em grade, 2 e 3 colunas
-item.pt	Instalação de vários VPKs em sequência
-item.pt	Servidor FTP com progresso de 0 a 100%
-item.pt	Visualizador de imagens
-item.pt	Sistema de desfazer
-sec.pt	Instalação
-item.pt	Transfira o .vpk do FMVita para o console (FTP ou USB)
-item.pt	Instale pelo VitaShell ou outro gerenciador
-info.pt	Versão|v0.5.0
-info.pt	Lançada em|17/06/2026
-info.pt	Base|VitaShell
-link.pt	Ver no GitHub|https://github.com/WolffsRoom/FMVita
-link.pt	Releases|https://github.com/WolffsRoom/FMVita/releases
-title.en	FMVita
-tag.en	Tool · C
-status.en	v0.5.0
-desc.en	File manager with a modern interface and touch support. A VitaShell fork.
-feature_text.en	File manager with a modern interface and touch support. A VitaShell fork.
-about.en	File Manager Vita is an improved fork of VitaShell (by TheFloW) focused on usability. It has its own Title ID and a dedicated folder at ux0:FMVita/, so it can be installed side by side with VitaShell or another manager.
-sec.en	Highlights
-item.en	Extended touchscreen support
-item.en	Animated backgrounds and themes, including a Custom theme via colors.txt
-item.en	Grid, 2-column and 3-column layouts
-item.en	Install several VPKs in a row
-item.en	FTP server with 0-100% progress
-item.en	Image viewer
-item.en	Undo system
-sec.en	Installation
-item.en	Transfer the FMVita .vpk to the console (FTP or USB)
-item.en	Install it with VitaShell or another manager
-info.en	Version|v0.5.0
-info.en	Released|17/06/2026
-info.en	Base|VitaShell
-link.en	View on GitHub|https://github.com/WolffsRoom/FMVita
-link.en	Releases|https://github.com/WolffsRoom/FMVita/releases
-cover	1
-shots	0
-end	
+end	-
 post	ystool
 cat	ferramentas
 group	0
@@ -390,7 +670,7 @@ info.en	Interface|PyWebview
 link.en	Tools page|https://wolffsroom.wordpress.com/ferramentas/
 cover	1
 shots	2
-end	
+end	-
 post	godot
 cat	ferramentas
 group	0
@@ -437,13 +717,13 @@ link.en	View on GitHub|https://github.com/WolffsRoom/godot4-psvita
 link.en	Releases|https://github.com/WolffsRoom/godot4-psvita/releases
 cover	1
 shots	0
-end	
+end	-
 post	idol
 cat	ports
 group	0
 date	2026-06-01
 title.pt	The Case of the Golden Idol
-tag.pt	Port · Python
+tag.pt	Port · Godot · PS Vita
 status.pt	Em andamento
 desc.pt	Port para PS Vita, com tradução em andamento.
 feature_text.pt	Port para PS Vita, com tradução em andamento.
@@ -469,7 +749,7 @@ info.pt	Ferramentas|GDRE_Tools, Godot PSVita, AssetStudio
 link.pt	Ver no GitHub|https://github.com/WolffsRoom/GoldenIdol-PSVita
 link.pt	Releases|https://github.com/WolffsRoom/GoldenIdol-PSVita/releases
 title.en	The Case of the Golden Idol
-tag.en	Port · Python
+tag.en	Port · Godot · PS Vita
 status.en	In progress
 desc.en	PS Vita port, translation in progress.
 feature_text.en	PS Vita port, translation in progress.
@@ -496,14 +776,14 @@ link.en	View on GitHub|https://github.com/WolffsRoom/GoldenIdol-PSVita
 link.en	Releases|https://github.com/WolffsRoom/GoldenIdol-PSVita/releases
 cover	1
 shots	0
-end	
+end	-
 post	uty
 cat	ports
 group	1
 date	2026-05-20
 pixel	1
 title.pt	Undertale Yellow
-tag.pt	Port · C
+tag.pt	Port · GameMaker · PS Vita
 status.pt	Jogável
 desc.pt	Port de Undertale Yellow para o PS Vita.
 feature_text.pt	Port de Undertale Yellow para o PS Vita.
@@ -530,7 +810,7 @@ info.pt	Runtime|Butterscotch + VitaGL
 link.pt	Ver no GitHub|https://github.com/WolffsRoom/UndertaleYellowVita
 link.pt	Releases|https://github.com/WolffsRoom/UndertaleYellowVita/releases
 title.en	Undertale Yellow
-tag.en	Port · C
+tag.en	Port · GameMaker · PS Vita
 status.en	Playable
 desc.en	Undertale Yellow ported to PS Vita.
 feature_text.en	Undertale Yellow ported to PS Vita.
@@ -558,7 +838,7 @@ link.en	View on GitHub|https://github.com/WolffsRoom/UndertaleYellowVita
 link.en	Releases|https://github.com/WolffsRoom/UndertaleYellowVita/releases
 cover	1
 shots	0
-end	
+end	-
 post	horizon
 cat	ferramentas
 group	1
@@ -636,7 +916,7 @@ link.en	Original post|https://wolffsroom.wordpress.com/2026/05/15/horizon-chase-
 cover	1
 shots	0
 video	https://youtu.be/uLmCN01wOwo
-end	
+end	-
 post	sonic
 cat	traducoes
 group	0
@@ -698,7 +978,7 @@ link.en	Original post|https://wolffsroom.wordpress.com/2026/02/25/sonic-mania-pl
 link.en	Vita port (GitHub)|https://github.com/SonicMastr/Sonic-Mania-Vita
 cover	1
 shots	0
-end	
+end	-
 post	dontstarve
 cat	traducoes
 group	2
@@ -750,7 +1030,7 @@ info.en	Posted|25/02/2026
 link.en	Original post|https://wolffsroom.wordpress.com/2026/02/25/dont-starve-reign-of-giants-psvita/
 cover	1
 shots	0
-end	
+end	-
 post	wolf
 cat	traducoes
 group	3
@@ -836,7 +1116,7 @@ link.en	MediaFire|https://www.mediafire.com/file/j4m92448sonzci1/Tradu%25C3%25A7
 link.en	Original post|https://wolffsroom.wordpress.com/2026/02/23/the-wolf-among-us-psvita/
 cover	1
 shots	4
-end	
+end	-
 post	wipeout
 cat	traducoes
 group	3
@@ -899,7 +1179,7 @@ link.en	Rubinho146's channel|https://www.youtube.com/channel/UCvRIQWYlpPKQ1LJfyO
 cover	1
 shots	3
 video	https://youtu.be/mbDw97XA5Mg
-end	
+end	-
 post	twd2
 cat	traducoes
 group	3
@@ -981,7 +1261,7 @@ link.en	MediaFire|https://www.mediafire.com/file/6a5btu7eg3buazc/Tradu%C3%A7%C3%
 link.en	Original post|https://wolffsroom.wordpress.com/2026/02/18/the-walking-dead-temporada-2-psvita/
 cover	1
 shots	3
-end	
+end	-
 post	alone
 cat	traducoes
 group	0
@@ -1037,7 +1317,7 @@ info.en	Posted|10/06/2025
 link.en	Original post|https://wolffsroom.wordpress.com/2025/06/10/psv-alone-with-you-traducao-pt-br/
 cover	1
 shots	3
-end	
+end	-
 post	p4g
 cat	reviews
 group	1
@@ -1108,7 +1388,7 @@ info.en	Score|192/216 (8.9/10)
 link.en	Read the full review|https://wolffsroom.wordpress.com/2025/04/26/persona-4-golden-psvita-analise/
 cover	1
 shots	2
-end	
+end	-
 post	ayesha
 cat	traducoes
 group	2
@@ -1160,7 +1440,7 @@ info.en	Posted|31/03/2025
 link.en	Original post|https://wolffsroom.wordpress.com/2025/03/31/psv-atelier-ayesha-traducao-pt-br/
 cover	1
 shots	1
-end	
+end	-
 post	bastion
 cat	traducoes
 group	2
@@ -1210,7 +1490,7 @@ info.en	Posted|20/02/2025
 link.en	Original post|https://wolffsroom.wordpress.com/2025/02/20/psv-bastion-traducao-pt-br/
 cover	1
 shots	1
-end	
+end	-
 post	undertale
 cat	traducoes
 group	2
@@ -1254,7 +1534,7 @@ info.en	Posted|12/02/2025
 link.en	Original post|https://wolffsroom.wordpress.com/2025/02/12/psv-undertale-melhorias-na-traducao-pt-br/
 cover	1
 shots	1
-end	
+end	-
 post	delta1
 cat	traducoes
 group	1
@@ -1334,7 +1614,7 @@ link.en	MediaFire|https://www.mediafire.com/file/hrhd5r8v9zbca4a/Deltarune+PTBR.
 link.en	Original post|https://wolffsroom.wordpress.com/2025/02/06/psv-deltarune-capitulo-1-port-traducao-pt-br/
 cover	1
 shots	3
-end	
+end	-
 post	cave
 cat	traducoes
 group	1
@@ -1414,7 +1694,7 @@ link.en	MediaFire|https://www.mediafire.com/file/jb44o6hsrx1sg4a/CaveStory.zip/f
 link.en	Original post|https://wolffsroom.wordpress.com/2025/02/06/psv-cave-story-traducao-pt-br/
 cover	1
 shots	3
-end	
+end	-
 post	ys
 cat	traducoes
 group	2
@@ -1468,7 +1748,7 @@ info.en	Posted|29/01/2025
 link.en	Original post|https://wolffsroom.wordpress.com/2025/01/29/psv-ys-origin-traducao-pt-br/
 cover	1
 shots	2
-end	
+end	-
 post	darkest
 cat	ferramentas
 group	0
@@ -1499,7 +1779,7 @@ info.en	Posted|27/01/2025
 link.en	Original post|https://wolffsroom.wordpress.com/2025/01/27/darkest-dungeon-mod/
 cover	1
 shots	1
-end	
+end	-
 post	icono
 cat	traducoes
 group	1
@@ -1577,4 +1857,4 @@ link.en	MEGA|https://mega.nz/file/ggEWXKxb#j3McOGblU7Gz76jTtNdEUWW23NQJNzDEvw9SK
 link.en	Original post|https://wolffsroom.wordpress.com/2025/01/25/psv-iconoclasts-traducao-pt-br/
 cover	1
 shots	3
-end	
+end	-

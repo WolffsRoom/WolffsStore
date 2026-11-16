@@ -14,9 +14,9 @@ class ReleaseInvariants(unittest.TestCase):
         cls.video = (ROOT / "src/video.c").read_text(encoding="utf-8")
         cls.updater = (ROOT / "updater/main.c").read_text(encoding="utf-8")
 
-    def test_release_is_v0997(self):
+    def test_release_is_v0998(self):
         self.assertIn('set(WS_SFO_VERSION "00.99")', self.cmake)
-        self.assertIn('set(WS_FILE_VERSION "0.99.7")', self.cmake)
+        self.assertIn('set(WS_FILE_VERSION "0.99.8")', self.cmake)
 
     def test_featured_update_suffix_follows_app_title(self):
         hero=self.main[self.main.index("static void build_home("):
@@ -38,9 +38,9 @@ class ReleaseInvariants(unittest.TestCase):
     def test_title_id_migration_keeps_old_bubble_safe(self):
         self.assertIn('set(WS_TITLEID "WFFS00042")', self.cmake)
         self.assertIn('set(WS_UPDATER_TITLEID "WFFS00043")', self.cmake)
-        self.assertIn('set(WS_FILE_VERSION "0.99.7")', self.cmake)
+        self.assertIn('set(WS_FILE_VERSION "0.99.8")', self.cmake)
         self.assertIn('set(WS_SFO_VERSION "00.99")', self.cmake)
-        self.assertIn('#define WS_VERSION "0.99.7"', self.main)
+        self.assertIn('#define WS_VERSION "0.99.8"', self.main)
         self.assertIn('#define MAIN_TITLE "WFFS00042"', self.updater)
         self.assertNotIn('set(WS_TITLEID "WOLF00001")',self.cmake)
         self.assertNotIn('#define MAIN_TITLE "WOLF00001"',self.updater)
@@ -356,6 +356,59 @@ class ReleaseInvariants(unittest.TestCase):
         catalog=(ROOT/"data/catalog.txt").read_bytes().decode("latin-1")
         for slug in ("pizza","delta"):
             self.assertIn(f"/posts/{slug}/trailer-vita-v2.mp4",catalog)
+
+    def test_realtime_audio_is_ram_buffered_during_archive_extraction(self):
+        aud = (ROOT / "src/audio.c").read_text(encoding="utf-8")
+        self.assertIn("#define GRAIN 1024", aud)
+        self.assertIn("static void ost_preload_pcm(void)",aud)
+        self.assertIn("ost_preload_pcm();",aud)
+        self.assertIn("if (ost_pcm[next] && ost_pcm_samples[next])",aud)
+        self.assertIn("if (pcm_memory && pcm_memory_samples)",aud)
+        self.assertIn("return pcm_memory[pcm_memory_pos++]",aud)
+        self.assertIn("pcm_memory_pos=0",aud)
+        self.assertIn("PCM_PRELOAD_MAX",aud)
+        self.assertIn("/* Low-memory fallback:",aud)
+        self.assertLess(aud.index("ost_preload_pcm();"),aud.index('sceKernelCreateThread("ws_audio"'))
+
+    def test_catalog_sync_gates_initial_question_even_when_cached(self):
+        entry=self.main[self.main.index("int main(void) {"):]
+        self.assertIn("first_sync = 1;",entry)
+        self.assertNotIn("first_sync = cached <= 0",entry)
+        self.assertIn("start_sync(0);",entry)
+        self.assertNotIn("if (!first_sync) title_cues();",entry)
+        tick=self.main[self.main.index("static void tick_store("):
+                       self.main.index("/* ================================================================ main */")]
+        ready=tick.index("if (first_sync && st == SYNC_READY)")
+        post=tick[ready:ready+500]
+        self.assertLess(post.index("apply_sync();"),post.index("first_sync = 0;"))
+        self.assertLess(post.index("first_sync = 0;"),post.index("title_cues();"))
+        self.assertIn("SYNC_OFFLINE || st == SYNC_FAIL",tick)
+
+    def test_delayed_bounce_messages_do_not_show_during_fast_sync(self):
+        splash=self.main[self.main.index("static void draw_first_sync(void) {"):
+                         self.main.index("static void letters_wave(",self.main.index("static void draw_first_sync(void) {"))]
+        self.assertIn("if (elapsed < 1.10) return;",splash)
+        self.assertIn('Atualizando a loja...',splash)
+        self.assertIn('Tirando a poeira dos ports',splash)
+        self.assertIn('Recompilando projetos',splash)
+        self.assertIn('Corrigindo alguns bugs aqui e ali',splash)
+        self.assertIn('Organizando as prateleiras',splash)
+        self.assertIn('Movendo as coisas de lugar',splash)
+        self.assertIn("if (elapsed >= 3.4)",splash)
+        self.assertIn("title_draw(ch,",splash)
+        self.assertIn("body_draw(sub,",splash)
+
+    def test_download_queue_shows_project_not_mirror_label(self):
+        act=self.main[self.main.index("static void activate(int it) {"):
+                      self.main.index("/* ================================================================ intro */")]
+        self.assertIn("const char *project = p->t[lang].title",act)
+        self.assertIn("const char *project = g_posts[i].t[lang].title",act)
+        self.assertNotIn('snprintf(title, sizeof(title), "%s", p->dls[x->arg].name)',act)
+        self.assertIn("const char *display_name = g_posts[pi].t[lang].title",self.main)
+        catalog=(ROOT/"data/catalog.txt").read_bytes().decode("latin-1")
+        self.assertIn("pokemon-emerald",catalog)
+        self.assertIn("Pokémon Emerald Voxel 3DS - with PT/BR",catalog)
+        self.assertIn("feat\\t1".replace("\\\\","\\") if False else "feat\t1",catalog)
 
     def test_audio_daypart_and_fixed_ost_options(self):
         aud=(ROOT/"src/audio.c").read_text(encoding="utf-8")

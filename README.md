@@ -127,7 +127,7 @@ evitando execução durante AFK na tela de abertura.
 
 1. Suba `WS_FILE_VERSION`/`WS_SFO_VERSION` no `CMakeLists.txt`.
 2. Crie e envie a tag correspondente, no formato `v0.8`, `v0.9`… ou `v1.0`:
-   `git tag v0.99.7 && git push origin v0.99.7`
+   `git tag v0.99.8 && git push origin v0.99.8`
 3. O workflow publica a release em `WolffsRoom/WolffsStore` com o asset fixo `WolffsStore.vpk`.
    A URL permanente da versão mais recente é
    `https://github.com/WolffsRoom/WolffsStore/releases/latest/download/WolffsStore.vpk`.
@@ -196,3 +196,23 @@ Auto-updater is removed only once the Home has remained stable for
 The worker checks exact installed TITLE_ID and TITLE before deletion.
 Markers are retained when deletion fails. Test the impact of
 SceShell LiveArea refresh on actual Vita hardware after updating.
+
+
+### v0.99.8 - Boot sync, audio extraction and download titles
+
+The first network sync now completes and applies the newest featured post and
+artwork BEFORE playing the opening question/intro, even with a cached catalog.
+Offline/failure falls back to saved or bundled posts. Fast fetches show no
+loading copy; a loading bounce appears only after 1.1 seconds and rotating
+contextual phrases after 3.4 seconds if startup is genuinely slow.
+
+The three 24-kHz PCM soundtracks are preloaded into ~5 MB of main memory
+before starting the realtime BGM audio thread. Thus the mixer performs
+no Vita storage reads during ZIP/VPK extraction, and the output grain is
+1024 samples (21 ms at 48 kHz), reducing underruns during heavy I/O.
+If memory is unavailable, the old streaming path remains a fallback.
+
+Downloads and installed entries now show the current project title rather
+than a download mirror label. Pokemon Emerald Voxel 3DS - with PT/BR is
+included in the offline catalog and on the site; its Google Drive link
+remains a manual alternative rather than an automatically installed VPK.

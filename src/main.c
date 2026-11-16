@@ -29,7 +29,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "0.99.7"
+#define WS_VERSION "0.99.8"
 #endif
 
 /* ================================================================ textos */
@@ -143,7 +143,7 @@ static int snd_menu = 0, snd_row = 0, vid_open = 0, vid_music = 0;
 static double now_s, view_t0, peek_t0, intro_t0 = -1, wipe_t0 = -100, wave_t0 = -100, pressed_t0 = -100;
 static int started = 0, pressed_item = -1;
 static int first_sync = 0;
-static double title_t0 = 0;
+static double title_t0 = 0, first_sync_t0 = 0;
 static double home_t0 = -100; /* animação de volta ao início */
 static int feat = 0;
 
@@ -1275,7 +1275,11 @@ static void build_dls(void) {
         frame(24, y, 912, rh, C_BORDER, C_BORDER, -1);
         char *lines[2];
         static char buf2[256];
-        if (wrap_title(e->name[0] ? e->name : d->name, 2, 560, lines, 1, buf2, sizeof(buf2))) title(keep(lines[0]), 48, y + 20, 2, C_WHITE, 0);
+        const char *display_name = g_posts[pi].t[lang].title;
+        if (!display_name || !display_name[0])
+            display_name = e->name[0] ? e->name : d->name;
+        if (wrap_title(display_name, 2, 560, lines, 1, buf2, sizeof(buf2)))
+            title(keep(lines[0]), 48, y + 20, 2, C_WHITE, 0);
         char s[192];
         snprintf(s, sizeof(s), "%s%s", TXT(S_INSTALLED_V), st.inst_ver[0] ? st.inst_ver : "?");
         if (st.update) snprintf(s + strlen(s), sizeof(s) - strlen(s), " \xb7 %s%s", TXT(S_ST_NEWVER), d->version);
@@ -2547,7 +2551,12 @@ static void activate(int it) {
         if (!e) break;
         for (int i = 0; i < g_nposts; i++)
             if (!strcmp(g_posts[i].slug, e->slug) && e->dl < g_posts[i].ndls) {
-                if (jobs_add(&g_posts[i], e->dl, e->name[0] ? e->name : g_posts[i].dls[e->dl].name) >= 0) sfx("confirm");
+                /* Installed records can retain old mirror labels; the
+                 * project title is the canonical download queue name. */
+                const char *project = g_posts[i].t[lang].title;
+                if (jobs_add(&g_posts[i], e->dl,
+                             project && project[0] ? project : g_posts[i].dls[e->dl].name) >= 0)
+                    sfx("confirm");
                 break;
             }
         break;
@@ -2578,9 +2587,12 @@ static void activate(int it) {
             go(V_DLS, 0);
             break;
         }
-        char title[160];
-        snprintf(title, sizeof(title), "%s", p->dls[x->arg].name);
-        if (jobs_add(p, x->arg, title) >= 0) sfx("confirm");
+        /* Do not label the queue by a mirror/CDN asset, e.g. "Download
+         * alternativo (Google Drive)". Keep the actual post name visible. */
+        const char *project = p->t[lang].title;
+        if (jobs_add(p, x->arg,
+                     project && project[0] ? project : p->dls[x->arg].name) >= 0)
+            sfx("confirm");
         break;
     }
     case A_CANCEL:
@@ -2813,6 +2825,9 @@ static void title_cues(void) {
 /* Primeira execução: sincroniza antes da pergunta da intro. A pata e o logo
  * continuam vivos enquanto o catálogo e as imagens são preparados. */
 static void draw_first_sync(void) {
+    /* Initial catalog is synchronized BEFORE the title-screen question or
+     * intro is allowed to begin. Cached content is the offline fallback,
+     * not a reason to delay updating until after Home. */
     const int sc = 5, step = 8 * sc;
     paw_draw(SCR_W / 2 - 36, SCR_H / 2 - 132, 1, 1);
     float lw = title_width(LOGO, sc);
@@ -2824,11 +2839,40 @@ static void draw_first_sync(void) {
         title_draw(ch, x + 5, SCR_H / 2 - 38 + 5 + hop, sc, C_SHADOW);
         title_draw(ch, x, SCR_H / 2 - 38 + hop, sc, C_WHITE);
     }
-    const char *msg = TXT(S_SYNCING);
-    body_draw(msg, (SCR_W - body_width(msg)) / 2, SCR_H / 2 + 34, C_SOFT);
-    char pc[16];
-    snprintf(pc, sizeof(pc), "%d%%", (int)(sync_progress() * 100));
-    title_draw(pc, (SCR_W - title_width(pc, 2)) / 2, SCR_H / 2 + 66, 2, C_WHITE);
+    double elapsed = now_s - first_sync_t0;
+    /* No loading copy is shown on quick synchronization. This quiet
+     * preface is just the normal paw/logo, not a fake progress screen. */
+    if (elapsed < 1.10) return;
+
+    static const char *headings[2] = {
+        "Updating the Store...", "Atualizando a loja..."
+    };
+    static const char *subtitles[2][5] = {
+        {"Dusting off the ports", "Recompiling projects",
+         "Fixing a bug or two", "Organizing the shelves",
+         "Moving things around"},
+        {"Tirando a poeira dos ports", "Recompilando projetos",
+         "Corrigindo alguns bugs aqui e ali", "Organizando as prateleiras",
+         "Movendo as coisas de lugar"}
+    };
+    const char *heading = headings[lang == LANG_PT ? 1 : 0];
+    const int scale = 2, letters = (int)strlen(heading);
+    float x = (SCR_W - title_width(heading, scale)) / 2;
+    float y = SCR_H / 2 + 54;
+    for (int i = 0; i < letters; i++) {
+        char ch[2] = {heading[i], 0};
+        int bounce = (int)(fabsf(sinf((float)elapsed * 5.2f - i * .36f)) * 8.f);
+        float cx = x + i * (8 * scale);
+        title_draw(ch, cx + 2, y + 2 - bounce, scale, C_SHADOW);
+        title_draw(ch, cx, y - bounce, scale, C_WHITE);
+    }
+    if (elapsed >= 3.4) {
+        /* Small rotating phrases only during a genuinely slow fetch. */
+        int idx = (int)((elapsed - 3.4) / 3.0) % 5;
+        const char *sub = subtitles[lang == LANG_PT ? 1 : 0][idx];
+        body_draw(sub, (SCR_W - body_width(sub)) / 2,
+                  SCR_H / 2 + 110, C_SOFT);
+    }
 }
 
 static void letters_wave(double at, int notes) {
@@ -3144,6 +3188,8 @@ static void tick_store(void) {
     }
     int st = sync_state();
     if (first_sync && st == SYNC_READY) {
+        /* apply_sync updates g_posts, feat, covers and the mosaic before
+         * the title text is ever animated. */
         apply_sync();
         first_sync = 0;
         title_t0 = now_s;
@@ -3352,7 +3398,9 @@ int main(void) {
     sceCommonDialogSetConfigParam(&cdc);
     /* catálogo: o último sincronizado (cartão) ou o que veio no VPK */
     int cached = store_load_cache(g_posts, MAX_POSTS, &app_rel);
-    first_sync = cached <= 0;
+    /* Always refresh before the question/intro, even when cache exists.
+     * On network failure the existing cache or bundled catalog is retained. */
+    first_sync = 1;
     if (cached > 0) g_nposts = cached;
     else catalog_load("app0:data/catalog.txt");
     feat = catalog_featured();
@@ -3398,9 +3446,11 @@ int main(void) {
 
     double t_start = clock_s();
     now_s = 0;
+    first_sync_t0 = now_s;
     view_t0 = 0;
     build_home();
-    if (!first_sync) title_cues();
+    /* Title cues begin only after apply_sync has applied latest featured
+     * metadata and the featured artwork/mosaic was rebuilt. */
 
     unsigned prev = 0;
     int prev_ly = 128;
