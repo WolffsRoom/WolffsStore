@@ -127,7 +127,7 @@ evitando execução durante AFK na tela de abertura.
 
 1. Suba `WS_FILE_VERSION`/`WS_SFO_VERSION` no `CMakeLists.txt`.
 2. Crie e envie a tag correspondente, no formato `v0.8`, `v0.9`… ou `v1.0`:
-   `git tag v0.99.8 && git push origin v0.99.8`
+   `git tag v0.99.9 && git push origin v0.99.9`
 3. O workflow publica a release em `WolffsRoom/WolffsStore` com o asset fixo `WolffsStore.vpk`.
    A URL permanente da versão mais recente é
    `https://github.com/WolffsRoom/WolffsStore/releases/latest/download/WolffsStore.vpk`.
@@ -216,3 +216,19 @@ Downloads and installed entries now show the current project title rather
 than a download mirror label. Pokemon Emerald Voxel 3DS - with PT/BR is
 included in the offline catalog and on the site; its Google Drive link
 remains a manual alternative rather than an automatically installed VPK.
+
+
+### v0.99.9 - restored typewriter after initial synchronization
+
+v0.99.8 started synchronizing every boot before displaying the question.
+On successful synchronization, apply_sync() can spend seconds decoding
+covers and rebuilding the featured project's pixel mosaic on the main
+thread. Its old frame-start now_s became stale, so setting title_t0 to
+that value meant the typing timeline was already finished when the
+question was first drawn.
+
+The v0.99.9 transition stores the monotonic clock origin on startup and
+samples now_s = clock_s() - app_clock_t0 AFTER apply_sync() finishes,
+before resetting title_t0 and scheduling the original letter sound cues.
+The same timestamp reset is used offline. All original 45-ms character
+reveal, cursor, typing SFX and the introductory TV transition remain.

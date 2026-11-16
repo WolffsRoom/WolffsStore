@@ -29,7 +29,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "0.99.8"
+#define WS_VERSION "0.99.9"
 #endif
 
 /* ================================================================ textos */
@@ -144,6 +144,7 @@ static double now_s, view_t0, peek_t0, intro_t0 = -1, wipe_t0 = -100, wave_t0 = 
 static int started = 0, pressed_item = -1;
 static int first_sync = 0;
 static double title_t0 = 0, first_sync_t0 = 0;
+static double app_clock_t0 = 0; /* monotonic origin for post-sync typewriter */
 static double home_t0 = -100; /* animação de volta ao início */
 static int feat = 0;
 
@@ -3188,15 +3189,23 @@ static void tick_store(void) {
     }
     int st = sync_state();
     if (first_sync && st == SYNC_READY) {
-        /* apply_sync updates g_posts, feat, covers and the mosaic before
-         * the title text is ever animated. */
+        /* apply_sync() may synchronously decode many covers and rebuild
+         * the featured mosaic. The 'now_s' value from the start of this
+         * frame becomes stale during that work. If it is reused as the
+         * typewriter origin, the entire question may render instantly.
+         * Sample the monotonic clock AFTER preparing the featured post. */
         apply_sync();
+        ws_log("intro: fresh catalog applied; starting full typewriter");
+        now_s = clock_s() - app_clock_t0;
         first_sync = 0;
         title_t0 = now_s;
         title_cues();
         return;
     }
     if (first_sync && (st == SYNC_OFFLINE || st == SYNC_FAIL)) {
+        /* The same timeline restart applies to offline cached catalogs. */
+        ws_log("intro: offline catalog ready; starting full typewriter");
+        now_s = clock_s() - app_clock_t0;
         first_sync = 0;
         title_t0 = now_s;
         title_cues();
@@ -3445,6 +3454,7 @@ int main(void) {
     start_sync(0);
 
     double t_start = clock_s();
+    app_clock_t0 = t_start;
     now_s = 0;
     first_sync_t0 = now_s;
     view_t0 = 0;

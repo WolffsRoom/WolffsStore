@@ -14,9 +14,9 @@ class ReleaseInvariants(unittest.TestCase):
         cls.video = (ROOT / "src/video.c").read_text(encoding="utf-8")
         cls.updater = (ROOT / "updater/main.c").read_text(encoding="utf-8")
 
-    def test_release_is_v0998(self):
+    def test_release_is_v0999(self):
         self.assertIn('set(WS_SFO_VERSION "00.99")', self.cmake)
-        self.assertIn('set(WS_FILE_VERSION "0.99.8")', self.cmake)
+        self.assertIn('set(WS_FILE_VERSION "0.99.9")', self.cmake)
 
     def test_featured_update_suffix_follows_app_title(self):
         hero=self.main[self.main.index("static void build_home("):
@@ -38,9 +38,9 @@ class ReleaseInvariants(unittest.TestCase):
     def test_title_id_migration_keeps_old_bubble_safe(self):
         self.assertIn('set(WS_TITLEID "WFFS00042")', self.cmake)
         self.assertIn('set(WS_UPDATER_TITLEID "WFFS00043")', self.cmake)
-        self.assertIn('set(WS_FILE_VERSION "0.99.8")', self.cmake)
+        self.assertIn('set(WS_FILE_VERSION "0.99.9")', self.cmake)
         self.assertIn('set(WS_SFO_VERSION "00.99")', self.cmake)
-        self.assertIn('#define WS_VERSION "0.99.8"', self.main)
+        self.assertIn('#define WS_VERSION "0.99.9"', self.main)
         self.assertIn('#define MAIN_TITLE "WFFS00042"', self.updater)
         self.assertNotIn('set(WS_TITLEID "WOLF00001")',self.cmake)
         self.assertNotIn('#define MAIN_TITLE "WOLF00001"',self.updater)
@@ -379,10 +379,50 @@ class ReleaseInvariants(unittest.TestCase):
         tick=self.main[self.main.index("static void tick_store("):
                        self.main.index("/* ================================================================ main */")]
         ready=tick.index("if (first_sync && st == SYNC_READY)")
-        post=tick[ready:ready+500]
+        post=tick[ready:tick.index("if (first_sync && (st == SYNC_OFFLINE || st == SYNC_FAIL))",ready)]
         self.assertLess(post.index("apply_sync();"),post.index("first_sync = 0;"))
         self.assertLess(post.index("first_sync = 0;"),post.index("title_cues();"))
         self.assertIn("SYNC_OFFLINE || st == SYNC_FAIL",tick)
+
+    def test_typewriter_clock_is_rearmed_after_sync_asset_processing(self):
+        # Regression from 0.99.8: apply_sync can spend seconds decoding
+        # featured covers. Reusing frame-start now_s skips the typewriter.
+        tick = self.main[self.main.index("static void tick_store("):
+                         self.main.index("/* ================================================================ main */")]
+        online = tick[tick.index("if (first_sync && st == SYNC_READY)"):
+                      tick.index("if (first_sync && (st == SYNC_OFFLINE || st == SYNC_FAIL))")]
+        self.assertLess(online.index("apply_sync();"),
+                        online.index("now_s = clock_s() - app_clock_t0;"))
+        self.assertLess(online.index("now_s = clock_s() - app_clock_t0;"),
+                        online.index("title_t0 = now_s;"))
+        self.assertLess(online.index("title_t0 = now_s;"),
+                        online.index("title_cues();"))
+        offline=tick[tick.index("if (first_sync && (st == SYNC_OFFLINE || st == SYNC_FAIL))"):
+                     tick.index("/* resultado da sincronização:")]
+        self.assertLess(offline.index("now_s = clock_s() - app_clock_t0;"),
+                        offline.index("title_t0 = now_s;"))
+        entry=self.main[self.main.index("int main(void) {"):]
+        self.assertLess(entry.index("app_clock_t0 = t_start;"),
+                        entry.index("for (;;) {"))
+        self.assertIn("draw_title_screen(now_s - title_t0, 0)",entry)
+
+    def test_original_typewriter_progression_and_sounds_are_retained(self):
+        draw=self.main[self.main.index("static void draw_title_screen("):
+                       self.main.index("/* ----------------------------------------------------------------",self.main.index("static void draw_title_screen(")+30)]
+        self.assertIn("if (tt < ct)",draw)
+        self.assertIn("kick_char_t(idx)",draw)
+        self.assertIn("typed_all = 0;",draw)
+        self.assertIn("title_draw_f(ch,",draw)
+        self.assertIn("if (!typed_all) return;",draw)
+        self.assertIn("cue(title_t0 + kick_char_t(idx), 1, 0);",self.main)
+        self.assertIn('case 1: if (!started) sfx("type");',self.main)
+        # Even after a simulated 3-second blocking sync, the first frame
+        # must start from 0 elapsed, not skip 45-ms character intervals.
+        frame_start,work=12.0,3.0
+        stale = frame_start
+        fresh = frame_start+work
+        self.assertGreater((fresh-stale), .3+30*.045)
+        self.assertLess(fresh-fresh,.3)
 
     def test_delayed_bounce_messages_do_not_show_during_fast_sync(self):
         splash=self.main[self.main.index("static void draw_first_sync(void) {"):
