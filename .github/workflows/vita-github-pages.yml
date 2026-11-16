@@ -49,6 +49,13 @@ jobs:
           test -s _site/WolffsRoom/FileManager/index.html
           test -s _site/Federicoilgrandebardo/vampire-survivors-vita/index.html
           test -s _site/Federicoilgrandebardo/vampire-survivors-vita/releases/index.html
+          # Pokémon Emerald source link in Wolff's Store must resolve on Vita
+          # to the generated Lite mirror, not an ordinary GitHub 404.
+          test -s _site/HctrRB/pokeemerald-vita-3ds/index.html
+          grep -qi 'pokeemerald' _site/HctrRB/pokeemerald-vita-3ds/index.html
+          if grep -qi 'Repository temporarily unavailable in this snapshot' _site/HctrRB/pokeemerald-vita-3ds/index.html; then
+            echo 'HctrRB mirror generated only a placeholder'; exit 1
+          fi
           grep -q 'vita-badge' _site/WolffsRoom/FileManager/index.html
           if grep -Rqi '<script' _site --include='*.html'; then echo 'Unexpected script tag'; exit 1; fi
       - name: Verify FileManager dark logo and badge readability
