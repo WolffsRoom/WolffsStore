@@ -30,7 +30,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "1.0"
+#define WS_VERSION "1.0.1"
 #endif
 
 /* ================================================================ textos */
@@ -52,7 +52,9 @@ enum {
     S_SET_HINT, S_SET_KEYS, S_H_MOVE, S_H_SELECT, S_SEARCH, S_SEARCH_FOR, S_RESULTS, S_NO_RESULTS, S_SEARCH_EMPTY,
     S_EDIT_SEARCH, S_ST_UPTODATE, S_ST_NEWVER, S_ST_INSTALLED, S_CHIP_INSTALLED, S_INSTALLED_LIST, S_OPEN_PROJECT,
     S_QUEUE, S_SOURCE, S_CLOCK, S_DL_DATA, S_DATA_TO, S_SYNC_SHORT, S_MUSIC, S_SFX, S_TIP_AUDIO, S_VID_LOAD,
-    S_VID_FAIL, S_VID_HINT, S_BARK, S_WATCH_APP, S_VIDEO_NOTE_APP, S_LATEST3, S_TROPHIES, S_OPEN_APP, S_LBL_SYNC, S_LBL_DLS, S_LBL_AUDIO, S_LBL_SETTINGS, S_LBL_SEARCH, S_POST_PUBLISHED, S_POST_UPDATED, S_APP_LIVEAREA, S_COUNT
+    S_VID_FAIL, S_VID_HINT, S_BARK, S_WATCH_APP, S_VIDEO_NOTE_APP, S_LATEST3, S_TROPHIES, S_OPEN_APP, S_LBL_SYNC, S_LBL_DLS, S_LBL_AUDIO, S_LBL_SETTINGS, S_LBL_SEARCH, S_POST_PUBLISHED, S_POST_UPDATED, S_APP_LIVEAREA,
+    S_TRANS_DIALOG_TITLE, S_TRANS_REQUIRE, S_TRANS_DETECTED, S_TRANS_MISSING,
+    S_TRANS_CONFIRM, S_TRANS_CANCEL, S_TRANS_INSTALLING, S_COUNT
 };
 
 static const char *UI_UTF8[2][S_COUNT] = {
@@ -70,7 +72,7 @@ static const char *UI_UTF8[2][S_COUNT] = {
         "rePatch plugin found.", "Needs the rePatch plugin: install it and restart the Vita.", "Goes to",
         "The file goes to ux0:Downloads. Follow the instructions on GitHub to install it.", "Installed: v",
         "Queued", "Downloading", "Extracting", "Installing", "Done", "Error", "Canceled", "Cancel", "Clear finished",
-        "No downloads yet. Open a project and pick a download.", "Syncing...", "Catalog updated",
+        "No downloads yet. Open a project and pick a download.", "Syncing", "Catalog updated",
         "Offline: using the saved catalog", "Couldn't sync the catalog", "Updating Wolff's Store", "Skip for now",
         "Saved to", "Downloads", "Sync", "installed", "translation installed", "saved to ux0:Downloads", "failed",
         "The app will close and reopen on its own.", "Update", "Translation", "See downloads", "Back",
@@ -85,6 +87,9 @@ static const char *UI_UTF8[2][S_COUNT] = {
         "The video plays right here in the app.", "Check out the latest three updates...", "Native trophies", "Open", "Sync", "Downloads", "Audio", "Settings", "Search",
         "Published on", "Last update",
         "After installation: refresh LiveArea with FMVita or File Manager.",
+        "INSTALL TRANSLATION", "This translation requires the rePatch plugin!",
+        "Plugin detected in taiHEN.", "Plugin missing from taiHEN.",
+        "CONFIRM", "CANCEL", "Installing the translation.",
     },
     [LANG_PT] = {
         "Ports", "Ferramentas", "Traduções", "Reviews",
@@ -102,7 +107,7 @@ static const char *UI_UTF8[2][S_COUNT] = {
         "O arquivo vai para ux0:Downloads. Siga as instruções no GitHub para instalar.", "Instalado: v",
         "Na fila", "Baixando", "Extraindo", "Instalando", "Concluído", "Erro", "Cancelado", "Cancelar",
         "Limpar concluídos", "Nenhum download por enquanto. Abra um projeto e escolha um download.",
-        "Sincronizando...", "Catálogo atualizado", "Sem internet: usando o catálogo salvo",
+        "Sincronizando", "Catálogo atualizado", "Sem internet: usando o catálogo salvo",
         "Não deu para sincronizar o catálogo", "Atualizando o Wolff's Store", "Pular por agora", "Salvo em",
         "Downloads", "Sincronizar", "instalado", "tradução instalada", "salvo em ux0:Downloads", "falhou",
         "O app vai fechar e abrir de novo sozinho.", "Atualizar", "Tradução", "Ver downloads", "Voltar",
@@ -118,6 +123,9 @@ static const char *UI_UTF8[2][S_COUNT] = {
         "O vídeo toca aqui mesmo no app.", "Confira as últimas três novidades...", "Troféus nativos", "Abrir", "Sincronizar", "Downloads", "Áudio", "Configurações", "Pesquisar",
         "Publicado em", "Atualizado em",
         "Após instalar, atualize a LiveArea pelo FMVita ou File Manager.",
+        "INSTALAR TRADUÇÃO", "Essa tradução exige o plugin rePatch instalado!",
+        "Plugin detectado no taiHEN.", "Plugin ausente no taiHen.",
+        "CONFIRMAR", "CANCELAR", "Instalando tradução.",
     },
 };
 static char UI[2][S_COUNT][128];
@@ -2287,7 +2295,8 @@ static void toast(const char *msg) {
 static void close_translation_confirm(int install) {
     if (trans_confirm_post < 0) return;
     int pi = trans_confirm_post, di = trans_confirm_dl;
-    if (install && (trans_confirm_backup || trans_confirm_base_missing)) {
+    if (install && (trans_confirm_backup || trans_confirm_base_missing ||
+                    (!trans_confirm_app && !trans_confirm_plugin))) {
         sfx("back");
         return; /* backup existente ou jogo base ausente: não instalar */
     }
@@ -2299,8 +2308,7 @@ static void close_translation_confirm(int install) {
             if (p->dls[di].type == DL_APP_FILES)
                 toast(TXT(S_APP_LIVEAREA));
             else
-                toast(lang == LANG_PT ? "Instalando tradução; rePatch é obrigatório."
-                                      : "Installing translation; rePatch is required.");
+                toast(TXT(S_TRANS_INSTALLING));
         }
     } else sfx("back");
 }
@@ -3461,7 +3469,11 @@ static void draw_strip(float hint_right) {
     Toast *t = &toasts[0];
     double e = now_s - t->t0;
     if (t->text[0] && e < 4.0) {
-        snprintf(msg, sizeof(msg), "! %s", t->text);
+        /* Status punctuation follows the label; never prefix with !. */
+        size_t n = strlen(t->text);
+        snprintf(msg, sizeof(msg), n && (t->text[n - 1] == '!' ||
+                                          t->text[n - 1] == '.' || t->text[n - 1] == '?')
+                 ? "%s" : "%s!", t->text);
     } else {
         Job *j = current_job();
         if (!j) return;
@@ -3547,71 +3559,91 @@ static void draw_update(void) {
     body_draw(sk, x + (w - sw) / 2 + 22, y + 301, C_WHITE);
 }
 
+/* Same square 4px border, 48-56px height, Press Start text and primary
+ * white-fill visual language as the Store's normal Download buttons. */
+static void draw_translation_action(float x, float y, float w, const char *label,
+                                    int primary, int disabled) {
+    float h = 48;
+    unsigned fill = disabled ? C_LINE : primary ? C_WHITE : C_DARK;
+    unsigned border = disabled ? C_BTNBRD : primary ? C_WHITE : C_BTNBRD;
+    unsigned ink = disabled ? C_MUTED : primary ? C_DARK : C_WHITE;
+    if (primary && !disabled) vita2d_draw_rectangle(x + 4, y + 4, w, h, C_SH1);
+    vita2d_draw_rectangle(x, y, w, h, fill);
+    frame_rect(x, y, w, h, 4, border);
+    float tw = title_width(label, 2);
+    title_draw(label, x + (w - tw) / 2, y + 16, 2, ink);
+}
+
 static void draw_translation_confirm(void) {
     if (trans_confirm_post < 0) return;
-    float x = 100, y = 64, w = 760, h = 410;
+    const float x = 100, y = 64, w = 760, h = 410;
     vita2d_draw_rectangle(0, 0, SCR_W, SCR_H, RGBA8(0, 0, 0, 0xE5));
     halo_draw(x - 16, y - 16, w + 32, h + 32, 0, 1);
     vita2d_draw_rectangle(x, y, w, h, C_PANEL);
     frame_rect(x, y, w, h, 4, C_WHITE);
-    title_draw(lang == LANG_PT ? "INSTALAR TRADUCAO" : "INSTALL TRANSLATION",
-               x + 28, y + 24, 2, C_WHITE);
+    const char *heading = TXT(S_TRANS_DIALOG_TITLE);
+    title_draw(heading, x + (w - title_width(heading, 2)) / 2, y + 26, 2, C_WHITE);
+    vita2d_draw_rectangle(x + 28, y + 76, w - 56, 4, C_LINE);
+
     if (trans_confirm_app) {
-        body_draw(lang == LANG_PT ? "Destino: ux0:app/PCSF00007/"
-                                 : "Destination: ux0:app/PCSF00007/",
-                  x + 28, y + 102, C_WHITE);
-        body_draw(lang == LANG_PT ? "Backup em ux0:data/WolffsStore/backups/"
-                                 : "Backups: ux0:data/WolffsStore/backups/",
-                  x + 28, y + 142, C_MUTED);
-        body_draw(lang == LANG_PT ? "Atualize LiveArea no FMVita ou File Manager."
-                                 : "Refresh LiveArea with FMVita or File Manager.",
-                  x + 28, y + 182, C_TEXT);
-        body_draw(trans_confirm_base_missing
-            ? (lang == LANG_PT ? "BLOQUEADO: instale primeiro o jogo PCSF00007."
-                              : "BLOCKED: first install game PCSF00007.")
-            : (lang == LANG_PT ? "RAR contendo apenas torrent será rejeitado."
-                              : "Torrent-only archives will be rejected."),
-                  x + 28, y + 222, trans_confirm_base_missing ? C_WHITE : C_MUTED);
+        char destination[128];
+        snprintf(destination, sizeof(destination), "%s",
+                 lang == LANG_PT ? "Destino: ux0:app/PCSF00007/"
+                                 : "Destination: ux0:app/PCSF00007/");
+        body_draw(destination, x + 28, y + 108, C_WHITE);
+        body_draw(lang == LANG_PT ? "Backup: ux0:data/WolffsStore/backups/"
+                                 : "Backup: ux0:data/WolffsStore/backups/",
+                  x + 28, y + 156, C_MUTED);
+        body_draw(TXT(S_APP_LIVEAREA), x + 28, y + 204, C_GOLD);
+        const char *status = trans_confirm_base_missing
+            ? (lang == LANG_PT ? "BLOQUEADO: instale o jogo PCSF00007 primeiro."
+                               : "BLOCKED: install game PCSF00007 first.")
+            : (lang == LANG_PT ? "RAR contendo apenas torrent sera rejeitado."
+                               : "Torrent-only archives will be rejected.");
+        body_draw(status, x + 28, y + 254,
+                  trans_confirm_base_missing ? C_PROGRESS_LOW : C_MUTED);
     } else {
-    body_draw(lang == LANG_PT
-        ? "A tradução exige rePatch em ur0:tai/config.txt."
-        : "This translation requires rePatch in ur0:tai/config.txt.",
-        x + 28, y + 102, C_TEXT);
-    body_draw(trans_confirm_plugin
-        ? (lang == LANG_PT ? "Plugin detectado no taiHEN." : "Plugin found in taiHEN config.")
-        : (lang == LANG_PT ? "AVISO: plugin não detectado no config.txt!"
-                          : "WARNING: plugin not found in config.txt!"),
-        x + 28, y + 142, trans_confirm_plugin ? C_MUTED : C_WHITE);
-    char backup_note[160];
-    if (trans_confirm_mod) {
-        const Download *d = &g_posts[trans_confirm_post].dls[trans_confirm_dl];
-        snprintf(backup_note, sizeof(backup_note),
-                 lang == LANG_PT ? "Mod existente sera preservado em %s_bkp."
-                                 : "Existing mod backed up as %s_bkp.",
-                 d->ntids ? d->tids[0] : "PCSE...");
-    } else {
-        snprintf(backup_note, sizeof(backup_note), "%s",
-                 lang == LANG_PT ? "Nenhum mod existente sera alterado."
-                                 : "No existing mods will be changed.");
+        body_draw(TXT(S_TRANS_REQUIRE), x + 28, y + 108, C_TEXT);
+        /* Both status strings came through the standard UTF-8 -> Latin-1
+         * UI pipeline. The detected status is highlighted in gold. */
+        body_draw(trans_confirm_plugin ? TXT(S_TRANS_DETECTED) : TXT(S_TRANS_MISSING),
+                  x + 28, y + 151, trans_confirm_plugin ? C_GOLD : C_PROGRESS_LOW);
+        char note_utf8[180], note[180];
+        if (trans_confirm_mod) {
+            const Download *d = &g_posts[trans_confirm_post].dls[trans_confirm_dl];
+            snprintf(note_utf8, sizeof(note_utf8),
+                     lang == LANG_PT ? "Mod existente será salvo em %s_bkp."
+                                     : "Existing mod backed up as %s_bkp.",
+                     d->ntids ? d->tids[0] : "PCSE...");
+        } else {
+            snprintf(note_utf8, sizeof(note_utf8), "%s",
+                     lang == LANG_PT ? "Nenhum mod existente será alterado."
+                                     : "No existing mods will be changed.");
+        }
+        utf8_to_latin1(note_utf8, note, sizeof(note));
+        body_draw(note, x + 28, y + 206, C_MUTED);
+        if (trans_confirm_backup) {
+            char msg[180];
+            utf8_to_latin1(lang == LANG_PT
+                          ? "BLOQUEADO: backup _bkp já existe. Preserve-o!"
+                          : "BLOCKED: a _bkp backup already exists.", msg, sizeof(msg));
+            body_draw(msg, x + 28, y + 250, C_PROGRESS_LOW);
+        } else if (!trans_confirm_plugin) {
+            body_draw(lang == LANG_PT ? "Ative o rePatch no taiHEN e reinicie o Vita."
+                                     : "Enable rePatch in taiHEN and restart your Vita.",
+                      x + 28, y + 250, C_MUTED);
+        } else {
+            body_draw(lang == LANG_PT ? "Destino: ux0:rePatch/"
+                                     : "Destination: ux0:rePatch/",
+                      x + 28, y + 250, C_MUTED);
+        }
     }
-    body_draw(backup_note, x + 28, y + 182, C_TEXT);
-    if (trans_confirm_backup) {
-        body_draw(lang == LANG_PT ? "BLOQUEADO: _bkp já existe. Preserve seu backup!"
-                                 : "BLOCKED: _bkp already exists. Keep the backup!",
-                  x + 28, y + 222, C_WHITE);
-    } else {
-        body_draw(lang == LANG_PT ? "Confirmar instala o pacote em ux0:rePatch/."
-                                 : "Confirm to install into ux0:rePatch/.",
-                  x + 28, y + 222, C_MUTED);
-    }
-    }
-    int install_blocked = trans_confirm_backup || trans_confirm_base_missing;
-    vita2d_draw_rectangle(140, 355, 310, 75, install_blocked ? C_LINE : C_WHITE);
-    frame_rect(485, 355, 325, 75, 4, C_WHITE);
-    body_draw(lang == LANG_PT ? "X - Confirmar" : "X - Confirm",
-              169, 378, install_blocked ? C_MUTED : C_DARK);
-    body_draw(lang == LANG_PT ? "O - Cancelar" : "O - Cancel",
-              520, 378, C_WHITE);
+
+    const int blocked = trans_confirm_backup || trans_confirm_base_missing ||
+                        (!trans_confirm_app && !trans_confirm_plugin);
+    const float by = y + 316;
+    draw_translation_action(x + 32, by, 328, TXT(S_TRANS_CONFIRM), 1, blocked);
+    draw_translation_action(x + 400, by, 328, TXT(S_TRANS_CANCEL), 0, 0);
 }
 
 /* ================================================================ main */
@@ -3872,9 +3904,9 @@ int main(void) {
                 } else if (!started) start_intro();
                 else if (vid_open) video_toggle_pause();
                 else if (trans_confirm_post >= 0) {
-                    if (t_y0 > 355 && t_y0 < 430) {
-                        if (t_x0 >= 140 && t_x0 < 450) close_translation_confirm(1);
-                        else if (t_x0 >= 485 && t_x0 < 810) close_translation_confirm(0);
+                    if (t_y0 >= 380 && t_y0 < 428) {
+                        if (t_x0 >= 132 && t_x0 < 460) close_translation_confirm(1);
+                        else if (t_x0 >= 500 && t_x0 < 828) close_translation_confirm(0);
                     } else if (t_y0 < 70 || t_y0 > 475) close_translation_confirm(0);
                 } else if (snd_menu_touch(t_x0, t_y0)) {
                 } else if (t_x0 >= 24 && t_x0 < 24 + 72 && t_y0 + cam >= 12 && t_y0 + cam < 12 + 76 && !settings_open) {

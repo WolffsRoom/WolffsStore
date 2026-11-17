@@ -44,7 +44,8 @@ class VitaPackageInstallerTests(unittest.TestCase):
 
     def test_livearea_ui_and_open_game(self):
         self.assertIn("atualize a LiveArea pelo FMVita ou File Manager", self.main)
-        self.assertIn("Refresh LiveArea with FMVita or File Manager", self.main)
+        self.assertIn("refresh LiveArea with FMVita or File Manager", self.main)
+        self.assertIn("body_draw(TXT(S_APP_LIVEAREA)", self.main)
         self.assertIn('trans_confirm_app = dl->type == DL_APP_FILES', self.main)
         self.assertIn("trans_confirm_base_missing", self.main)
         self.assertIn("j->kind == JK_APP_FILES ? DL_APP_FILES", self.main)

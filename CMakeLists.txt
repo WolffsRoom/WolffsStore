@@ -14,8 +14,8 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2 -Wall -Wno-format-truncation")
 set(WS_TITLEID "WFFS00042")
 set(WS_UPDATER_TITLEID "WFFS00043")
 # LiveArea padrão: assets/livearea (icon0 128x128, bg0 840x500, startup 280x158, PNG indexado de 8 bits)
-set(WS_SFO_VERSION "01.00")
-set(WS_FILE_VERSION "1.0")
+set(WS_SFO_VERSION "01.01")
+set(WS_FILE_VERSION "1.0.1")
 set(WS_VPK_NAME "WolffsStore.vpk")
 set(WS_ARTIFACTS_DIR "${CMAKE_SOURCE_DIR}/artifacts/current")
 
@@ -69,15 +69,16 @@ target_link_libraries(${PROJECT_NAME}
   png
   jpeg
   curl
-  ssl
-  crypto
-  pthread
+  zip
   archive
   zstd
   lzma
   expat
   bz2
   z
+  ssl
+  crypto
+  pthread
   SceGxm_stub
   SceDisplay_stub
   SceCommonDialog_stub

@@ -110,7 +110,14 @@ int jobs_add(const Post *p, int dl, const char *title, int confirm_replace) {
     j->nmirrors = d->nmirrors;
     for (int k = 0; k < j->nmirrors; k++)
         snprintf(j->mirrors[k], sizeof(j->mirrors[k]), "%s", d->mirrors[k]);
-    snprintf(j->password, sizeof(j->password), "%s", d->password ? d->password : "");
+    /* All Wolff's Room protected translation archives use one password.
+     * Never rely on the downloaded catalog to provide it correctly. */
+    const char *ext = strrchr(d->file, '.');
+    int protected_translation = d->type == DL_TRANS || d->type == DL_APP_FILES ||
+        (d->type == DL_VPK && ext &&
+         (!strcasecmp(ext, ".zip") || !strcasecmp(ext, ".rar")));
+    snprintf(j->password, sizeof(j->password), "%s",
+             protected_translation ? "wolffsroom" : (d->password ? d->password : ""));
     j->confirm_replace = confirm_replace && (d->type == DL_TRANS || d->type == DL_APP_FILES);
     snprintf(j->file, sizeof(j->file), "%s", d->file[0] ? d->file : "download.bin");
     snprintf(j->version, sizeof(j->version), "%s", d->version);

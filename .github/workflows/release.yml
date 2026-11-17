@@ -20,6 +20,12 @@ jobs:
           if [ ! -f "$VITASDK/arm-vita-eabi/lib/libvita2d.a" ]; then
             vdpm install vita2d libpng libjpeg-turbo freetype bzip2 zlib || vdpm vita2d libpng libjpeg-turbo freetype bzip2 zlib
           fi
+      - name: ZIP AES - garantir libzip no VitaSDK
+        run: |
+          if [ ! -f "$VITASDK/arm-vita-eabi/lib/libzip.a" ]; then
+            vdpm install libzip || vdpm libzip
+          fi
+          test -f "$VITASDK/arm-vita-eabi/lib/libzip.a"
       - name: Compilar
         run: |
           cmake -S . -B build-vita -DCMAKE_BUILD_TYPE=Release

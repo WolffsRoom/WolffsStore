@@ -1,5 +1,19 @@
 # Wolff's Store
 
+
+
+### v1.0.1 - Correções nas traduções
+
+- Senha padronizada em wolffsroom para os ZIPs/VPKs compactados e pacotes
+  rePatch: independe de campo eventualmente ausente no catálogo.
+- ZIP com criptografia WinZip AES passa a ser extraído via libzip/OpenSSL,
+  com validação de conteúdo, CRC, tamanho, cancelamento e logs de erro.
+- Janela Instalar tradução redesenhada no estilo dos botões da loja.
+  Textos em Latin-1 após a conversão do sistema de idiomas;
+  rePatch detectado em amarelo, ausente com aviso e instalação bloqueada.
+- Status inferior passa a exibir Sincronizando! e Catálogo atualizado!,
+  com a exclamação ao final da mensagem.
+
 ### v1.0 - Traduções instaláveis e catálogo reorganizado
 
 - Downloads ocupa a primeira caixa lateral dos posts, antes de Detalhes. Se um arquivo

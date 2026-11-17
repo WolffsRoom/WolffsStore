@@ -13,6 +13,7 @@
 #include <psp2/sysmodule.h>
 #include <archive.h>
 #include <archive_entry.h>
+#include <zip.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -82,17 +83,130 @@ static int count_entries(const char *zip, const char *password) {
     return n;
 }
 
+/* ZIP/WinZip-AES extraction through libzip. The VitaSDK libzip build has
+ * OpenSSL AES/HMAC enabled; libarchive's ZIP reader is retained only for
+ * non-ZIP formats (RAR/RAR5). ZIP entries are always written to staging. */
+static int extract_zip_libzip(const char *path, const char *dst,
+                              const char **strip, int nstrip,
+                              const char *password, NetProgress *pr) {
+    int errnum = 0;
+    zip_t *za = zip_open(path, ZIP_RDONLY, &errnum);
+    if (!za) {
+        zip_error_t ze;
+        zip_error_init_with_code(&ze, errnum);
+        snprintf(ierr, sizeof(ierr), "ZIP: %.130s", zip_error_strerror(&ze));
+        zip_error_fini(&ze);
+        return -1;
+    }
+    const char *pass = (password && *password) ? password : "wolffsroom";
+    if (zip_set_default_password(za, pass) < 0) {
+        snprintf(ierr, sizeof(ierr), "ZIP: senha nao aceita pelo leitor: %.110s", zip_strerror(za));
+        zip_discard(za);
+        return -1;
+    }
+    zip_int64_t total = zip_get_num_entries(za, 0);
+    if (total < 0 || total > 100000) {
+        snprintf(ierr, sizeof(ierr), "ZIP: numero de arquivos invalido");
+        zip_discard(za);
+        return -1;
+    }
+    if (pr) { pr->done = 0; pr->total = total; }
+    static unsigned char buf[64 * 1024];
+    int result = 0;
+    for (zip_uint64_t i = 0; i < (zip_uint64_t)total; i++) {
+        if (pr) {
+            if (pr->cancel) { result = -2; break; }
+            pr->done++;
+        }
+        const char *name = zip_get_name(za, i, 0);
+        if (!name || strstr(name, "..") || strchr(name, ':') ||
+            strchr(name, '\\') || strstr(name, "__MACOSX")) continue;
+        const char *rel = strip_path(name, strip, nstrip);
+        if (!rel || !*rel) continue;
+        char full[512];
+        if (snprintf(full, sizeof(full), "%s/%s", dst, rel) >= (int)sizeof(full)) {
+            snprintf(ierr, sizeof(ierr), "ZIP: caminho longo demais");
+            result = -1;
+            break;
+        }
+        size_t len = strlen(name);
+        if (len && name[len - 1] == '/') {
+            fs_mkdir_p(full);
+            continue;
+        }
+        /* Ignore symbolic links and devices encoded as Unix ZIP entries. */
+        zip_uint8_t opsys = 0;
+        zip_uint32_t attrs = 0;
+        if (zip_file_get_external_attributes(za, i, 0, &opsys, &attrs) == 0 &&
+            opsys == ZIP_OPSYS_UNIX && (((attrs >> 16) & 0170000) != 0) &&
+            (((attrs >> 16) & 0170000) != 0100000)) continue;
+        char *slash = strrchr(full, '/');
+        if (slash) { *slash = 0; fs_mkdir_p(full); *slash = '/'; }
+        zip_stat_t stat;
+        zip_stat_init(&stat);
+        int has_stat = zip_stat_index(za, i, 0, &stat) == 0;
+        zip_uint16_t method = has_stat && (stat.valid & ZIP_STAT_ENCRYPTION_METHOD)
+            ? stat.encryption_method : ZIP_EM_NONE;
+        zip_file_t *zf = method == ZIP_EM_NONE
+            ? zip_fopen_index(za, i, 0)
+            : zip_fopen_index_encrypted(za, i, 0, pass);
+        if (!zf) {
+            snprintf(ierr, sizeof(ierr), "ZIP: falha ao abrir %.70s: %.75s", rel, zip_strerror(za));
+            result = -1;
+            break;
+        }
+        SceUID fd = sceIoOpen(full, SCE_O_WRONLY | SCE_O_CREAT | SCE_O_TRUNC, 0777);
+        if (fd < 0) {
+            snprintf(ierr, sizeof(ierr), "ZIP: nao foi possivel gravar %.90s", rel);
+            zip_fclose(zf);
+            result = -1;
+            break;
+        }
+        zip_int64_t n, written = 0;
+        while ((n = zip_fread(zf, buf, sizeof(buf))) > 0) {
+            if (pr && pr->cancel) { n = -1; result = -2; break; }
+            if (sceIoWrite(fd, buf, (SceSize)n) != n) { n = -1; break; }
+            written += n;
+        }
+        if (n < 0 && result != -2) {
+            snprintf(ierr, sizeof(ierr), "ZIP: %.70s: %.75s", rel, zip_file_strerror(zf));
+            result = -1;
+        }
+        if (zip_fclose(zf) < 0 && result == 0) {
+            snprintf(ierr, sizeof(ierr), "ZIP: CRC/AES invalido em %.90s", rel);
+            result = -1;
+        }
+        sceIoClose(fd);
+        if (!result && has_stat && (stat.valid & ZIP_STAT_SIZE) &&
+            written != (zip_int64_t)stat.size) {
+            snprintf(ierr, sizeof(ierr), "ZIP: tamanho extraido invalido em %.90s", rel);
+            result = -1;
+        }
+        if (result) { sceIoRemove(full); break; }
+    }
+    zip_discard(za);
+    return result;
+}
+
 int inst_extract_password(const char *zip, const char *dst, const char **strip, int nstrip,
                           const char *password, NetProgress *pr) {
+    /* Every protected translation distributed by Wolff's Room uses this
+     * passphrase. Do not depend on a possibly missing catalog field. */
+    const char *pass = (password && *password) ? password : "wolffsroom";
+    unsigned char sig[4] = {0};
+    SceUID magic_fd = sceIoOpen(zip, SCE_O_RDONLY, 0);
+    if (magic_fd >= 0) { sceIoRead(magic_fd, sig, sizeof(sig)); sceIoClose(magic_fd); }
+    if (sig[0] == 'P' && sig[1] == 'K')
+        return extract_zip_libzip(zip, dst, strip, nstrip, pass, pr);
     if (pr) {
         pr->done = 0;
-        pr->total = count_entries(zip, password);
+        pr->total = count_entries(zip, pass);
     }
     struct archive *a = archive_read_new();
     archive_read_support_format_zip(a);
     archive_read_support_format_rar(a);
     archive_read_support_format_rar5(a);
-    if (password && *password) archive_read_add_passphrase(a, password);
+    if (pass && *pass) archive_read_add_passphrase(a, pass);
     if (archive_read_open_filename(a, zip, 256 * 1024) != ARCHIVE_OK) {
         snprintf(ierr, sizeof(ierr), "Arquivo ZIP/RAR invalido ou incompleto");
         archive_read_free(a);
