@@ -174,7 +174,9 @@ static int check_space(Job *j, double factor) {
 /* Resolve o botão do MediaFire sem depender de links temporários. */
 static int resolve_mediafire(const char *page_url, char *out, size_t cap) {
     int size = 0;
-    char *html = net_fetch(page_url, &size);
+    /* The public MediaFire HTML can stall indefinitely on Vita TLS/CDN.
+     * Give up after 15s so another mirror can be attempted. */
+    char *html = net_fetch_timeout(page_url, &size, 15L);
     if (!html) return -1;
     char *btn = strstr(html, "id=\"downloadButton\"");
     char *href = NULL, *scan = html;
@@ -196,7 +198,7 @@ static int resolve_mediafire(const char *page_url, char *out, size_t cap) {
 }
 
 static int download(Job *j, const char *dst) {
-    set_state(j, J_DOWNLOAD);
+    set_state(j, J_RESOLVE);
     char part[300];
     snprintf(part, sizeof(part), "%s.part", dst);
     char original[512];
@@ -215,6 +217,7 @@ static int download(Job *j, const char *dst) {
             continue;
         }
         if (strstr(candidate, "mediafire.com/file/")) {
+            set_state(j, J_RESOLVE);
             if (resolve_mediafire(candidate, resolved, sizeof(resolved)) < 0) {
                 ws_log("download: MediaFire não forneceu URL direta");
                 snprintf(error, sizeof(error), "Não foi possível resolver o link MediaFire.");
@@ -222,6 +225,10 @@ static int download(Job *j, const char *dst) {
             }
         }
         snprintf(j->url, sizeof(j->url), "%s", resolved);
+        ws_log("download: attempting mirror %d/%d [%s]", attempt + 1,
+               j->nmirrors + 1, strstr(candidate, "drive.usercontent.google.com")
+               ? "Google Drive" : strstr(candidate, "mediafire.com") ? "MediaFire" : "external");
+        set_state(j, J_DOWNLOAD);
         j->pr.done = 0;
         j->pr.total = j->size_hint;
         j->pr.speed = 0;
@@ -230,6 +237,7 @@ static int download(Job *j, const char *dst) {
         if (r != NET_OK) {
             snprintf(error, sizeof(error), "%s", r == NET_CANCELED ? "Cancelado." : net_error());
             ws_log("download: espelho %d falhou: %s", attempt + 1, error);
+            set_state(j, J_RESOLVE);
             sceIoRemove(part);
             if (r == NET_CANCELED || j->pr.cancel) { fail(j, "Cancelado."); return -1; }
             continue;

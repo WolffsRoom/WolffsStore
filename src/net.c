@@ -62,12 +62,13 @@ static void common(CURL *c, const char *url) {
     curl_easy_setopt(c, CURLOPT_MAXREDIRS, 8L);
     curl_easy_setopt(c, CURLOPT_SSL_VERIFYPEER, 0L);
     curl_easy_setopt(c, CURLOPT_SSL_VERIFYHOST, 0L);
-    curl_easy_setopt(c, CURLOPT_CONNECTTIMEOUT, 20L);
+    curl_easy_setopt(c, CURLOPT_CONNECTTIMEOUT, 12L);
     curl_easy_setopt(c, CURLOPT_NOSIGNAL, 1L);
     curl_easy_setopt(c, CURLOPT_FAILONERROR, 1L);
-    /* conexão parada por 30 s = erro (downloads grandes não têm tempo total) */
+    /* No Vita, never leave an item frozen at zero bytes while an
+     * unreachable CDN prevents the next mirror from being attempted. */
     curl_easy_setopt(c, CURLOPT_LOW_SPEED_LIMIT, 1L);
-    curl_easy_setopt(c, CURLOPT_LOW_SPEED_TIME, 30L);
+    curl_easy_setopt(c, CURLOPT_LOW_SPEED_TIME, 20L);
 }
 
 typedef struct { char *buf; size_t len, cap; } Mem;
@@ -89,7 +90,7 @@ static size_t mem_cb(void *d, size_t s, size_t n, void *u) {
     return t;
 }
 
-char *net_fetch(const char *url, int *size) {
+char *net_fetch_timeout(const char *url, int *size, long seconds) {
     if (!inited) return NULL;
     CURL *c = curl_easy_init();
     if (!c) return NULL;
@@ -101,7 +102,7 @@ char *net_fetch(const char *url, int *size) {
     m.buf[0] = 0;
     common(c, url);
     curl_easy_setopt(c, CURLOPT_ACCEPT_ENCODING, "");
-    curl_easy_setopt(c, CURLOPT_TIMEOUT, 60L);
+    curl_easy_setopt(c, CURLOPT_TIMEOUT, seconds > 0 ? seconds : 60L);
     curl_easy_setopt(c, CURLOPT_WRITEFUNCTION, mem_cb);
     curl_easy_setopt(c, CURLOPT_WRITEDATA, &m);
     CURLcode r = curl_easy_perform(c);
@@ -113,6 +114,10 @@ char *net_fetch(const char *url, int *size) {
     }
     if (size) *size = (int)m.len;
     return m.buf;
+}
+
+char *net_fetch(const char *url, int *size) {
+    return net_fetch_timeout(url, size, 60L);
 }
 
 /* ------------------------------------------------------------------ download para arquivo */

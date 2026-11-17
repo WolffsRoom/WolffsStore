@@ -7,7 +7,7 @@
 /* Fila de downloads/instalações em segundo plano (estilo PKGj): um trabalho por vez,
  * a interface continua livre. */
 
-enum { J_QUEUED, J_DOWNLOAD, J_EXTRACT, J_INSTALL, J_DONE, J_ERROR, J_CANCELED };
+enum { J_QUEUED, J_RESOLVE, J_DOWNLOAD, J_EXTRACT, J_INSTALL, J_DONE, J_ERROR, J_CANCELED };
 enum { JK_VPK, JK_TRANS, JK_PLUGIN, JK_FILE, JK_SELF, JK_DATA, JK_APP_FILES };
 
 #define MAX_JOBS 24

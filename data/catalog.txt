@@ -3,25 +3,31 @@ cat	ports
 group	3
 date	2026-11-16
 feat	1
-title.pt	Pokémon Emerald Voxel 3DS - with PT/BR
-tag.pt	Port nativo · PS Vita · PT-BR
-status.pt	Disponível · PT-BR
-desc.pt	Port nativo de Pokémon Emerald para PS Vita, agora com português brasileiro, LiveArea personalizada e manual.
-feature_text.pt	Pokémon Emerald no PS Vita, com mundo voxel 3D, batalhas 3D e tradução brasileira da Wolff's Room.
+title.pt	Pokémon Emerald Voxel 3DS - PT-BR v0.5.1
+tag.pt	Port nativo · PS Vita · PT-BR · v0.5.1
+status.pt	Disponível · v0.5.1
+desc.pt	Pokémon Emerald v0.5.1 para PS Vita, com Pokémon selvagens aprimorados, PT-BR revisado e novos controles de câmera.
+feature_text.pt	Pokémon Emerald v0.5.1 para PS Vita com Pokémon selvagens visíveis, cenário voxel 3D e tradução PT-BR.
 about.pt	Pokémon Emerald recebeu um port nativo não oficial para PS Vita, desenvolvido por HctrRB a partir da descompilação pret/pokeemerald. Não é um emulador: o código C do jogo é compilado para o processador ARM do Vita, com uma camada de plataforma que substitui as funções do hardware do GBA. Com vitaGL e recursos do Emerald 3DS, o port transforma a experiência clássica com cenários e batalhas 3D, mantendo a aventura original.
+sec.pt	Novidades da v0.5.1 - Pokémon selvagens visíveis
+item.pt	População procedural: conjunto de até 48 Pokémon selvagens (`VW_POOL_MAX = 48`) independente dos 12 slots ativos, permitindo que apareçam pelo mapa como NPCs.
+item.pt	Pré-população de mapas vizinhos: seleção dos tiles válidos de encontros e leitura antecipada de até 24 tiles das áreas conectadas, com pré-carregamento das espécies.
+item.pt	Streaming adaptado à câmera de 25°: distâncias assimétricas norte/sul (`VW_VIEW_NORTH = 20`, `VW_SHOW_NORTH = 24`, `VW_HIDE_NORTH = 26`), histerese de entrada/saída e limite de dois sprites por quadro.
+item.pt	Correções de surgimento e animação: evita reaparecimentos na transição entre mapas; efeitos de grama/água e crescimento aparecem somente nos spawns ou respawns reais.
 sec.pt	Recursos do port
 item.pt	Mundo voxel 3D gerado em tempo real a partir dos mapas, com sol, sombras, ciclo de dia e noite e clima
 item.pt	Batalhas 3D em cenários derivados da área em que o confronto começa
 item.pt	Interface de toque sobre o mundo 3D, substituindo menus e caixas originais do GBA, com cinco temas
 item.pt	Pokémon seguidores no estilo HGSS, relógio acelerado, encontros por horário e melhorias opcionais de qualidade de vida
-sec.pt	Wolff's Room - versão PT-BR
-item.pt	Suporte ao português brasileiro, incluindo textos, menus e interfaces
-item.pt	Elementos traduzidos na tela inicial, incluindo Versão Esmeralda e PRESSIONE START
-item.pt	Novos assets da LiveArea
-item.pt	Manual integrado à LiveArea
-item.pt	Arte da tela inicial com paleta adaptada para o sprite do jogo
+sec.pt	Melhorias da Wolff's Room
+para.pt	*As opções de câmera e primeira pessoa são experimentais. É recomendado jogar inicialmente com o preset padrão.*
+item.pt	Revisão da tradução PT-BR, incluindo textos, menus e novas entradas da interface Voxel.
+item.pt	Interface adaptada em diferentes temas: letreiros para textos longos e descrições das cidades traduzidas.
+item.pt	Controle da câmera pelo analógico direito, opção experimental de primeira pessoa e árvores 2D acompanhando a câmera (opcional).
+item.pt	Splash screen do vitaGL removido da compilação personalizada.
+item.pt	Tela inicial traduzida (Versão Esmeralda e PRESSIONE START), LiveArea personalizada e manual em português.
 sec.pt	Instalação
-item.pt	Baixe o VPK desta página ou pelo espelho do Google Drive
+item.pt	Baixe o VPK v0.5.1 pelo Google Drive no botão Download
 item.pt	Instale pelo VitaShell em um PS Vita desbloqueado
 item.pt	Inicie o jogo pela LiveArea
 item.pt	Antes de atualizar uma instalação anterior, faça backup dos seus saves
@@ -35,31 +41,38 @@ item.pt	Fontes consultadas: Pokémon Classic e Font Meme - Pokémon
 item.pt	Referência dos assets da LiveArea: ícones de Pokémon Geração 3 para 3DS
 sec.pt	Observações
 item.pt	Port não oficial, sem vínculo com Nintendo, Game Freak ou The Pokémon Company.
-item.pt	A compilação VitaSDK foi concluída; a correção mais recente da faixa de título ainda aguarda conferência visual em hardware.
+item.pt	A compilação VitaSDK foi concluída; os novos controles de câmera e recursos gráficos ainda aguardam validação no PS Vita físico.
+info.pt	Versão|v0.5.1
+info.pt	Versão Wolff's Room|PT-BR · LiveArea · Manual · Câmera
 info.pt	Port original|HctrRB
-info.pt	Versão Wolff's Room|PT-BR · LiveArea · Manual
 info.pt	Plataforma|PS Vita / PSTV
 info.pt	Tecnologia|Código nativo ARM · vitaGL
-link.pt	Download VPK|https://github.com/WolffsRoom/WolffsRoomSite/releases/download/pokemon-emerald-ptbr-v1.0/Pokemon-Emerald-PTBR-WolffsRoom.vpk
-link.pt	Download alternativo (Google Drive)|https://drive.google.com/file/d/1prXPQgulczBJYybvY5nbaaWHtEIMPe7-/view?usp=sharing
-title.en	Pokémon Emerald Voxel 3DS - with PT/BR
-tag.en	Native port · PS Vita · PT-BR
-status.en	Available · PT-BR
-desc.en	Native Pokémon Emerald port for PS Vita, now with Brazilian Portuguese, custom LiveArea assets and an included manual.
-feature_text.en	Pokémon Emerald on PS Vita, featuring a 3D voxel world, 3D battles, and Brazilian Portuguese localization.
+link.pt	Download VPK (Google Drive)|https://drive.google.com/file/d/1ZNVd7j6EZyGgYTHuwIL-Edj6r57hJCGn/view?usp=sharing
+title.en	Pokémon Emerald Voxel 3DS - PT-BR v0.5.1
+tag.en	Native port · PS Vita · PT-BR · v0.5.1
+status.en	Available · v0.5.1
+desc.en	Native PS Vita Pokémon Emerald v0.5.1, improved wild Pokémon, Brazilian Portuguese and new camera controls.
+feature_text.en	Pokémon Emerald v0.5.1 for PS Vita - overworld encounters, voxel 3D and PT-BR localization.
 about.en	Pokémon Emerald has an unofficial native PS Vita port developed by HctrRB, based on the pret/pokeemerald decompilation. It is not an emulator: the game's C code is compiled for Vita ARM, while a platform layer replaces GBA hardware functions. Using vitaGL and features from Emerald 3DS, the port offers a modern 3D presentation of the original adventure.
+sec.en	What's new in v0.5.1 - Visible Wild Pokémon
+item.en	Procedural overworld pool: up to 48 wild Pokémon (`VW_POOL_MAX = 48`) independent of the 12 active sprite slots, allowing encounters throughout the map like NPCs.
+item.en	Neighbor map pre-population: valid encounter tiles sampled in advance, scanning up to 24 tiles of connected map layouts with species prefetching.
+item.en	25° camera-aware streaming: asymmetric north/south ranges (`VW_VIEW_NORTH = 20`, `VW_SHOW_NORTH = 24`, `VW_HIDE_NORTH = 26`), entry/exit hysteresis and two-sprites-per-frame limit.
+item.en	Spawn and animation fixes: no repeat pop-ins on map changes; growth and grass/water rustling are reserved for actual spawns, respawns and in-view materializations.
 sec.en	Original port features
 item.en	Live voxel 3D overworld built from maps, with sun, shadows, day/night, and weather
 item.en	3D battle stages drawn from the map where battles start
 item.en	Touch menus with five themes, replacing the GBA's menus and dialog boxes
 item.en	HGSS-style follower Pokémon, accelerated clock, time-based encounters, and optional QoL features
-sec.en	Wolff's Room edition
-item.en	Brazilian Portuguese localization for game text, menus, and UI
-item.en	Translated title-screen elements, including Versão Esmeralda and PRESSIONE START
-item.en	New LiveArea artwork and an included LiveArea manual
-item.en	Title artwork converted to the game's native sprite palette
+sec.en	Wolff's Room improvements
+para.en	*The new camera and first-person controls are experimental. We recommend using the default camera/graphics preset for initial gameplay.*
+item.en	Reviewed the Brazilian Portuguese localization, including new voxel UI labels and gameplay text.
+item.en	Adapted overflowing text with marquee animations and translated town descriptions for the different UI themes.
+item.en	Added right-stick camera controls, experimental first-person view and optional camera-facing 2D tree sprites.
+item.en	Removed the vitaGL startup splash from the customized build.
+item.en	Updated the title-screen labels (Versão Esmeralda and PRESSIONE START), LiveArea artwork and Portuguese manual.
 sec.en	Installation
-item.en	Download the VPK here or use the Google Drive mirror
+item.en	Download the v0.5.1 VPK using the Google Drive download button
 item.en	Install it with VitaShell on a homebrew-enabled PS Vita
 item.en	Launch the game from LiveArea
 item.en	Back up existing saves before replacing an earlier version
@@ -74,14 +87,14 @@ item.en	LiveArea art reference: Gen 3 Pokémon 3DS-style icons
 sec.en	Notes
 item.en	Unofficial port, not affiliated with Nintendo, Game Freak, or The Pokémon Company.
 item.en	VitaSDK build completed; the latest title-banner palette fix has not yet been visually confirmed on hardware.
+info.en	Version|v0.5.1
+info.en	Wolff's Room edition|PT-BR · LiveArea · Manual · Camera
 info.en	Original port|HctrRB
-info.en	Wolff's Room edition|PT-BR · LiveArea · Manual
 info.en	Platform|PS Vita / PSTV
 info.en	Technology|Native ARM code · vitaGL
-link.en	Download VPK|https://github.com/WolffsRoom/WolffsRoomSite/releases/download/pokemon-emerald-ptbr-v1.0/Pokemon-Emerald-PTBR-WolffsRoom.vpk
-link.en	Alternative download (Google Drive)|https://drive.google.com/file/d/1prXPQgulczBJYybvY5nbaaWHtEIMPe7-/view?usp=sharing
+link.en	Download VPK (Google Drive)|https://drive.google.com/file/d/1ZNVd7j6EZyGgYTHuwIL-Edj6r57hJCGn/view?usp=sharing
 cover	1
-shots	8
+shots	10
 end	
 post	pizza
 cat	ports
@@ -1301,6 +1314,7 @@ post	twd1
 cat	traducoes
 group	3
 date	2026-02-17
+updated	2026-11-16
 progress	100
 title.pt	The Walking Dead: Temporada 1
 tag.pt	Tradução PT-BR · GameLab Traduções
@@ -1434,26 +1448,39 @@ post	p4g
 cat	reviews
 group	1
 date	2025-04-26
-title.pt	Persona 4 Golden
-tag.pt	Review · PS Vita
+updated	2026-11-16
+title.pt	Persona 4 Golden - Análise PS Vita
+tag.pt	Review · PS Vita · JRPG
 status.pt	Nota 8.9/10
-desc.pt	Análise pessoal após zerar o jogo.
-feature_text.pt	Análise pessoal após zerar o jogo.
-bars_title.pt	Notas
-about.pt	Análise pessoal de Persona 4 Golden no PS Vita, escrita depois de zerar o jogo em 86 horas. A nota usa o sistema "seis ao cubo": seis categorias, cada uma valendo até 36 pontos.
-sec.pt	Pontos positivos
-item.pt	História bem escrita, com personagens profundos e momentos cômicos
-item.pt	Tradução para português do Brasil excelente
-item.pt	Trilha sonora com faixas originais e novas
-item.pt	Gráficos melhorados em relação ao PS2
-item.pt	Sistema de Personas, habilidades e fusões
-sec.pt	Pontos negativos
-item.pt	Masmorras repetitivas
-item.pt	Romances fracos, sem grande impacto na história
-item.pt	Inaba é pequena e restrita
-item.pt	Modelos 3D menos expressivos que os sprites de diálogo
-sec.pt	Veredito
-item.pt	Recomendado, especialmente para quem está começando na série
+desc.pt	Uma jornada sobre amizade, mistérios e autoconhecimento em Inaba. Review após 86 horas de jogo.
+feature_text.pt	Persona 4 Golden no PS Vita - seis categorias avaliadas e um mistério que vale a pena conhecer.
+bars_title.pt	Notas · Seis ao Cubo
+about.pt	Após 86 horas em Inaba, Persona 4 Golden se destaca pela maneira como transforma amizade, autoconhecimento e mistério em uma experiência pessoal. A análise foi publicada originalmente em 26 de abril de 2025, depois de finalizar o jogo no PS Vita. As notas seguem meu método *Seis ao Cubo*, que avalia seis categorias com até 36 pontos cada.
+sec.pt	Gráficos - Perfeito (36/36)
+item.pt	Modelos, expressões e texturas melhorados em relação à versão de PS2.
+item.pt	Ambientes e personagens combinam com o estilo visual do jogo, mesmo nas limitações do PS Vita.
+item.pt	Os sprites nos diálogos transmitem mais emoção do que algumas animações dos modelos 3D.
+sec.pt	História - Perfeito (36/36)
+item.pt	A investigação de assassinatos em Inaba, o mundo dentro das televisões e as relações entre amigos mantêm o mistério envolvente.
+item.pt	Personagens profundos, momentos de humor e cenas em estilo anime enriquecem a narrativa.
+item.pt	A tradução brasileira da Phantasie Translate foi elogiada na análise original.
+sec.pt	Jogabilidade - Ótimo (30/36)
+item.pt	O calendário exige equilibrar escola, estudos, Social Links, romances e exploração de masmorras.
+item.pt	Combates por turnos, Personas e fusões oferecem boas possibilidades de estratégia.
+item.pt	As masmorras podem ser repetitivas; os romances têm consequências mais limitadas do que o esperado.
+sec.pt	Trilha sonora - Perfeito (36/36)
+item.pt	As composições de Shoji Meguro misturam rock, jazz, pop e elementos eletrônicos.
+item.pt	Faixas originais e músicas adicionais da edição Golden ajudam a dar personalidade a cada momento da aventura.
+sec.pt	Level design - Ótimo (30/36)
+item.pt	O mundo social de Inaba é denso em atividades e interações, mesmo com áreas pequenas.
+item.pt	Masmorras procedurais oferecem desafios, embora a exploração possa se tornar repetitiva.
+sec.pt	Duração - Ótimo (30/36)
+item.pt	A campanha combina dezenas de horas de história, vínculos sociais e conteúdo opcional.
+item.pt	Minha conclusão levou 86 horas, sem esgotar todas as possibilidades da aventura.
+sec.pt	Veredito - 8.9/10
+para.pt	*Esta é uma adaptação da análise publicada no WordPress. Para ler os comentários e argumentos completos, use o link «Ler análise original completa».*
+item.pt	Recomendo! Persona 4 Golden é uma ótima porta de entrada para a série e uma jornada memorável sobre amizade, superação e mistério.
+item.pt	A pontuação final apresentada no artigo original é 192/216 (8.9/10).
 bar.pt	Nota final|89|192/216
 bar.pt	Gráficos|100|36/36
 bar.pt	História|100|36/36
@@ -1461,31 +1488,45 @@ bar.pt	Jogabilidade|83|30/36
 bar.pt	Trilha sonora|100|36/36
 bar.pt	Level design|83|30/36
 bar.pt	Duração|83|30/36
+info.pt	Jogo|Persona 4 Golden
 info.pt	Plataforma|PS Vita
 info.pt	Publicado em|26/04/2025
 info.pt	Tempo de jogo|86 horas
-info.pt	Nota|192/216 (8.9/10)
-link.pt	Ler análise completa|https://wolffsroom.wordpress.com/2025/04/26/persona-4-golden-psvita-analise/
-title.en	Persona 4 Golden
-tag.en	Review · PS Vita
+info.pt	Nota publicada|192/216 · 8.9/10
+info.pt	Avaliação|Seis ao Cubo
+link.pt	Ler análise original completa|https://wolffsroom.wordpress.com/2025/04/26/persona-4-golden-psvita-analise/
+title.en	Persona 4 Golden - PS Vita Review
+tag.en	Review · PS Vita · JRPG
 status.en	Score 8.9/10
-desc.en	A personal review after finishing the game.
-feature_text.en	A personal review after finishing the game.
-bars_title.en	Scores
-about.en	A personal review of Persona 4 Golden on PS Vita, written after finishing the game in 86 hours. The score uses a "six cubed" system: six categories, each worth up to 36 points.
-sec.en	Pros
-item.en	Well-written story, with deep characters and funny moments
-item.en	Excellent Brazilian Portuguese translation
-item.en	Soundtrack with original and new tracks
-item.en	Improved graphics over the PS2 version
-item.en	Persona, skill and fusion systems
-sec.en	Cons
-item.en	Repetitive dungeons
-item.en	Weak romances with little impact on the story
-item.en	Inaba is small and limited
-item.en	3D models are less expressive than the dialogue sprites
-sec.en	Verdict
-item.en	Recommended, especially if you are new to the series
+desc.en	Friendship, mystery and self-discovery in Inaba, reviewed after 86 hours of gameplay.
+feature_text.en	Persona 4 Golden on PS Vita - six review categories and a mystery worth experiencing.
+bars_title.en	Scores · Six Cubed
+about.en	After 86 hours in Inaba, Persona 4 Golden stands out for turning friendship, self-discovery and mystery into a deeply personal experience. This review was first published on April 26, 2025 after finishing the PS Vita edition. Scores follow the *Six Cubed* system: six categories, each worth up to 36 points.
+sec.en	Graphics - Perfect (36/36)
+item.en	Improved models, character expressions and textures compared with the PS2 edition.
+item.en	The locations and characters blend well with the art direction, despite the Vita hardware constraints.
+item.en	Portrait sprites are more expressive than some 3D character animations.
+sec.en	Story - Perfect (36/36)
+item.en	The Inaba murder mystery, the TV world and growing friendships make the story engaging.
+item.en	Memorable characters, humorous moments and anime cutscenes add to its personality.
+item.en	The original review praises the Brazilian Portuguese fan translation.
+sec.en	Gameplay - Great (30/36)
+item.en	The calendar balances school, studying, Social Links, romance and dungeon exploration.
+item.en	Turn-based battles, Personas and fusion provide tactical variety.
+item.en	Dungeon repetition and the relatively limited impact of romances are downsides.
+sec.en	Soundtrack - Perfect (36/36)
+item.en	Shoji Meguro mixes rock, jazz, pop and electronic elements.
+item.en	The Golden edition combines original and additional tracks to support the atmosphere.
+sec.en	Level design - Great (30/36)
+item.en	Inaba's relatively small world is packed with social activities.
+item.en	Procedural dungeons are challenging but can feel repetitive.
+sec.en	Length - Great (30/36)
+item.en	Plenty of story, relationship building and optional content.
+item.en	My playthrough lasted 86 hours.
+sec.en	Verdict - 8.9/10
+para.en	*This page summarizes the author's original Portuguese review; see the linked WordPress article for the full analysis.*
+item.en	Recommended! An excellent introduction to Persona and a memorable journey through friendship, personal growth and mystery.
+item.en	Original published score: 192/216 (8.9/10).
 bar.en	Final score|89|192/216
 bar.en	Graphics|100|36/36
 bar.en	Story|100|36/36
@@ -1493,11 +1534,13 @@ bar.en	Gameplay|83|30/36
 bar.en	Soundtrack|100|36/36
 bar.en	Level design|83|30/36
 bar.en	Length|83|30/36
+info.en	Game|Persona 4 Golden
 info.en	Platform|PS Vita
 info.en	Published|26/04/2025
 info.en	Playtime|86 hours
-info.en	Score|192/216 (8.9/10)
-link.en	Read the full review|https://wolffsroom.wordpress.com/2025/04/26/persona-4-golden-psvita-analise/
+info.en	Published score|192/216 · 8.9/10
+info.en	Review method|Six Cubed
+link.en	Read full original review (Portuguese)|https://wolffsroom.wordpress.com/2025/04/26/persona-4-golden-psvita-analise/
 cover	1
 shots	2
 end	
@@ -1917,6 +1960,101 @@ info.en	Posted|27/01/2025
 link.en	Original post|https://wolffsroom.wordpress.com/2025/01/27/darkest-dungeon-mod/
 cover	1
 shots	1
+end	
+post	god-of-war-ragnarok
+cat	reviews
+group	1
+date	2025-01-26
+title.pt	God of War Ragnarök - Análise PS4
+tag.pt	Review · PlayStation 4 · Ação
+status.pt	Nota 198/216
+desc.pt	Kratos e Atreus encerram a saga nórdica em uma jornada emocionante, com combates excelentes e alguns problemas de ritmo.
+feature_text.pt	God of War Ragnarök no PS4 - uma experiência marcante avaliada pelo método Seis ao Cubo.
+bars_title.pt	Notas · Seis ao Cubo
+about.pt	God of War Ragnarök continua a jornada de Kratos e Atreus pelo mundo nórdico e encerra uma fase importante da franquia. Esta análise pessoal, publicada originalmente em 26 de janeiro de 2025, foi feita após 48 horas de jogo no PlayStation 4. As seis categorias seguem o método *Seis ao Cubo*, com até 36 pontos por categoria.
+sec.pt	Gráficos - Perfeito (36/36)
+item.pt	O PS4 ainda entrega cenários impressionantes, com riqueza de detalhes na água, na vegetação, nas embarcações e nos reinos nórdicos.
+item.pt	A direção de arte proporciona diversos momentos de contemplação e exploração.
+sec.pt	História - Ótimo (30/36)
+item.pt	A relação de Kratos e Atreus evolui em uma narrativa intensa, com grandes revelações e novos personagens.
+item.pt	Algumas missões narrativas desaceleram demais o ritmo e o desfecho do Ragnarök parece apressado em comparação à expectativa criada.
+sec.pt	Jogabilidade - Perfeito (36/36)
+item.pt	O combate expande a base de God of War (2018), com alternância fluida entre armas e habilidades.
+item.pt	A progressão por equipamentos e melhorias ainda é mais complexa do que deveria, apesar da qualidade dos confrontos.
+sec.pt	Trilha sonora - Perfeito (36/36)
+item.pt	A trilha de Bear McCreary combina coros e instrumentos de inspiração nórdica para intensificar batalhas e cenas emocionais.
+item.pt	Um dos elementos mais consistentes de toda a jornada.
+sec.pt	Level design - Ótimo (30/36)
+item.pt	Reinos com identidade própria, segredos e quebra-cabeças estimulam a exploração.
+item.pt	Alguns trajetos exigem retornos repetidos e certas missões secundárias, especialmente em Vanaheim, poderiam ser mais objetivas.
+item.pt	Há poucos NPCs para interagir além dos personagens relevantes à trama.
+sec.pt	Duração - Ótimo (30/36)
+item.pt	As atividades opcionais complementam a história sem tornar a campanha excessivamente longa.
+item.pt	Concluí a aventura em 48 horas, priorizando o que achei interessante, sem perseguir a platina.
+sec.pt	Veredito - 198/216
+para.pt	*Esta página adapta a review publicada em 2025. Leia o artigo original no WordPress para a análise completa e todas as considerações pessoais.*
+item.pt	Recomendo! Ragnarök traz uma história envolvente, combates excelentes e um mundo rico em detalhes, apesar de algumas escolhas de ritmo e progressão.
+item.pt	A nota original foi 198/216 (aproximadamente 9,2/10 em escala decimal).
+bar.pt	Nota final|92|198/216
+bar.pt	Gráficos|100|36/36
+bar.pt	História|83|30/36
+bar.pt	Jogabilidade|100|36/36
+bar.pt	Trilha sonora|100|36/36
+bar.pt	Level design|83|30/36
+bar.pt	Duração|83|30/36
+info.pt	Jogo|God of War Ragnarök
+info.pt	Plataforma|PlayStation 4
+info.pt	Publicado em|26/01/2025
+info.pt	Tempo de jogo|48 horas
+info.pt	Nota original|198/216
+info.pt	Avaliação|Seis ao Cubo
+link.pt	Ler análise original completa|https://wolffsroom.wordpress.com/2025/01/26/god-of-war-ragnarok-ps4/
+title.en	God of War Ragnarök - PS4 Review
+tag.en	Review · PlayStation 4 · Action
+status.en	Score 198/216
+desc.en	Kratos and Atreus close their Norse saga with strong combat, memorable moments and a few pacing issues.
+feature_text.en	God of War Ragnarök on PS4, reviewed using the author's Six Cubed scoring method.
+bars_title.en	Scores · Six Cubed
+about.en	God of War Ragnarök follows Kratos and Atreus on the final stretch of their Norse adventure. This personal review was first published on January 26, 2025 after 48 hours on PlayStation 4. It uses the author's *Six Cubed* method: six categories, each worth up to 36 points.
+sec.en	Graphics - Perfect (36/36)
+item.en	Beautiful PS4 environments, full of detail in water, forests, boats and the Norse realms.
+item.en	Strong art direction rewards exploration and offers plenty of memorable scenes.
+sec.en	Story - Great (30/36)
+item.en	Kratos and Atreus grow through emotional developments, revelations and new encounters.
+item.en	A few story arcs slow the pacing and the ending feels rushed.
+sec.en	Gameplay - Perfect (36/36)
+item.en	Satisfying combat expands on God of War (2018), with smooth weapon switching and more combat options.
+item.en	Equipment progression and upgrades remain overly complicated.
+sec.en	Soundtrack - Perfect (36/36)
+item.en	Bear McCreary's score uses epic choirs and Norse-inspired instrumentation.
+item.en	Music heightens both combat intensity and emotional scenes.
+sec.en	Level design - Great (30/36)
+item.en	Distinct realms, secrets and puzzles make exploration rewarding.
+item.en	Backtracking and some long optional quests, particularly in Vanaheim, diminish the pacing.
+item.en	The world could benefit from more characters to interact with.
+sec.en	Length - Great (30/36)
+item.en	The optional activities enrich the campaign without excessive padding.
+item.en	My playthrough took 48 hours without focusing on platinum trophies.
+sec.en	Verdict - 198/216
+para.en	*This adaptation summarizes the author's Portuguese review. Follow the WordPress link for the complete original article.*
+item.en	Recommended! An excellent follow-up with powerful combat and a richly detailed world despite minor pacing and progression problems.
+item.en	Original score: 198/216, approximately 9.2/10.
+bar.en	Final score|92|198/216
+bar.en	Graphics|100|36/36
+bar.en	Story|83|30/36
+bar.en	Gameplay|100|36/36
+bar.en	Soundtrack|100|36/36
+bar.en	Level design|83|30/36
+bar.en	Length|83|30/36
+info.en	Game|God of War Ragnarök
+info.en	Platform|PlayStation 4
+info.en	Published|26/01/2025
+info.en	Playtime|48 hours
+info.en	Original score|198/216
+info.en	Review method|Six Cubed
+link.en	Read full original review (Portuguese)|https://wolffsroom.wordpress.com/2025/01/26/god-of-war-ragnarok-ps4/
+cover	1
+shots	3
 end	
 post	icono
 cat	traducoes

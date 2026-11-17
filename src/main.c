@@ -30,7 +30,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "1.0.1"
+#define WS_VERSION "1.0.2"
 #endif
 
 /* ================================================================ textos */
@@ -54,7 +54,7 @@ enum {
     S_QUEUE, S_SOURCE, S_CLOCK, S_DL_DATA, S_DATA_TO, S_SYNC_SHORT, S_MUSIC, S_SFX, S_TIP_AUDIO, S_VID_LOAD,
     S_VID_FAIL, S_VID_HINT, S_BARK, S_WATCH_APP, S_VIDEO_NOTE_APP, S_LATEST3, S_TROPHIES, S_OPEN_APP, S_LBL_SYNC, S_LBL_DLS, S_LBL_AUDIO, S_LBL_SETTINGS, S_LBL_SEARCH, S_POST_PUBLISHED, S_POST_UPDATED, S_APP_LIVEAREA,
     S_TRANS_DIALOG_TITLE, S_TRANS_REQUIRE, S_TRANS_DETECTED, S_TRANS_MISSING,
-    S_TRANS_CONFIRM, S_TRANS_CANCEL, S_TRANS_INSTALLING, S_COUNT
+    S_TRANS_CONFIRM, S_TRANS_CANCEL, S_TRANS_INSTALLING, S_RESOLVING_LINK, S_CONNECTING, S_COUNT
 };
 
 static const char *UI_UTF8[2][S_COUNT] = {
@@ -90,6 +90,7 @@ static const char *UI_UTF8[2][S_COUNT] = {
         "INSTALL TRANSLATION", "This translation requires the rePatch plugin!",
         "Plugin detected in taiHEN.", "Plugin missing from taiHEN.",
         "CONFIRM", "CANCEL", "Installing the translation.",
+        "Resolving link...", "Connecting...",
     },
     [LANG_PT] = {
         "Ports", "Ferramentas", "Traduções", "Reviews",
@@ -126,6 +127,7 @@ static const char *UI_UTF8[2][S_COUNT] = {
         "INSTALAR TRADUÇÃO", "Essa tradução exige o plugin rePatch instalado!",
         "Plugin detectado no taiHEN.", "Plugin ausente no taiHen.",
         "CONFIRMAR", "CANCELAR", "Instalando tradução.",
+        "Resolvendo link...", "Conectando...",
     },
 };
 static char UI[2][S_COUNT][128];
@@ -1333,7 +1335,8 @@ static void build_post(int pi) {
 static const char *job_state_text(const Job *j) {
     switch (j->state) {
     case J_QUEUED: return TXT(S_QUEUED);
-    case J_DOWNLOAD: return TXT(S_DOWNLOADING);
+    case J_RESOLVE: return TXT(S_RESOLVING_LINK);
+    case J_DOWNLOAD: return j->pr.done > 0 ? TXT(S_DOWNLOADING) : TXT(S_CONNECTING);
     case J_EXTRACT: return j->phase ? TXT(S_INSTALLING) : TXT(S_EXTRACTING);
     case J_INSTALL: return TXT(S_INSTALLING);
     case J_DONE: return TXT(S_DONE);
@@ -1902,7 +1905,9 @@ static void draw_dljob(const Op *o, float x, float y, float al) {
     vita2d_draw_rectangle(x, y, w, h, col_alpha(C_DARK, al));
     frame_rect(x, y, w, h, 4, col_alpha(C_WHITE, al));
     float k = job_frac(j);
-    int busy = j->state == J_EXTRACT || j->state == J_INSTALL || j->state == J_QUEUED;
+    int busy = j->state == J_EXTRACT || j->state == J_INSTALL ||
+               j->state == J_QUEUED || j->state == J_RESOLVE ||
+               (j->state == J_DOWNLOAD && j->pr.done <= 0);
     if (busy && (j->state != J_EXTRACT || j->phase)) {
         /* instalando/na fila: listras andando */
         int off = (int)(now_s * 24) % 24;
@@ -1912,7 +1917,9 @@ static void draw_dljob(const Op *o, float x, float y, float al) {
         seg_bar(x + 8, y + h - 12, w - 16, 4, k, col_alpha(C_WHITE, al), col_alpha(RGBA8(0x24, 0x24, 0x24, 0xFF), al));
     }
     char t[64];
-    if (j->state == J_DOWNLOAD || (j->state == J_EXTRACT && !j->phase)) snprintf(t, sizeof(t), "%s %d%%", job_state_text(j), (int)(k * 100));
+    if ((j->state == J_DOWNLOAD && j->pr.done > 0) ||
+        (j->state == J_EXTRACT && !j->phase))
+        snprintf(t, sizeof(t), "%s %d%%", job_state_text(j), (int)(k * 100));
     else snprintf(t, sizeof(t), "%s", job_state_text(j));
     upper_latin1(t);
     title_draw(t, x + (w - title_width(t, 2)) / 2, y + 12, 2, col_alpha(C_WHITE, al));
@@ -1926,7 +1933,7 @@ static void draw_jobrow(const Op *o, float x, float y, float al) {
     char t[256], a[24], b[24];
     fmt_size(j->pr.done, a, sizeof(a));
     fmt_size(j->pr.total, b, sizeof(b));
-    if (j->state == J_DOWNLOAD) {
+    if (j->state == J_DOWNLOAD && j->pr.done > 0) {
         char sp[24];
         fmt_size((long long)j->pr.speed, sp, sizeof(sp));
         char spd[40] = "";
@@ -1944,7 +1951,8 @@ static void draw_jobrow(const Op *o, float x, float y, float al) {
     int n = wrap_body(t, (int)o->w, lines, 1, buf, sizeof(buf));
     if (n) body_draw(lines[0], x, y - 4, col_alpha(j->state == J_ERROR ? C_WHITE : C_SOFT, al));
     if (j->state < J_DONE || j->state == J_DONE) {
-        int busy = (j->state == J_EXTRACT && j->phase) || j->state == J_INSTALL;
+        int busy = (j->state == J_EXTRACT && j->phase) || j->state == J_INSTALL ||
+                   j->state == J_RESOLVE || (j->state == J_DOWNLOAD && j->pr.done <= 0);
         vita2d_draw_rectangle(x, y + 26, o->w, 16, col_alpha(C_DARK, al));
         if (busy) {
             int off = (int)(now_s * 24) % 24;
@@ -3478,7 +3486,7 @@ static void draw_strip(float hint_right) {
         Job *j = current_job();
         if (!j) return;
         float k = job_frac(j);
-        if (j->state == J_DOWNLOAD) {
+        if (j->state == J_DOWNLOAD && j->pr.done > 0) {
             char size[24] = "";
             fmt_size((long long)j->pr.speed, size, sizeof(size));
             snprintf(msg, sizeof(msg), "%s - %s %d%% %s/s",

@@ -2,6 +2,19 @@
 
 
 
+### v1.0.2 - Download das traduções GameLab
+
+- Renomeados os downloads: The Wolf Among Us (PTBR),
+  The Walking Dead: Temporada 1 (PTBR) e Temporada 2 (PTBR).
+- O Google Drive passa a ser o primeiro espelho; MediaFire é tentado como
+  alternativa, e MEGA permanece disponível para download manual.
+- MediaFire tem tempo de resolução máximo de 15 segundos, evitando que
+  a loja fique permanentemente parada em zero durante consultas de CDN.
+- Novos estados Resolvendo link... e Conectando... tornam a UI informativa,
+  ocultando falsos 0%/0 KB até o início da transferência.
+- Conexões lentas/falhas terminam e passam ao próximo espelho, preservando
+  a instalação segura com senha fixa wolffsroom.
+
 ### v1.0.1 - Correções nas traduções
 
 - Senha padronizada em wolffsroom para os ZIPs/VPKs compactados e pacotes
