@@ -37,16 +37,37 @@ const char *inst_last_titleid(void) { return last_tid; }
 static const char *strip_path(const char *name, const char **strip, int nstrip) {
     while (name[0] == '.' && name[1] == '/') name += 2;
     while (*name == '/') name++;
+    int require_titleid = 0;
     for (int i = 0; i < nstrip; i++) {
-        size_t n = strlen(strip[i]);
-        if (!strncasecmp(name, strip[i], n)) return name + n;
+        /* @PCSE00352/ searches the TitleID component anywhere within the
+         * archive, e.g. Translation/PCSE00352/Pack or rePatch/PCSE.../data.
+         * This also rejects unrelated files such as README or torrent. */
+        const char *prefix = strip[i];
+        if (prefix[0] == '@') {
+            require_titleid = 1;
+            const char *needle = prefix + 1;
+            size_t n = strlen(needle);
+            const char *segment = name;
+            while (*segment) {
+                if (!strncasecmp(segment, needle, n)) return segment + n;
+                segment = strchr(segment, '/');
+                if (!segment) break;
+                segment++;
+            }
+        } else {
+            size_t n = strlen(prefix);
+            if (!strncasecmp(name, prefix, n)) return name + n;
+        }
     }
-    return name;
+    return require_titleid ? NULL : name;
 }
 
-static int count_entries(const char *zip) {
+static int count_entries(const char *zip, const char *password) {
     struct archive *a = archive_read_new();
     archive_read_support_format_zip(a);
+    archive_read_support_format_rar(a);
+    archive_read_support_format_rar5(a);
+    if (password && *password) archive_read_add_passphrase(a, password);
     if (archive_read_open_filename(a, zip, 65536) != ARCHIVE_OK) {
         archive_read_free(a);
         return -1;
@@ -61,15 +82,19 @@ static int count_entries(const char *zip) {
     return n;
 }
 
-int inst_extract(const char *zip, const char *dst, const char **strip, int nstrip, NetProgress *pr) {
+int inst_extract_password(const char *zip, const char *dst, const char **strip, int nstrip,
+                          const char *password, NetProgress *pr) {
     if (pr) {
         pr->done = 0;
-        pr->total = count_entries(zip);
+        pr->total = count_entries(zip, password);
     }
     struct archive *a = archive_read_new();
     archive_read_support_format_zip(a);
+    archive_read_support_format_rar(a);
+    archive_read_support_format_rar5(a);
+    if (password && *password) archive_read_add_passphrase(a, password);
     if (archive_read_open_filename(a, zip, 256 * 1024) != ARCHIVE_OK) {
-        snprintf(ierr, sizeof(ierr), "arquivo zip inválido");
+        snprintf(ierr, sizeof(ierr), "Arquivo ZIP/RAR invalido ou incompleto");
         archive_read_free(a);
         return -1;
     }
@@ -85,19 +110,27 @@ int inst_extract(const char *zip, const char *dst, const char **strip, int nstri
             }
         }
         const char *name = archive_entry_pathname(e);
-        if (!name || strstr(name, "__MACOSX") || strstr(name, "..")) {
+        if (!name || strstr(name, "__MACOSX") || strstr(name, "..") || strchr(name, ':') || strchr(name, '\\')) {
             archive_read_data_skip(a);
             continue;
         }
         const char *rel = strip_path(name, strip, nstrip);
-        if (!*rel) {
+        if (!rel || !*rel) {
             archive_read_data_skip(a);
             continue;
         }
         char full[512];
-        snprintf(full, sizeof(full), "%s/%s", dst, rel);
+        if (snprintf(full, sizeof(full), "%s/%s", dst, rel) >= (int)sizeof(full)) {
+            snprintf(ierr, sizeof(ierr), "Caminho de arquivo longo demais no pacote");
+            res = -1;
+            break;
+        }
         if (archive_entry_filetype(e) == AE_IFDIR) {
             fs_mkdir_p(full);
+            continue;
+        }
+        if (archive_entry_filetype(e) != AE_IFREG) {
+            archive_read_data_skip(a); /* ignora links e tipos especiais */
             continue;
         }
         char *slash = strrchr(full, '/');
@@ -120,17 +153,21 @@ int inst_extract(const char *zip, const char *dst, const char **strip, int nstri
             }
         sceIoClose(fd);
         if (n < 0) {
-            snprintf(ierr, sizeof(ierr), "falha ao extrair %s (sem espaço?)", rel);
+            snprintf(ierr, sizeof(ierr), "Falha no arquivo: senha, criptografia ou armazenamento (%s)", rel);
             res = -1;
             break;
         }
     }
     if (res == 0 && r != ARCHIVE_EOF) {
-        snprintf(ierr, sizeof(ierr), "zip corrompido");
+        snprintf(ierr, sizeof(ierr), "Arquivo compactado corrompido");
         res = -1;
     }
     archive_read_free(a);
     return res;
+}
+
+int inst_extract(const char *zip, const char *dst, const char **strip, int nstrip, NetProgress *pr) {
+    return inst_extract_password(zip, dst, strip, nstrip, NULL, pr);
 }
 
 /* ------------------------------------------------------------------ head.bin (VitaShell) */

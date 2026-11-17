@@ -13,6 +13,7 @@
 
 #include <math.h>
 #include <stdio.h>
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
@@ -29,7 +30,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "0.99.9"
+#define WS_VERSION "1.0"
 #endif
 
 /* ================================================================ textos */
@@ -51,7 +52,7 @@ enum {
     S_SET_HINT, S_SET_KEYS, S_H_MOVE, S_H_SELECT, S_SEARCH, S_SEARCH_FOR, S_RESULTS, S_NO_RESULTS, S_SEARCH_EMPTY,
     S_EDIT_SEARCH, S_ST_UPTODATE, S_ST_NEWVER, S_ST_INSTALLED, S_CHIP_INSTALLED, S_INSTALLED_LIST, S_OPEN_PROJECT,
     S_QUEUE, S_SOURCE, S_CLOCK, S_DL_DATA, S_DATA_TO, S_SYNC_SHORT, S_MUSIC, S_SFX, S_TIP_AUDIO, S_VID_LOAD,
-    S_VID_FAIL, S_VID_HINT, S_BARK, S_WATCH_APP, S_VIDEO_NOTE_APP, S_LATEST3, S_TROPHIES, S_OPEN_APP, S_LBL_SYNC, S_LBL_DLS, S_LBL_AUDIO, S_LBL_SETTINGS, S_LBL_SEARCH, S_COUNT
+    S_VID_FAIL, S_VID_HINT, S_BARK, S_WATCH_APP, S_VIDEO_NOTE_APP, S_LATEST3, S_TROPHIES, S_OPEN_APP, S_LBL_SYNC, S_LBL_DLS, S_LBL_AUDIO, S_LBL_SETTINGS, S_LBL_SEARCH, S_POST_PUBLISHED, S_POST_UPDATED, S_APP_LIVEAREA, S_COUNT
 };
 
 static const char *UI_UTF8[2][S_COUNT] = {
@@ -82,6 +83,8 @@ static const char *UI_UTF8[2][S_COUNT] = {
         "Source", "Recommended clock", "Download data", "Extracted to ux0:data/", "Syncing...", "Music", "Effects", "Audio",
         "Loading video", "Couldn't play the video.", "X pause \xb7 Left/Right 10 s \xb7 O close", "WOOF!", "Watch here",
         "The video plays right here in the app.", "Check out the latest three updates...", "Native trophies", "Open", "Sync", "Downloads", "Audio", "Settings", "Search",
+        "Published on", "Last update",
+        "After installation: refresh LiveArea with FMVita or File Manager.",
     },
     [LANG_PT] = {
         "Ports", "Ferramentas", "Traduções", "Reviews",
@@ -113,6 +116,8 @@ static const char *UI_UTF8[2][S_COUNT] = {
         "Source", "Clock recomendado", "Baixar dados", "Extraído em ux0:data/", "Sincron...", "Música", "Efeitos", "Áudio",
         "Carregando vídeo", "Não deu para tocar o vídeo.", "X pausa \xb7 Esq./Dir. 10 s \xb7 O fecha", "AU AU!", "Assistir aqui",
         "O vídeo toca aqui mesmo no app.", "Confira as últimas três novidades...", "Troféus nativos", "Abrir", "Sincronizar", "Downloads", "Áudio", "Configurações", "Pesquisar",
+        "Publicado em", "Atualizado em",
+        "Após instalar, atualize a LiveArea pelo FMVita ou File Manager.",
     },
 };
 static char UI[2][S_COUNT][128];
@@ -129,6 +134,9 @@ static int dls_from = V_HOME, dls_from_arg = 0;
 static float hint_h = 36; /* barra de dicas (+ faixa de status quando aparece) */
 static int brightness = 100;  /* % (escurece a imagem do app; 40..100) */
 static int settings_open = 0, settings_row = 0, settings_page = 0, settings_root_row = 0;
+static int trans_confirm_post = -1, trans_confirm_dl = -1;
+static int trans_confirm_mod = 0, trans_confirm_backup = 0, trans_confirm_plugin = 0;
+static int trans_confirm_app = 0, trans_confirm_base_missing = 0;
 static double settings_t0 = -10;
 static char search_q[128] = "";
 static int ime_open = 0;
@@ -405,11 +413,26 @@ static void dl_status(const Post *p, int idx, DlStatus *s) {
         }
     } else if (d->type == DL_TRANS) {
         for (int i = 0; i < d->ntids && !s->installed; i++) {
-            char path[64];
+            char path[64], game[96];
             snprintf(path, sizeof(path), "ux0:rePatch/%s", d->tids[i]);
             s->installed = fs_is_dir(path);
+            if (s->installed) {
+                snprintf(game, sizeof(game), "ux0:app/%s/sce_sys/param.sfo", d->tids[i]);
+                if (fs_exists(game)) snprintf(s->tid, sizeof(s->tid), "%s", d->tids[i]);
+            }
         }
         if (s->installed && r) snprintf(s->inst_ver, sizeof(s->inst_ver), "%s", r->version);
+    } else if (d->type == DL_APP_FILES) {
+        /* O jogo base instalado não equivale à tradução aplicada. */
+        if (r && d->ntids > 0 && fs_is_dir(r->path)) {
+            char sfo[96];
+            snprintf(sfo, sizeof(sfo), "ux0:app/%s/sce_sys/param.sfo", d->tids[0]);
+            if (fs_exists(sfo)) {
+                s->installed = 1;
+                snprintf(s->tid, sizeof(s->tid), "%s", d->tids[0]);
+                snprintf(s->inst_ver, sizeof(s->inst_ver), "%s", r->version);
+            }
+        }
     } else if (r && fs_exists(r->path)) {
         s->installed = 1;
         snprintf(s->inst_ver, sizeof(s->inst_ver), "%s", r->version);
@@ -418,8 +441,59 @@ static void dl_status(const Post *p, int idx, DlStatus *s) {
 }
 
 /* plugin rePatch listado no config do taiHEN */
+static int repatch_from_config(const char *config) {
+    char *text = fs_read(config, NULL);
+    if (!text) return 0;
+    int found = 0;
+    char *save = NULL;
+    for (char *line = strtok_r(text, "\n", &save); line;
+         line = strtok_r(NULL, "\n", &save)) {
+        while (*line && isspace((unsigned char)*line)) line++;
+        if (!*line || *line == '#' || *line == ';' || *line == '*') continue;
+        char *end = line;
+        while (*end && !isspace((unsigned char)*end) && *end != '#') end++;
+        *end = 0;
+        char path[260];
+        snprintf(path, sizeof(path), "%s", line);
+        for (char *c = path; *c; c++) *c = (char)tolower((unsigned char)*c);
+        if (strstr(path, "repatch") && (strstr(path, ".skprx") || strstr(path, ".suprx"))
+            && fs_exists(line)) { found = 1; break; }
+    }
+    free(text);
+    return found;
+}
+
 static int repatch_plugin(void) {
-    return fs_grep_ci("ur0:tai/config.txt", "repatch") || fs_grep_ci("ux0:tai/config.txt", "repatch");
+    return repatch_from_config("ur0:tai/config.txt") ||
+           repatch_from_config("ux0:tai/config.txt");
+}
+
+static void open_translation_confirm(int pi, int di) {
+    if (pi < 0 || pi >= g_nposts || di < 0 || di >= g_posts[pi].ndls) return;
+    const Download *dl = &g_posts[pi].dls[di];
+    if (dl->type != DL_TRANS && dl->type != DL_APP_FILES) return;
+    trans_confirm_post = pi;
+    trans_confirm_dl = di;
+    trans_confirm_mod = 0;
+    trans_confirm_backup = 0;
+    trans_confirm_app = dl->type == DL_APP_FILES;
+    trans_confirm_base_missing = 0;
+    trans_confirm_plugin = trans_confirm_app ? 1 : repatch_plugin();
+    if (trans_confirm_app) {
+        char game[96];
+        snprintf(game, sizeof(game), "ux0:app/%s", dl->ntids ? dl->tids[0] : "?");
+        trans_confirm_base_missing = !dl->ntids || !fs_is_dir(game);
+        sfx("open");
+        return;
+    }
+    for (int i = 0; i < dl->ntids; i++) {
+        char dir[80], bak[96];
+        snprintf(dir, sizeof(dir), "ux0:rePatch/%s", dl->tids[i]);
+        snprintf(bak, sizeof(bak), "%s_bkp", dir);
+        if (fs_exists(dir)) trans_confirm_mod = 1;
+        if (fs_exists(dir) && fs_exists(bak)) trans_confirm_backup = 1;
+    }
+    sfx("open");
 }
 
 static void fmt_size(long long b, char *out, int n) {
@@ -935,6 +1009,28 @@ static void load_shots(int pi) {
     }
 }
 
+static int post_date_display(const char *iso, char *out, size_t len) {
+    if (!iso || strlen(iso) != 10 || iso[4] != '-' || iso[7] != '-') return 0;
+    for (int i = 0; i < 10; i++) {
+        if (i != 4 && i != 7 && (iso[i] < '0' || iso[i] > '9')) return 0;
+    }
+    int y, m, d;
+    if (sscanf(iso, "%4d-%2d-%2d", &y, &m, &d) != 3 ||
+        y < 1 || m < 1 || m > 12 || d < 1) return 0;
+    static const int days[] = {31,28,31,30,31,30,31,31,30,31,30,31};
+    int last = days[m - 1] + (m == 2 && (y % 400 == 0 || (y % 4 == 0 && y % 100 != 0)));
+    if (d > last) return 0;
+    if (lang == LANG_PT) snprintf(out, len, "%02d/%02d/%04d", d, m, y);
+    else {
+        static const char *months[] = {
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        };
+        snprintf(out, len, "%s %d, %d", months[m - 1], d, y);
+    }
+    return 1;
+}
+
 static void build_post(int pi) {
     layout_begin();
     Post *p = &g_posts[pi];
@@ -944,7 +1040,16 @@ static void build_post(int pi) {
     char line[512];
     snprintf(line, sizeof(line), "%s \xb7 %s", t->tag, t->status);
     upper_latin1(line);
-    y += para(line, 24, y, 912, C_MUTED, 1, 2, 0) + 16;
+    y += para(line, 24, y, 912, C_MUTED, 1, 2, 0) + 12;
+    char published[40], updated[40];
+    if (post_date_display(p->date, published, sizeof(published))) {
+        snprintf(line, sizeof(line), "%s: %s", TXT(S_POST_PUBLISHED), published);
+        if (post_date_display(p->updated, updated, sizeof(updated))) {
+            size_t used = strlen(line);
+            snprintf(line + used, sizeof(line) - used, "  \xb7  %s: %s", TXT(S_POST_UPDATED), updated);
+        }
+        y += para(line, 24, y, 912, C_MUTED, 1, 3, 0) + 16;
+    } else y += 4;
     rect(24, y, 912, 4, C_LINE);
     y += 4 + 28;
 
@@ -1044,7 +1149,8 @@ static void build_post(int pi) {
             yy += 10;
             const char *label = st.update ? TXT(S_DL_UPDATE)
                               : d->type == DL_VPK ? (st.installed ? TXT(S_DL_REINSTALL) : TXT(S_DL_INSTALL))
-                              : d->type == DL_TRANS ? (st.installed ? TXT(S_DL_TRANS_RE) : TXT(S_DL_TRANS))
+                              : d->type == DL_TRANS || d->type == DL_APP_FILES
+                              ? (st.installed ? TXT(S_DL_TRANS_RE) : TXT(S_DL_TRANS))
                               : d->type == DL_DATA ? TXT(S_DL_DATA)
                                                     : TXT(S_DL_GET);
             if (st.installed && st.tid[0]) { /* baixado e instalado: Abrir primeiro */
@@ -1077,6 +1183,12 @@ static void build_post(int pi) {
                 } else {
                     yy += para(TXT(S_REPATCH_OK), rx + in, yy, iw, C_MUTED, 0, 2, 0) + 10;
                 }
+            } else if (d->type == DL_APP_FILES) {
+                char to[128];
+                snprintf(to, sizeof(to), "ux0:app/%s/", d->ntids ? d->tids[0] : "?");
+                yy += para(to, rx + in, yy, iw, C_MUTED, 0, 2, 0) + 8;
+                op(OP_WARN, rx + in, yy + 2, 20, 20);
+                yy += para(TXT(S_APP_LIVEAREA), rx + in + 28, yy, iw - 28, C_TEXT, 0, 5, 0) + 10;
             } else if (d->type == DL_DATA) {
                 yy += para(TXT(S_DATA_TO), rx + in, yy, iw, C_MUTED, 0, 3, 0) + 10;
             } else if (d->type == DL_PLUGIN || d->type == DL_FILE) {
@@ -1088,6 +1200,20 @@ static void build_post(int pi) {
             }
         }
         ry += box_end(bg, rx, ry, rw, yy - 14) + 36;
+        pop_range(bg, box_pop);
+        box_pop += .1;
+    }
+    /* Download links get the same priority as native install buttons:
+     * always the first side box, before Details and progress metrics. */
+    if (!p->ndls && t->nlinks) {
+        int bg = box_begin(rx, ry, rw);
+        float yy = ry + in;
+        yy += heading(TXT(S_DOWNLOADS), rx + in, yy, rw - 2 * in, 2, C_WHITE, 0, 0, 1, 24) + 16;
+        for (int i = 0; i < t->nlinks; i++) {
+            int it = button(t->links[i].a, rx + in, yy, rw - 2 * in, i == 0, A_URL, 0, t->links[i].b, -1);
+            yy += (it >= 0 ? items[it].h : 48) + 12;
+        }
+        ry += box_end(bg, rx, ry, rw, yy - 12) + 36;
         pop_range(bg, box_pop);
         box_pop += .1;
     }
@@ -1153,7 +1279,7 @@ static void build_post(int pi) {
     /* Downloads (links do site) só quando o post não tem downloads do app, que já fazem o mesmo aqui dentro;
      * depois a caixa Source e o Clock recomendado, na ordem do site */
     for (int b = 0; b < 2; b++) {
-        int n = b ? t->nsrcs : (p->ndls ? 0 : t->nlinks);
+        int n = b ? t->nsrcs : 0; /* manual Downloads was shown above Details */
         if (!n) continue;
         Pair *lk = b ? t->srcs : t->links;
         int bg = box_begin(rx, ry, rw);
@@ -1415,6 +1541,10 @@ static void draw_play(float x, float y) {
     vita2d_draw_rectangle(x + 44, y + 28, 4, 8, C_WHITE);
 }
 
+static unsigned progress_color(int pct) {
+    return pct < 40 ? C_PROGRESS_LOW : pct < 80 ? C_PROGRESS_MID : C_PROGRESS_HIGH;
+}
+
 static void draw_bar(float x, float y, float w, int pct) {
     /* .wr-pb: moldura branca 4px, fundo escuro, segmentos de 8px a cada 12px */
     frame_rect(x - 4, y - 4, w + 8, 32, 4, C_WHITE);
@@ -1430,7 +1560,7 @@ static void draw_bar(float x, float y, float w, int pct) {
     float fw = iw * pct / 100.f * (k > 1 ? 1 : k);
     for (float sx = 0; sx < fw; sx += 12) {
         float sw = sx + 8 > fw ? fw - sx : 8;
-        vita2d_draw_rectangle(x + 4 + sx, y + 4, sw, 16, C_WHITE);
+        vita2d_draw_rectangle(x + 4 + sx, y + 4, sw, 16, progress_color(pct));
     }
 }
 
@@ -2154,6 +2284,27 @@ static void toast(const char *msg) {
     toasts[0].t0 = now_s;
 }
 
+static void close_translation_confirm(int install) {
+    if (trans_confirm_post < 0) return;
+    int pi = trans_confirm_post, di = trans_confirm_dl;
+    if (install && (trans_confirm_backup || trans_confirm_base_missing)) {
+        sfx("back");
+        return; /* backup existente ou jogo base ausente: não instalar */
+    }
+    trans_confirm_post = trans_confirm_dl = -1;
+    if (install) {
+        Post *p = &g_posts[pi];
+        if (jobs_add(p, di, p->dls[di].name, 1) >= 0) {
+            sfx("confirm");
+            if (p->dls[di].type == DL_APP_FILES)
+                toast(TXT(S_APP_LIVEAREA));
+            else
+                toast(lang == LANG_PT ? "Instalando tradução; rePatch é obrigatório."
+                                      : "Installing translation; rePatch is required.");
+        }
+    } else sfx("back");
+}
+
 static void toggle_lang(void) {
     lang = !lang;
     settings_save();
@@ -2555,8 +2706,11 @@ static void activate(int it) {
                 /* Installed records can retain old mirror labels; the
                  * project title is the canonical download queue name. */
                 const char *project = g_posts[i].t[lang].title;
-                if (jobs_add(&g_posts[i], e->dl,
-                             project && project[0] ? project : g_posts[i].dls[e->dl].name) >= 0)
+                if (g_posts[i].dls[e->dl].type == DL_TRANS ||
+                    g_posts[i].dls[e->dl].type == DL_APP_FILES) {
+                    open_translation_confirm(i, e->dl);
+                } else if (jobs_add(&g_posts[i], e->dl,
+                             project && project[0] ? project : g_posts[i].dls[e->dl].name, 0) >= 0)
                     sfx("confirm");
                 break;
             }
@@ -2590,9 +2744,14 @@ static void activate(int it) {
         }
         /* Do not label the queue by a mirror/CDN asset, e.g. "Download
          * alternativo (Google Drive)". Keep the actual post name visible. */
+        if (p->dls[x->arg].type == DL_TRANS ||
+            p->dls[x->arg].type == DL_APP_FILES) {
+            open_translation_confirm(view_post, x->arg);
+            break;
+        }
         const char *project = p->t[lang].title;
         if (jobs_add(p, x->arg,
-                     project && project[0] ? project : p->dls[x->arg].name) >= 0)
+                     project && project[0] ? project : p->dls[x->arg].name, 0) >= 0)
             sfx("confirm");
         break;
     }
@@ -3241,7 +3400,8 @@ static void tick_store(void) {
             char t[256];
             if (j->state == J_DONE) {
                 /* guarda o que foi instalado e em qual versão */
-                int kind = j->kind == JK_TRANS ? DL_TRANS : j->kind == JK_PLUGIN ? DL_PLUGIN : j->kind == JK_FILE ? DL_FILE
+                int kind = j->kind == JK_TRANS ? DL_TRANS : j->kind == JK_APP_FILES ? DL_APP_FILES
+                         : j->kind == JK_PLUGIN ? DL_PLUGIN : j->kind == JK_FILE ? DL_FILE
                          : j->kind == JK_DATA ? DL_DATA : DL_VPK;
                 char path[192];
                 if (kind == DL_TRANS) snprintf(path, sizeof(path), "ux0:rePatch/%s", j->tids[0]);
@@ -3251,6 +3411,8 @@ static void tick_store(void) {
                 if (j->kind == JK_VPK) snprintf(t, sizeof(t), "%s %s", j->name, TXT(S_T_INSTALLED));
                 else if (j->kind == JK_TRANS) snprintf(t, sizeof(t), "%s: %s (%s)", j->name, TXT(S_T_TRANS), j->msg);
                 else if (j->kind == JK_DATA) snprintf(t, sizeof(t), "%s: %s", j->name, TXT(S_DATA_TO));
+                else if (j->kind == JK_APP_FILES)
+                    snprintf(t, sizeof(t), "%s. %s", TXT(S_T_TRANS), TXT(S_APP_LIVEAREA));
                 else snprintf(t, sizeof(t), "%s %s", j->name, TXT(S_T_SAVED));
             } else if (j->state == J_ERROR) {
                 sfx("back");
@@ -3383,6 +3545,73 @@ static void draw_update(void) {
     float sw = body_width(sk) + 22;
     btn_icon(1, x + (w - sw) / 2, y + 307);
     body_draw(sk, x + (w - sw) / 2 + 22, y + 301, C_WHITE);
+}
+
+static void draw_translation_confirm(void) {
+    if (trans_confirm_post < 0) return;
+    float x = 100, y = 64, w = 760, h = 410;
+    vita2d_draw_rectangle(0, 0, SCR_W, SCR_H, RGBA8(0, 0, 0, 0xE5));
+    halo_draw(x - 16, y - 16, w + 32, h + 32, 0, 1);
+    vita2d_draw_rectangle(x, y, w, h, C_PANEL);
+    frame_rect(x, y, w, h, 4, C_WHITE);
+    title_draw(lang == LANG_PT ? "INSTALAR TRADUCAO" : "INSTALL TRANSLATION",
+               x + 28, y + 24, 2, C_WHITE);
+    if (trans_confirm_app) {
+        body_draw(lang == LANG_PT ? "Destino: ux0:app/PCSF00007/"
+                                 : "Destination: ux0:app/PCSF00007/",
+                  x + 28, y + 102, C_WHITE);
+        body_draw(lang == LANG_PT ? "Backup em ux0:data/WolffsStore/backups/"
+                                 : "Backups: ux0:data/WolffsStore/backups/",
+                  x + 28, y + 142, C_MUTED);
+        body_draw(lang == LANG_PT ? "Atualize LiveArea no FMVita ou File Manager."
+                                 : "Refresh LiveArea with FMVita or File Manager.",
+                  x + 28, y + 182, C_TEXT);
+        body_draw(trans_confirm_base_missing
+            ? (lang == LANG_PT ? "BLOQUEADO: instale primeiro o jogo PCSF00007."
+                              : "BLOCKED: first install game PCSF00007.")
+            : (lang == LANG_PT ? "RAR contendo apenas torrent será rejeitado."
+                              : "Torrent-only archives will be rejected."),
+                  x + 28, y + 222, trans_confirm_base_missing ? C_WHITE : C_MUTED);
+    } else {
+    body_draw(lang == LANG_PT
+        ? "A tradução exige rePatch em ur0:tai/config.txt."
+        : "This translation requires rePatch in ur0:tai/config.txt.",
+        x + 28, y + 102, C_TEXT);
+    body_draw(trans_confirm_plugin
+        ? (lang == LANG_PT ? "Plugin detectado no taiHEN." : "Plugin found in taiHEN config.")
+        : (lang == LANG_PT ? "AVISO: plugin não detectado no config.txt!"
+                          : "WARNING: plugin not found in config.txt!"),
+        x + 28, y + 142, trans_confirm_plugin ? C_MUTED : C_WHITE);
+    char backup_note[160];
+    if (trans_confirm_mod) {
+        const Download *d = &g_posts[trans_confirm_post].dls[trans_confirm_dl];
+        snprintf(backup_note, sizeof(backup_note),
+                 lang == LANG_PT ? "Mod existente sera preservado em %s_bkp."
+                                 : "Existing mod backed up as %s_bkp.",
+                 d->ntids ? d->tids[0] : "PCSE...");
+    } else {
+        snprintf(backup_note, sizeof(backup_note), "%s",
+                 lang == LANG_PT ? "Nenhum mod existente sera alterado."
+                                 : "No existing mods will be changed.");
+    }
+    body_draw(backup_note, x + 28, y + 182, C_TEXT);
+    if (trans_confirm_backup) {
+        body_draw(lang == LANG_PT ? "BLOQUEADO: _bkp já existe. Preserve seu backup!"
+                                 : "BLOCKED: _bkp already exists. Keep the backup!",
+                  x + 28, y + 222, C_WHITE);
+    } else {
+        body_draw(lang == LANG_PT ? "Confirmar instala o pacote em ux0:rePatch/."
+                                 : "Confirm to install into ux0:rePatch/.",
+                  x + 28, y + 222, C_MUTED);
+    }
+    }
+    int install_blocked = trans_confirm_backup || trans_confirm_base_missing;
+    vita2d_draw_rectangle(140, 355, 310, 75, install_blocked ? C_LINE : C_WHITE);
+    frame_rect(485, 355, 325, 75, 4, C_WHITE);
+    body_draw(lang == LANG_PT ? "X - Confirmar" : "X - Confirm",
+              169, 378, install_blocked ? C_MUTED : C_DARK);
+    body_draw(lang == LANG_PT ? "O - Cancelar" : "O - Cancel",
+              520, 378, C_WHITE);
 }
 
 /* ================================================================ main */
@@ -3523,6 +3752,9 @@ int main(void) {
             if (down & SCE_CTRL_RIGHT && snd_row < 1) { snd_row = 1; sfx("hover"); }
             if (down & SCE_CTRL_CROSS) snd_menu_toggle(snd_row);
             if (down & (SCE_CTRL_CIRCLE | SCE_CTRL_UP)) { snd_menu = 0; sfx("back"); }
+        } else if (trans_confirm_post >= 0) {
+            if (down & SCE_CTRL_CIRCLE) close_translation_confirm(0);
+            else if (down & SCE_CTRL_CROSS) close_translation_confirm(1);
         } else if (settings_open) {
             int dir = (down & SCE_CTRL_UP) ? 0 : (down & SCE_CTRL_DOWN) ? 1 : -1;
             if (pad.ly < 40 && !(prev_ly < 40)) dir = 0;
@@ -3611,7 +3843,7 @@ int main(void) {
                 dragged = 1;
             }
             /* passar o dedo no logo: as letras pulam com a nota (como o hover no PC) */
-            if ((started || first_sync) && !vid_open && !settings_open) {
+            if ((started || first_sync) && !vid_open && !settings_open && trans_confirm_post < 0) {
                 float wy = ty + cam;
                 float logo_x = first_sync ? (SCR_W - title_width(LOGO, 5)) / 2 : LOGO_X;
                 float logo_y = first_sync ? SCR_H / 2 - 52 : 30;
@@ -3624,7 +3856,7 @@ int main(void) {
                     }
                 }
             }
-            if (dragged && viewer < 0 && !vid_open && !settings_open && !snd_menu) {
+            if (dragged && viewer < 0 && !vid_open && !settings_open && !snd_menu && trans_confirm_post < 0) {
                 cam_target = t_cam0 - (ty - t_y0);
                 cam_clamp();
                 cam = cam_target;
@@ -3639,7 +3871,12 @@ int main(void) {
                     sfx("bark");
                 } else if (!started) start_intro();
                 else if (vid_open) video_toggle_pause();
-                else if (snd_menu_touch(t_x0, t_y0)) {
+                else if (trans_confirm_post >= 0) {
+                    if (t_y0 > 355 && t_y0 < 430) {
+                        if (t_x0 >= 140 && t_x0 < 450) close_translation_confirm(1);
+                        else if (t_x0 >= 485 && t_x0 < 810) close_translation_confirm(0);
+                    } else if (t_y0 < 70 || t_y0 > 475) close_translation_confirm(0);
+                } else if (snd_menu_touch(t_x0, t_y0)) {
                 } else if (t_x0 >= 24 && t_x0 < 24 + 72 && t_y0 + cam >= 12 && t_y0 + cam < 12 + 76 && !settings_open) {
                     if (view != V_HOME) go(V_HOME, 0);
                     else {
@@ -3718,6 +3955,7 @@ int main(void) {
             }
         }
         draw_video();
+        draw_translation_confirm();
         /* transição wr-wipe: sólido, 75%, 50%, 25% */
         double we = now_s - wipe_t0;
         if (we < .4) dither_fill((int)(we / .1), 0, 0, SCR_W, SCR_H, C_BG);

@@ -8,13 +8,16 @@
  * a interface continua livre. */
 
 enum { J_QUEUED, J_DOWNLOAD, J_EXTRACT, J_INSTALL, J_DONE, J_ERROR, J_CANCELED };
-enum { JK_VPK, JK_TRANS, JK_PLUGIN, JK_FILE, JK_SELF, JK_DATA };
+enum { JK_VPK, JK_TRANS, JK_PLUGIN, JK_FILE, JK_SELF, JK_DATA, JK_APP_FILES };
 
 #define MAX_JOBS 24
 
 typedef struct {
     int id, kind;
     char name[96], url[512], file[128], version[24];
+    char mirrors[MAX_MIRRORS][512]; int nmirrors;
+    char password[64];
+    int confirm_replace;   /* explicit user approval required to back up an existing rePatch */
     char slug[48];
     int dl;                 /* índice do download no post */
     char tids[8][10];
@@ -29,7 +32,7 @@ typedef struct {
 } Job;
 
 void jobs_init(void);
-int jobs_add(const Post *p, int dl_index, const char *title); /* id ou -1 */
+int jobs_add(const Post *p, int dl_index, const char *title, int confirm_replace); /* id ou -1 */
 int jobs_add_self(const AppRelease *app);                  /* atualização do app */
 int jobs_count(void);
 Job *jobs_get(int i);                                      /* 0 = mais antigo */

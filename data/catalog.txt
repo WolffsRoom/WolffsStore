@@ -82,7 +82,7 @@ link.en	Download VPK|https://github.com/WolffsRoom/WolffsRoomSite/releases/downl
 link.en	Alternative download (Google Drive)|https://drive.google.com/file/d/1prXPQgulczBJYybvY5nbaaWHtEIMPe7-/view?usp=sharing
 cover	1
 shots	8
-end	-
+end	
 post	pizza
 cat	ports
 group	1
@@ -169,7 +169,7 @@ link.en	Download VPK|https://github.com/WolffsRoom/PizzaTowerSage2019Vita/releas
 link.en	Download data|https://drive.google.com/file/d/1CBof60EExpF4IrZMhyix6CvRicqSONRA/view?usp=sharing
 cover	1
 shots	6
-end	-
+end	
 post	vampire-survivors-vita
 cat	ports
 group	3
@@ -239,7 +239,7 @@ link.en	Download VPK|https://github.com/Federicoilgrandebardo/vampire-survivors-
 link.en	Download data|https://drive.google.com/file/d/1oKKnLI7tvSPWEDa0kmUkbIHeTsWXw4VF/view?usp=sharing
 cover	1
 shots	6
-end	-
+end	
 post	shinokai
 cat	ferramentas
 group	3
@@ -292,7 +292,7 @@ link.en	Download from Google Drive|https://drive.google.com/file/d/17OO0Q2Zmd4hp
 link.en	MediaFire mirror|https://www.mediafire.com/file/w6kzbmi3uhmo2f6/ShinokaiVita.vpk/
 cover	1
 shots	3
-end	-
+end	
 post	file-manager
 cat	ferramentas
 group	0
@@ -339,7 +339,7 @@ info.en	Interface|ScePaf
 info.en	Planned Title ID|FILEMGR01
 cover	1
 shots	2
-end	-
+end	
 post	fm
 cat	ferramentas
 group	1
@@ -390,7 +390,7 @@ link.en	View on GitHub|https://github.com/WolffsRoom/FMVita
 link.en	Releases|https://github.com/WolffsRoom/FMVita/releases
 cover	1
 shots	3
-end	-
+end	
 post	godot-v03
 cat	ferramentas
 group	0
@@ -463,7 +463,7 @@ info.en	Requirements|HENkaku/Ens? and kubridge
 link.en	Download Showcase (VPK)|https://github.com/WolffsRoom/godot4-psvita/releases/download/v0.3/Godot4Vita-v0.3-Showcase.vpk
 cover	1
 shots	0
-end	-
+end	
 post	void
 cat	ports
 group	0
@@ -536,7 +536,7 @@ link.en	View on GitHub|https://github.com/WolffsRoom/VoidStrangerVita
 link.en	Releases|https://github.com/WolffsRoom/VoidStrangerVita/releases
 cover	1
 shots	0
-end	-
+end	
 post	delta
 cat	ports
 group	0
@@ -635,7 +635,7 @@ info.en	Trophies|Yes (NoTrpDrm)
 link.en	Download VPK (v0.81)|https://github.com/WolffsRoom/DeltaruneVita/releases/download/v0.81/Deltarune-v0.81.vpk
 cover	1
 shots	8
-end	-
+end	
 post	ystool
 cat	ferramentas
 group	0
@@ -670,7 +670,7 @@ info.en	Interface|PyWebview
 link.en	Tools page|https://wolffsroom.wordpress.com/ferramentas/
 cover	1
 shots	2
-end	-
+end	
 post	godot
 cat	ferramentas
 group	0
@@ -717,7 +717,7 @@ link.en	View on GitHub|https://github.com/WolffsRoom/godot4-psvita
 link.en	Releases|https://github.com/WolffsRoom/godot4-psvita/releases
 cover	1
 shots	0
-end	-
+end	
 post	idol
 cat	ports
 group	0
@@ -776,7 +776,7 @@ link.en	View on GitHub|https://github.com/WolffsRoom/GoldenIdol-PSVita
 link.en	Releases|https://github.com/WolffsRoom/GoldenIdol-PSVita/releases
 cover	1
 shots	0
-end	-
+end	
 post	uty
 cat	ports
 group	1
@@ -838,7 +838,7 @@ link.en	View on GitHub|https://github.com/WolffsRoom/UndertaleYellowVita
 link.en	Releases|https://github.com/WolffsRoom/UndertaleYellowVita/releases
 cover	1
 shots	0
-end	-
+end	
 post	horizon
 cat	ferramentas
 group	1
@@ -916,7 +916,7 @@ link.en	Original post|https://wolffsroom.wordpress.com/2026/05/15/horizon-chase-
 cover	1
 shots	0
 video	https://youtu.be/uLmCN01wOwo
-end	-
+end	
 post	sonic
 cat	traducoes
 group	0
@@ -978,7 +978,7 @@ link.en	Original post|https://wolffsroom.wordpress.com/2026/02/25/sonic-mania-pl
 link.en	Vita port (GitHub)|https://github.com/SonicMastr/Sonic-Mania-Vita
 cover	1
 shots	0
-end	-
+end	
 post	dontstarve
 cat	traducoes
 group	2
@@ -1030,11 +1030,12 @@ info.en	Posted|25/02/2026
 link.en	Original post|https://wolffsroom.wordpress.com/2026/02/25/dont-starve-reign-of-giants-psvita/
 cover	1
 shots	0
-end	-
+end	
 post	wolf
 cat	traducoes
 group	3
 date	2026-02-23
+updated	2026-11-16
 progress	100
 title.pt	The Wolf Among Us
 tag.pt	Tradução PT-BR · GameLab Traduções
@@ -1049,9 +1050,9 @@ item.pt	Ajustes em texturas e nomes que estavam sem tradução
 item.pt	Correções ortográficas e gramaticais
 item.pt	Menu de depuração habilitado (botão Select)
 sec.pt	Instalação
-item.pt	Baixe e extraia o arquivo no computador
+item.pt	Baixe o arquivo RAR e extraia no computador com a senha wolffsroom
 item.pt	Conecte o Vita por USB ou FTP
-item.pt	Copie a pasta rePatch (dentro de CONSOLE) para a raiz de ux0:
+item.pt	Antes de substituir outro mod, faça backup da pasta atual; copie a pasta rePatch (dentro de CONSOLE) para a raiz de ux0:
 item.pt	Reinicie o Vita e abra o jogo
 sec.pt	Aviso
 item.pt	Use um save novo. Para continuar um progresso, apague caboose.prop, choice.prop e feed.prop em ux0:user/00/savedata/PCSE00352
@@ -1067,14 +1068,18 @@ bar.pt	Ortografia|100|
 bar.pt	Gráficos|100|
 bar.pt	Cinemáticas|100|
 bar.pt	Testes|100|
+info.pt	Lançamento|11 de outubro de 2013
+info.pt	Desenvolvedor|Telltale Games
 info.pt	Equipe|GameLab Traduções
-info.pt	Versão do jogo|PCSE00352
-info.pt	Porte|Heitor Spectre
+info.pt	Portado por|Heitor Spectre
+info.pt	Versão|PCSE00352
+info.pt	Plataformas|PS Vita, Windows, Nintendo Switch, PlayStation 3, PlayStation 4 e Xbox 360
+info.pt	Instalação|rePatch (pacote RAR)
 info.pt	Senha do arquivo|wolffsroom
+info.pt	Ferramentas usadas|TTG-Tools e Notepad++
 link.pt	Google Drive|https://drive.google.com/file/d/15wPBd36wCPJnXkCQxTQ8Kk_lovv4AU-p/view?usp=sharing
 link.pt	MEGA|https://mega.nz/file/9otQDLYR#TqVqHv7MGhEdrEgTdc9k_2rNXwgqFdUuT5fB0Tk4u3s
-link.pt	MediaFire|https://www.mediafire.com/file/j4m92448sonzci1/Tradu%25C3%25A7%25C3%25A3o_-_The_Wolf_Among_Us_%2528PS_Vita%2529.rar/file
-link.pt	Ver post original|https://wolffsroom.wordpress.com/2026/02/23/the-wolf-among-us-psvita/
+link.pt	MediaFire|https://www.mediafire.com/file/j4m92448sonzci1/Tradu%C3%A7%C3%A3o_-_The_Wolf_Among_Us_%28PS_Vita%29.rar/file
 title.en	The Wolf Among Us
 tag.en	PT-BR translation · GameLab Traduções
 status.en	100% · Available
@@ -1088,9 +1093,9 @@ item.en	Fixed textures and names that were left untranslated
 item.en	Spelling and grammar fixes
 item.en	Debug menu enabled (Select button)
 sec.en	Installation
-item.en	Download and extract the archive on your computer
+item.en	Download and extract the RAR on your computer using password wolffsroom
 item.en	Connect the Vita over USB or FTP
-item.en	Copy the rePatch folder (inside CONSOLE) to the root of ux0:
+item.en	Back up any existing mod first, then copy the rePatch folder (inside CONSOLE) to the root of ux0:
 item.en	Restart the Vita and open the game
 sec.en	Warning
 item.en	Use a new save. To keep an existing one, delete caboose.prop, choice.prop and feed.prop in ux0:user/00/savedata/PCSE00352
@@ -1106,21 +1111,26 @@ bar.en	Proofreading|100|
 bar.en	Graphics|100|
 bar.en	Cutscenes|100|
 bar.en	Testing|100|
+info.en	Release date|October 11, 2013
+info.en	Developer|Telltale Games
 info.en	Team|GameLab Traduções
-info.en	Game version|PCSE00352
-info.en	Port|Heitor Spectre
+info.en	Ported by|Heitor Spectre
+info.en	Version|PCSE00352
+info.en	Platforms|PS Vita, Windows, Nintendo Switch, PlayStation 3, PlayStation 4 and Xbox 360
+info.en	Installation|rePatch (RAR package)
 info.en	Archive password|wolffsroom
+info.en	Tools used|TTG-Tools and Notepad++
 link.en	Google Drive|https://drive.google.com/file/d/15wPBd36wCPJnXkCQxTQ8Kk_lovv4AU-p/view?usp=sharing
 link.en	MEGA|https://mega.nz/file/9otQDLYR#TqVqHv7MGhEdrEgTdc9k_2rNXwgqFdUuT5fB0Tk4u3s
-link.en	MediaFire|https://www.mediafire.com/file/j4m92448sonzci1/Tradu%25C3%25A7%25C3%25A3o_-_The_Wolf_Among_Us_%2528PS_Vita%2529.rar/file
-link.en	Original post|https://wolffsroom.wordpress.com/2026/02/23/the-wolf-among-us-psvita/
+link.en	MediaFire|https://www.mediafire.com/file/j4m92448sonzci1/Tradu%C3%A7%C3%A3o_-_The_Wolf_Among_Us_%28PS_Vita%29.rar/file
 cover	1
-shots	4
-end	-
+shots	9
+end	
 post	wipeout
 cat	traducoes
 group	3
 date	2026-02-21
+updated	2026-11-16
 progress	100
 title.pt	WipEout 2048
 tag.pt	Tradução e dublagem PT-BR · Rubinho146
@@ -1130,10 +1140,12 @@ feature_text.pt	Traduzido e dublado em português, com textos da Omega Collection
 bars_title.pt	Progresso
 about.pt	Tradução e dublagem em português de WipEout 2048 para o PS Vita, feitas por Rúben Fernandes (Rubinho146). Os textos aproveitam os do WipEout Omega Collection (PS4); os manuais digitais ficaram em português de Portugal.
 sec.pt	Instalação
-item.pt	Baixe e extraia a pasta PCSF00007
-item.pt	Copie o conteúdo para ux0: no Vita
-item.pt	Abra a pasta ux0 no gerenciador e use Refresh LiveArea
-item.pt	Aguarde e reinicie o console
+para.pt	Na futura v1.0, a Wolff's Store seguirá esse fluxo automaticamente apenas quando houver um arquivo completo e validado, e mostrará o aviso de atualização da LiveArea. Não marcará o jogo como traduzido ao encontrar somente o torrent.
+item.pt	Tenha a versão PCSF00007 instalada no PS Vita.
+item.pt	Obtenha o pacote completo da tradução. Os arquivos atuais do Google Drive e MediaFire contêm apenas um arquivo torrent dentro de um RAR de cerca de 24 KB: não são o conteúdo instalável.
+item.pt	Extraia o pacote completo com a senha wolffsroom.
+item.pt	Coloque os arquivos extraídos em ux0:app/PCSF00007/, preservando a estrutura interna e fazendo backup dos arquivos substituídos.
+item.pt	Após a cópia, atualize a LiveArea usando o FMVita ou File Manager e reinicie o console se necessário.
 sec.pt	Créditos
 item.pt	Rúben Fernandes (rubinho146) - ajustes de texto e direção de vozes
 item.pt	Ajkmetiuk - ajuda no port do PS4 para o Vita
@@ -1144,11 +1156,17 @@ bar.pt	Ortografia|100|
 bar.pt	Gráficos|100|
 bar.pt	Cinemáticas|100|
 bar.pt	Testes|100|
-info.pt	Equipe|Rubinho146
-info.pt	Versão do jogo|PCSF00007
-info.pt	Post|21/02/2026
-link.pt	Ver post e downloads|https://wolffsroom.wordpress.com/2026/02/21/wipeout-2048-psvita/
-link.pt	Canal do Rubinho146|https://www.youtube.com/channel/UCvRIQWYlpPKQ1LJfyO_ttKQ
+info.pt	Lançamento|19 de janeiro de 2012
+info.pt	Desenvolvedor|Studio Liverpool
+info.pt	Tradução e dublagem|Rúben Fernandes (Rubinho146)
+info.pt	Versão|PCSF00007
+info.pt	Plataformas|PlayStation Vita
+info.pt	Instalação|Extrair o pacote completo em ux0:app/PCSF00007/ e atualizar LiveArea com FMVita ou File Manager
+info.pt	Senha do arquivo|wolffsroom
+info.pt	Ferramentas usadas|WipEout-Fonts, Karameru, Notepad++, Audacity e VitaSDK
+link.pt	Google Drive|https://drive.google.com/file/d/1mzxxAuYOxxzlQaFmwBws_b1hgbbZhSDh/view?usp=sharing
+link.pt	MEGA|https://mega.nz/file/F49FyKpI#IPzkciDhseElFWxsWdWbSL3dn-dMNUVr6Cs5DbS8mlc
+link.pt	MediaFire (arquivo auxiliar)|https://www.mediafire.com/file/q1w6yowl8vca4r8/PCSF00007.rar/file
 title.en	WipEout 2048
 tag.en	PT-BR translation and dub · Rubinho146
 status.en	100% · Available
@@ -1157,10 +1175,12 @@ feature_text.en	Translated and dubbed in Portuguese, with text from the Omega Co
 bars_title.en	Progress
 about.en	Portuguese translation and dub of WipEout 2048 for PS Vita, by Rúben Fernandes (Rubinho146). The text reuses WipEout Omega Collection (PS4); the digital manuals are in European Portuguese.
 sec.en	Installation
-item.en	Download and extract the PCSF00007 folder
-item.en	Copy its contents to ux0: on the Vita
-item.en	Open the ux0 folder in your file manager and use Refresh LiveArea
-item.en	Wait, then restart the console
+para.en	The upcoming v1.0 installer will do this automatically only once a complete and validated package is available. It will not mark a torrent-only archive as installed.
+item.en	Have game version PCSF00007 installed on your PS Vita.
+item.en	Obtain the complete translation package. The current Google Drive and MediaFire links only provide a roughly 24 KB RAR containing a torrent file, not the installable contents.
+item.en	Extract the complete package with password wolffsroom.
+item.en	Merge the extracted files into ux0:app/PCSF00007/, keeping the directory structure and backing up existing files.
+item.en	Refresh LiveArea using FMVita or File Manager, then restart the console if necessary.
 sec.en	Credits
 item.en	Rúben Fernandes (rubinho146) - text adjustments and voice direction
 item.en	Ajkmetiuk - help porting from PS4 to Vita
@@ -1171,19 +1191,26 @@ bar.en	Proofreading|100|
 bar.en	Graphics|100|
 bar.en	Cutscenes|100|
 bar.en	Testing|100|
-info.en	Team|Rubinho146
-info.en	Game version|PCSF00007
-info.en	Posted|21/02/2026
-link.en	Post and downloads|https://wolffsroom.wordpress.com/2026/02/21/wipeout-2048-psvita/
-link.en	Rubinho146's channel|https://www.youtube.com/channel/UCvRIQWYlpPKQ1LJfyO_ttKQ
+info.en	Release date|January 19, 2012
+info.en	Developer|Studio Liverpool
+info.en	Translation and dubbing|Rúben Fernandes (Rubinho146)
+info.en	Version|PCSF00007
+info.en	Platforms|PlayStation Vita
+info.en	Installation|Extract full package into ux0:app/PCSF00007/ and refresh LiveArea using FMVita or File Manager
+info.en	Archive password|wolffsroom
+info.en	Tools used|WipEout-Fonts, Karameru, Notepad++, Audacity and VitaSDK
+link.en	Google Drive|https://drive.google.com/file/d/1mzxxAuYOxxzlQaFmwBws_b1hgbbZhSDh/view?usp=sharing
+link.en	MEGA|https://mega.nz/file/F49FyKpI#IPzkciDhseElFWxsWdWbSL3dn-dMNUVr6Cs5DbS8mlc
+link.en	MediaFire (auxiliary file)|https://www.mediafire.com/file/q1w6yowl8vca4r8/PCSF00007.rar/file
 cover	1
-shots	3
+shots	7
 video	https://youtu.be/mbDw97XA5Mg
-end	-
+end	
 post	twd2
 cat	traducoes
 group	3
 date	2026-02-18
+updated	2026-11-16
 progress	100
 title.pt	The Walking Dead: Temporada 2
 tag.pt	Tradução PT-BR · GameLab Traduções
@@ -1198,9 +1225,9 @@ item.pt	Ajustes em texturas
 item.pt	Tradução de nomes que estavam em inglês
 item.pt	Correções ortográficas e gramaticais
 sec.pt	Instalação
-item.pt	Baixe e extraia o arquivo no computador
+item.pt	Baixe o arquivo RAR e extraia no computador com a senha wolffsroom
 item.pt	Conecte o Vita por USB ou FTP
-item.pt	Copie a pasta rePatch (dentro de CONSOLE) para a raiz de ux0:
+item.pt	Antes de substituir outro mod, faça backup da pasta atual; copie a pasta rePatch (dentro de CONSOLE) para a raiz de ux0:
 item.pt	Reinicie o Vita e abra o jogo
 sec.pt	Créditos
 item.pt	Telltale Games - tradução oficial
@@ -1214,14 +1241,18 @@ bar.pt	Ortografia|100|
 bar.pt	Gráficos|100|
 bar.pt	Cinemáticas|100|
 bar.pt	Testes|100|
+info.pt	Lançamento|17 de dezembro de 2013
+info.pt	Desenvolvedor|Telltale Games
 info.pt	Equipe|GameLab Traduções
-info.pt	Versão do jogo|PCSE00556
-info.pt	Porte|Heitor Spectre
+info.pt	Portado por|Heitor Spectre
+info.pt	Versão|PCSE00556
+info.pt	Plataformas|PS Vita, Windows, Nintendo Switch, PlayStation 3, PlayStation 4 e Xbox 360
+info.pt	Instalação|rePatch (pacote RAR)
 info.pt	Senha do arquivo|wolffsroom
+info.pt	Ferramentas usadas|TTG-Tools e Notepad++
 link.pt	Google Drive|https://drive.google.com/file/d/1_U2kVFTmZ0uiHE1s2I9BHViSMlbhrCGw/view?usp=sharing
 link.pt	MEGA|https://mega.nz/file/w0MlQDgD#yYMDDbmC-Cg5-8wxQT4Bvkjlpu_AvKkYFpds1RBwkeA
 link.pt	MediaFire|https://www.mediafire.com/file/6a5btu7eg3buazc/Tradu%C3%A7%C3%A3o_TWD_Temporada2.rar/file
-link.pt	Ver post original|https://wolffsroom.wordpress.com/2026/02/18/the-walking-dead-temporada-2-psvita/
 title.en	The Walking Dead: Season Two
 tag.en	PT-BR translation · GameLab Traduções
 status.en	100% · Available
@@ -1235,9 +1266,9 @@ item.en	Texture adjustments
 item.en	Translated names that were still in English
 item.en	Spelling and grammar fixes
 sec.en	Installation
-item.en	Download and extract the archive on your computer
+item.en	Download and extract the RAR on your computer using password wolffsroom
 item.en	Connect the Vita over USB or FTP
-item.en	Copy the rePatch folder (inside CONSOLE) to the root of ux0:
+item.en	Back up any existing mod first, then copy the rePatch folder (inside CONSOLE) to the root of ux0:
 item.en	Restart the Vita and open the game
 sec.en	Credits
 item.en	Telltale Games - official translation
@@ -1251,17 +1282,98 @@ bar.en	Proofreading|100|
 bar.en	Graphics|100|
 bar.en	Cutscenes|100|
 bar.en	Testing|100|
+info.en	Release date|December 17, 2013
+info.en	Developer|Telltale Games
 info.en	Team|GameLab Traduções
-info.en	Game version|PCSE00556
-info.en	Port|Heitor Spectre
+info.en	Ported by|Heitor Spectre
+info.en	Version|PCSE00556
+info.en	Platforms|PS Vita, Windows, Nintendo Switch, PlayStation 3, PlayStation 4 and Xbox 360
+info.en	Installation|rePatch (RAR package)
 info.en	Archive password|wolffsroom
+info.en	Tools used|TTG-Tools and Notepad++
 link.en	Google Drive|https://drive.google.com/file/d/1_U2kVFTmZ0uiHE1s2I9BHViSMlbhrCGw/view?usp=sharing
 link.en	MEGA|https://mega.nz/file/w0MlQDgD#yYMDDbmC-Cg5-8wxQT4Bvkjlpu_AvKkYFpds1RBwkeA
 link.en	MediaFire|https://www.mediafire.com/file/6a5btu7eg3buazc/Tradu%C3%A7%C3%A3o_TWD_Temporada2.rar/file
-link.en	Original post|https://wolffsroom.wordpress.com/2026/02/18/the-walking-dead-temporada-2-psvita/
 cover	1
-shots	3
-end	-
+shots	6
+end	
+post	twd1
+cat	traducoes
+group	3
+date	2026-02-17
+progress	100
+title.pt	The Walking Dead: Temporada 1
+tag.pt	Tradução PT-BR · GameLab Traduções
+status.pt	100% · Disponível
+desc.pt	Tradução brasileira da primeira temporada, revisada e adaptada ao PS Vita pela equipe GameLab.
+feature_text.pt	A história de Lee e Clementine, agora em português brasileiro no PS Vita.
+bars_title.pt	Progresso
+about.pt	Nesta aventura narrativa da Telltale Games, você controla Lee Everett, que busca proteger Clementine em um mundo tomado por mortos-vivos. As decisões e os relacionamentos moldam a história.
+sec.pt	Sobre a tradução
+para.pt	A GameLab Traduções revisou a versão brasileira para maior fidelidade ao universo de The Walking Dead, corrigindo ortografia e gramática. Foram editadas 80 texturas e 7 fontes para dar suporte aos acentos do português brasileiro.
+sec.pt	Instalação
+para.pt	A instalação automática no Wolff's Store PSVita permanece desabilitada enquanto o aplicativo não oferecer suporte validado à extração de RAR e proteção dos arquivos de mods anteriores.
+item.pt	É necessário possuir a versão PCSE00316 do jogo e instalar/ativar o plugin rePatch no PS Vita.
+item.pt	Baixe o arquivo RAR em um dos provedores e extraia-o no computador usando a senha wolffsroom.
+item.pt	Na pasta extraída, abra CONSOLE e copie a pasta rePatch para a raiz de ux0: por USB ou FTP. Os arquivos do jogo devem ficar em ux0:rePatch/PCSE00316/.
+item.pt	Se já existir uma modificação nesta pasta, faça o backup antes de copiar os novos arquivos.
+item.pt	Reinicie o console e abra o jogo normalmente.
+sec.pt	Créditos
+para.pt	Telltale Games - tradução oficial; Heitor Spectre - ferramentas e porte; Niccbilac - texturas; Den Em e Pashok6798 - ferramentas. Agradecimentos a André pelo tutorial e a Wolff pelos testes e ajustes do patch.
+bar.pt	Scripts|100|
+bar.pt	Ortografia|100|
+bar.pt	Gráficos|100|
+bar.pt	Cinemáticas|100|
+bar.pt	Testes|100|
+info.pt	Lançamento|24 de abril de 2012
+info.pt	Desenvolvedor|Telltale Games
+info.pt	Equipe|GameLab Traduções
+info.pt	Portado por|Heitor Spectre
+info.pt	Versão|PCSE00316
+info.pt	Plataformas|PS Vita, Windows, Nintendo Switch, PlayStation 3, PlayStation 4 e Xbox 360
+info.pt	Instalação|rePatch (pacote RAR)
+info.pt	Senha do arquivo|wolffsroom
+info.pt	Ferramentas usadas|TTG-Tools e Notepad++
+link.pt	Google Drive|https://drive.google.com/file/d/1XNHD9ruQsComRdrR3jnbu4yGVJJS9ErU/view?usp=sharing
+link.pt	MEGA|https://mega.nz/file/g0sBgDDJ#ipYFjee1zWiwcLpi8uqtZumiFgvU0iAdLIyihQS6CLA
+link.pt	MediaFire|https://www.mediafire.com/file/057iv1x99q0djb1/Tradu%C3%A7%C3%A3o_Oficial_The_Walking_Dead_Temporada_1_PS_Vita.rar/file
+title.en	The Walking Dead: Season One
+tag.en	Brazilian Portuguese translation · GameLab Traduções
+status.en	100% · Available
+desc.en	First season of The Walking Dead, reviewed and adapted into Brazilian Portuguese for PS Vita by GameLab.
+feature_text.en	Lee and Clementine's story, now in Brazilian Portuguese on PS Vita.
+bars_title.en	Progress
+about.en	Telltale's narrative adventure follows Lee Everett as he protects Clementine during a zombie apocalypse. Player choices shape their relationships and the story.
+sec.en	About this translation
+para.en	GameLab Traduções reviewed the Brazilian Portuguese localization, correcting text and adapting 80 textures and 7 fonts for accented characters.
+sec.en	Installation
+para.en	Automated installation remains disabled in the Vita Store until verified RAR handling and safe mod backups are supported.
+item.en	You must own game version PCSE00316 and have the rePatch plugin installed and enabled.
+item.en	Download the RAR from one of the providers, and extract it on a computer using password wolffsroom.
+item.en	Open the extracted CONSOLE directory and copy the rePatch folder to ux0: over USB or FTP; translated files must end up inside ux0:rePatch/PCSE00316/.
+item.en	Back up any existing mod for this TitleID, restart your Vita and launch the game.
+sec.en	Credits
+para.en	Telltale Games - original localization; Heitor Spectre - tools and port; Niccbilac - textures; Den Em and Pashok6798 - tools. Thanks to André for the installation guide and Wolff for testing and patch adjustments.
+bar.en	Scripts|100|
+bar.en	Proofreading|100|
+bar.en	Graphics|100|
+bar.en	Cutscenes|100|
+bar.en	Testing|100|
+info.en	Release date|April 24, 2012
+info.en	Developer|Telltale Games
+info.en	Team|GameLab Traduções
+info.en	Ported by|Heitor Spectre
+info.en	Version|PCSE00316
+info.en	Platforms|PS Vita, Windows, Nintendo Switch, PlayStation 3, PlayStation 4 and Xbox 360
+info.en	Installation|rePatch (RAR package)
+info.en	Archive password|wolffsroom
+info.en	Tools used|TTG-Tools and Notepad++
+link.en	Google Drive|https://drive.google.com/file/d/1XNHD9ruQsComRdrR3jnbu4yGVJJS9ErU/view?usp=sharing
+link.en	MEGA|https://mega.nz/file/g0sBgDDJ#ipYFjee1zWiwcLpi8uqtZumiFgvU0iAdLIyihQS6CLA
+link.en	MediaFire|https://www.mediafire.com/file/057iv1x99q0djb1/Tradu%C3%A7%C3%A3o_Oficial_The_Walking_Dead_Temporada_1_PS_Vita.rar/file
+cover	1
+shots	6
+end	
 post	alone
 cat	traducoes
 group	0
@@ -1317,7 +1429,7 @@ info.en	Posted|10/06/2025
 link.en	Original post|https://wolffsroom.wordpress.com/2025/06/10/psv-alone-with-you-traducao-pt-br/
 cover	1
 shots	3
-end	-
+end	
 post	p4g
 cat	reviews
 group	1
@@ -1388,7 +1500,7 @@ info.en	Score|192/216 (8.9/10)
 link.en	Read the full review|https://wolffsroom.wordpress.com/2025/04/26/persona-4-golden-psvita-analise/
 cover	1
 shots	2
-end	-
+end	
 post	ayesha
 cat	traducoes
 group	2
@@ -1440,7 +1552,7 @@ info.en	Posted|31/03/2025
 link.en	Original post|https://wolffsroom.wordpress.com/2025/03/31/psv-atelier-ayesha-traducao-pt-br/
 cover	1
 shots	1
-end	-
+end	
 post	bastion
 cat	traducoes
 group	2
@@ -1490,7 +1602,7 @@ info.en	Posted|20/02/2025
 link.en	Original post|https://wolffsroom.wordpress.com/2025/02/20/psv-bastion-traducao-pt-br/
 cover	1
 shots	1
-end	-
+end	
 post	undertale
 cat	traducoes
 group	2
@@ -1534,91 +1646,113 @@ info.en	Posted|12/02/2025
 link.en	Original post|https://wolffsroom.wordpress.com/2025/02/12/psv-undertale-melhorias-na-traducao-pt-br/
 cover	1
 shots	1
-end	-
+end	
 post	delta1
 cat	traducoes
 group	1
 date	2025-02-06
-progress	98
+updated	2026-11-16
+progress	100
 title.pt	Deltarune: Capítulo 1
 tag.pt	Port + Tradução PT-BR
-status.pt	98% · Disponível
+status.pt	100% · Disponível
 desc.pt	Uma história no universo de Undertale, com mistério e reviravoltas.
 feature_text.pt	Uma história no universo de Undertale, com mistério e reviravoltas.
 bars_title.pt	Progresso
-about.pt	Tradução para português do Brasil de Deltarune: Capítulo 1 no PS Vita, sobre o port não oficial de tijesef. O VPK foi remontado com a tradução incluída, adaptado para 16:9 e com os manuais da LiveArea traduzidos.
+about.pt	DELTARUNE: Capítulo 1 é uma história paralela ao universo de *Undertale*, com diálogos marcantes, mistério, amizade e escolhas que acompanham Kris, Susie e Ralsei.
+sec.pt	Sobre o projeto
+para.pt	O jogo foi portado ao PS Vita de forma não oficial por tijesef. Para adaptar a tradução brasileira da equipe Teiarruma, foram mesclados arquivos de diferentes versões, corrigidas estruturas incompatíveis com o port e ajustados sprites e controles.
+para.pt	Inicialmente, a tradução foi testada por meio de rePatch. Para facilitar a instalação, a versão disponibilizada foi reempacotada em um único VPK com os arquivos em português, os ajustes de 16:9 e os novos manuais da LiveArea. Os scripts da tradução estão registrados como 100% concluídos.
 sec.pt	O que foi feito
 item.pt	Mescla de versões da tradução original
 item.pt	Ajustes em sprites e nos controles padrão do Vita
-item.pt	Correção do problema de salvamento
-item.pt	Adaptação para 16:9 e manuais da LiveArea com novas imagens
+item.pt	Correção do problema de salvamento do port (antes, permitia salvar apenas uma vez por sessão)
+item.pt	Adaptação para 16:9 e tradução dos manuais da LiveArea com novas imagens
+item.pt	Remontagem do VPK com os arquivos da tradução incluídos e título de instalação Deltarune: Capítulo 1
 sec.pt	Instalação
-item.pt	Baixe e extraia Deltarune PTBR.zip
-item.pt	Envie o VPK ao Vita por FTP ou USB
-item.pt	Instale pelo VitaShell
-item.pt	Se já tiver save em inglês, faça backup de ux0:user/00 antes
+item.pt	Baixe Deltarune PTBR.zip e extraia-o com a senha wolffsroom para obter Deltarune PTBR.vpk.
+item.pt	Envie o VPK ao PS Vita por FTP ou USB.
+item.pt	Instale o VPK pelo VitaShell. A tradução e os manuais da LiveArea já estão incluídos, sem necessidade do plugin rePatch.
+item.pt	Caso tenha um save anterior em inglês, faça backup de ux0:user/00/ antes de instalar.
+item.pt	Para dúvidas sobre o procedimento, consulte o FAQ da Wolff's Room.
 sec.pt	Problemas conhecidos
-item.pt	Alterar os controles nas opções causa travamento
-item.pt	O jogo ainda cita as teclas Z, C e X em vez dos botões do Vita
+para.pt	A tradução dos scripts está concluída, mas ainda existem limitações do port que não representam textos faltando.
+item.pt	Modificar os controles no menu de opções pode causar um soft lock. Se ocorrer, reinicie o jogo; o progresso não salvo poderá ser perdido.
+item.pt	Algumas instruções do jogo ainda mostram Z, C e X, em vez dos botões do PS Vita. Isso não indica diálogo sem tradução.
+item.pt	Caso encontre outro problema, você pode relatá-lo aqui.
 sec.pt	Créditos
 item.pt	tijesef - port não oficial para o Vita
 item.pt	Equipe Teiarruma - projeto de tradução original
 item.pt	Toby Fox - desenvolvedor do jogo
-bar.pt	Scripts|90|
+bar.pt	Scripts|100|
 bar.pt	Ortografia|100|
 bar.pt	Gráficos|100|
 bar.pt	Cinemáticas|100|
 bar.pt	Testes|100|
-info.pt	Status|Disponível
-info.pt	Post|06/02/2025
+info.pt	Lançamento|31 de outubro de 2018
+info.pt	Desenvolvedor|Toby Fox
+info.pt	Portado por|tijesef
+info.pt	Versão|PCSB00964
+info.pt	Plataformas|Nintendo Switch, PlayStation 4, Microsoft Windows e macOS
 info.pt	Senha do arquivo|wolffsroom
+info.pt	Ferramentas usadas|Sublime Text, Photoshop 2025, Photopea, Undertale Mod Tool, Text to Vita Manual Converter e Param SFO Editor
 link.pt	Google Drive|https://drive.google.com/file/d/1-uf89S5Bz9iMJZzA5AkSmT48WTpiNqnm/view
 link.pt	MEGA|https://mega.nz/file/slUUhQKL#zS1wuEAgez2n8HfPoLCPBHJBKDk37XHKuaDwuFygJ6U
 link.pt	MediaFire|https://www.mediafire.com/file/hrhd5r8v9zbca4a/Deltarune+PTBR.zip/file
-link.pt	Ver post original|https://wolffsroom.wordpress.com/2025/02/06/psv-deltarune-capitulo-1-port-traducao-pt-br/
 title.en	Deltarune: Chapter 1
 tag.en	Port + PT-BR translation
-status.en	98% · Available
+status.en	100% · Available
 desc.en	A story in the Undertale universe, full of mystery and twists.
 feature_text.en	A story in the Undertale universe, full of mystery and twists.
 bars_title.en	Progress
-about.en	Brazilian Portuguese translation of Deltarune: Chapter 1 on PS Vita, built on tijesef's unofficial port. The VPK was rebuilt with the translation included, adapted to 16:9 and with translated LiveArea manuals.
+about.en	DELTARUNE: Chapter 1 is a parallel story set in the *Undertale* universe, with memorable dialogue, mystery, friendship and choices, following Kris, Susie and Ralsei.
+sec.en	About the project
+para.en	The game was unofficially ported to PS Vita by tijesef. To adapt the Teiarruma team's Brazilian Portuguese translation, files from multiple versions were merged, compatibility issues were fixed, and sprites and controls were adjusted.
+para.en	The translation was initially tested with rePatch, but the final distribution is a single VPK with the translated content, 16:9 adjustments and new LiveArea manuals already integrated. The translation scripts are recorded as 100% complete.
 sec.en	What was done
 item.en	Merged versions of the original translation
 item.en	Adjusted sprites and the default Vita controls
-item.en	Fixed the save issue
-item.en	16:9 adaptation and LiveArea manuals with new images
+item.en	Fixed the port's saving issue (previously it allowed only one save per session)
+item.en	16:9 adaptation and translated LiveArea manuals with new images
+item.en	Rebuilt the VPK with the Portuguese translation included and changed the installed title to Deltarune: Capítulo 1
 sec.en	Installation
-item.en	Download and extract Deltarune PTBR.zip
-item.en	Send the VPK to the Vita over FTP or USB
-item.en	Install it with VitaShell
-item.en	If you already have an English save, back up ux0:user/00 first
+item.en	Download Deltarune PTBR.zip and extract it using password wolffsroom to obtain Deltarune PTBR.vpk.
+item.en	Transfer the VPK to the PS Vita via FTP or USB.
+item.en	Install the VPK with VitaShell. The translation and LiveArea manuals are already included; rePatch is not required.
+item.en	If you already have an English save, back up ux0:user/00/ before installing.
+item.en	For further installation questions, see the Wolff's Room FAQ.
 sec.en	Known issues
-item.en	Changing the controls in the options crashes the game
-item.en	The game still mentions the Z, C and X keys instead of the Vita buttons
+para.en	The script translation is complete, but the underlying port still has limitations unrelated to untranslated dialogue.
+item.en	Changing controls in the options can cause a soft lock. Restart the game if it happens; unsaved progress might be lost.
+item.en	Some prompts still refer to Z, C and X, rather than Vita buttons. This is a control-label issue, not untranslated dialogue.
+item.en	If you encounter another problem, you can report it here.
 sec.en	Credits
 item.en	tijesef - unofficial Vita port
 item.en	Teiarruma team - original translation project
 item.en	Toby Fox - game developer
-bar.en	Scripts|90|
+bar.en	Scripts|100|
 bar.en	Proofreading|100|
 bar.en	Graphics|100|
 bar.en	Cutscenes|100|
 bar.en	Testing|100|
-info.en	Status|Available
-info.en	Posted|06/02/2025
+info.en	Release date|October 31, 2018
+info.en	Developer|Toby Fox
+info.en	Ported by|tijesef
+info.en	Version|PCSB00964
+info.en	Platforms|Nintendo Switch, PlayStation 4, Microsoft Windows and macOS
 info.en	Archive password|wolffsroom
+info.en	Tools used|Sublime Text, Photoshop 2025, Photopea, Undertale Mod Tool, Text to Vita Manual Converter and Param SFO Editor
 link.en	Google Drive|https://drive.google.com/file/d/1-uf89S5Bz9iMJZzA5AkSmT48WTpiNqnm/view
 link.en	MEGA|https://mega.nz/file/slUUhQKL#zS1wuEAgez2n8HfPoLCPBHJBKDk37XHKuaDwuFygJ6U
 link.en	MediaFire|https://www.mediafire.com/file/hrhd5r8v9zbca4a/Deltarune+PTBR.zip/file
-link.en	Original post|https://wolffsroom.wordpress.com/2025/02/06/psv-deltarune-capitulo-1-port-traducao-pt-br/
 cover	1
-shots	3
-end	-
+shots	5
+end	
 post	cave
 cat	traducoes
 group	1
 date	2025-02-06
+updated	2026-11-16
 progress	84
 title.pt	Cave Story
 tag.pt	Port + Tradução PT-BR
@@ -1634,7 +1768,7 @@ item.pt	Menu e gerenciamento de saves aprimorados
 item.pt	Suporte a mods
 item.pt	Roda a 55 FPS fixos, como o original
 sec.pt	Instalação
-item.pt	Baixe e extraia Cave Story.zip
+item.pt	Baixe e extraia com a senha wolffsroom Cave Story.zip
 item.pt	Envie CaveStory.vpk ao Vita por FTP ou USB
 item.pt	Instale pelo VitaShell
 item.pt	Se já tiver save em inglês, faça backup de ux0:user/00 antes
@@ -1648,14 +1782,16 @@ bar.pt	Ortografia|100|
 bar.pt	Gráficos|100|
 bar.pt	Cinemáticas|100|
 bar.pt	Testes|20|
-info.pt	Status|Disponível
+info.pt	Lançamento|20 de dezembro de 2004
+info.pt	Desenvolvedor|Nicalis (conforme publicação original)
+info.pt	Portado por|Epifanov Ivan / sage_dna (NXEngine)
 info.pt	Versão|DOKU41220 (V1.0.3)
-info.pt	Post|06/02/2025
+info.pt	Plataformas|Windows, Nintendo Switch, PlayStation 4, PS Vita, Nintendo 3DS, Wii, Linux e macOS
 info.pt	Senha do arquivo|wolffsroom
+info.pt	Ferramentas usadas|Sublime Text, Photoshop 2025 e WinRAR
 link.pt	Google Drive|https://drive.google.com/file/d/1OJuyRLHyqmou2FMxREUEdvcgUqcbbkD7/view
 link.pt	MEGA|https://mega.nz/file/d1FAmKyS#tp7T-DAA2MG4HymcnNjuhUJy-p7YfZSkwNT-nd5VF-g
 link.pt	MediaFire|https://www.mediafire.com/file/jb44o6hsrx1sg4a/CaveStory.zip/file
-link.pt	Ver post original|https://wolffsroom.wordpress.com/2025/02/06/psv-cave-story-traducao-pt-br/
 title.en	Cave Story
 tag.en	Port + PT-BR translation
 status.en	84% · Available
@@ -1670,7 +1806,7 @@ item.en	Better menu and save management
 item.en	Mod support
 item.en	Runs at a locked 55 FPS, like the original
 sec.en	Installation
-item.en	Download and extract Cave Story.zip
+item.en	Download and extract with password wolffsroom Cave Story.zip
 item.en	Send CaveStory.vpk to the Vita over FTP or USB
 item.en	Install it with VitaShell
 item.en	If you already have an English save, back up ux0:user/00 first
@@ -1684,17 +1820,19 @@ bar.en	Proofreading|100|
 bar.en	Graphics|100|
 bar.en	Cutscenes|100|
 bar.en	Testing|20|
-info.en	Status|Available
+info.en	Release date|December 20, 2004
+info.en	Developer|Nicalis (as credited in the original post)
+info.en	Ported by|Epifanov Ivan / sage_dna (NXEngine)
 info.en	Version|DOKU41220 (V1.0.3)
-info.en	Posted|06/02/2025
+info.en	Platforms|Windows, Nintendo Switch, PlayStation 4, PS Vita, Nintendo 3DS, Wii, Linux and macOS
 info.en	Archive password|wolffsroom
+info.en	Tools used|Sublime Text, Photoshop 2025 and WinRAR
 link.en	Google Drive|https://drive.google.com/file/d/1OJuyRLHyqmou2FMxREUEdvcgUqcbbkD7/view
 link.en	MEGA|https://mega.nz/file/d1FAmKyS#tp7T-DAA2MG4HymcnNjuhUJy-p7YfZSkwNT-nd5VF-g
 link.en	MediaFire|https://www.mediafire.com/file/jb44o6hsrx1sg4a/CaveStory.zip/file
-link.en	Original post|https://wolffsroom.wordpress.com/2025/02/06/psv-cave-story-traducao-pt-br/
 cover	1
-shots	3
-end	-
+shots	6
+end	
 post	ys
 cat	traducoes
 group	2
@@ -1748,7 +1886,7 @@ info.en	Posted|29/01/2025
 link.en	Original post|https://wolffsroom.wordpress.com/2025/01/29/psv-ys-origin-traducao-pt-br/
 cover	1
 shots	2
-end	-
+end	
 post	darkest
 cat	ferramentas
 group	0
@@ -1779,11 +1917,12 @@ info.en	Posted|27/01/2025
 link.en	Original post|https://wolffsroom.wordpress.com/2025/01/27/darkest-dungeon-mod/
 cover	1
 shots	1
-end	-
+end	
 post	icono
 cat	traducoes
 group	1
 date	2025-01-25
+updated	2026-11-16
 progress	70
 title.pt	Iconoclasts
 tag.pt	Tradução PT-BR · PS Vita
@@ -1797,9 +1936,9 @@ item.pt	Jogo instalado no Vita (USA, PCSE01177)
 item.pt	Plugin rePatch
 item.pt	VitaShell, para criar pastas e extrair o ZIP
 sec.pt	Instalação
-item.pt	Baixe o arquivo e extraia com o VitaShell
+item.pt	Baixe o arquivo ZIP e extraia usando a senha wolffsroom (no VitaShell ou computador)
 item.pt	Crie a pasta rePatch em ux0:
-item.pt	Copie a pasta PCSE01177 para ux0:rePatch/
+item.pt	Faça backup de qualquer mod existente e copie a pasta PCSE01177 para ux0:rePatch/PCSE01177/
 item.pt	Reinicie o Vita
 sec.pt	Problemas conhecidos
 item.pt	Alguns textos são difíceis de ler
@@ -1812,14 +1951,16 @@ bar.pt	Ortografia|80|
 bar.pt	Gráficos|0|
 bar.pt	Cinemáticas|100|
 bar.pt	Testes|70|
-info.pt	Status|Disponível
-info.pt	Versão do jogo|PCSE01177 (USA)
-info.pt	Atualizado em|12/01/2025
+info.pt	Lançamento|23 de janeiro de 2018
+info.pt	Desenvolvedor|Joakim Sandberg e MP2 Games
+info.pt	Versão|PCSE01177 (USA)
+info.pt	Plataformas|Windows, Linux, macOS, PlayStation 4, PlayStation Vita, Nintendo Switch e Xbox One
+info.pt	Instalação|rePatch (jogo base necessário)
 info.pt	Senha do arquivo|wolffsroom
+info.pt	Ferramentas usadas|Adobe Photoshop 2025, Sublime Text, Python e IconoParser
 link.pt	MediaFire|https://www.mediafire.com/file/gl4pa9kup40lwtu/PCSE01177.zip/file
 link.pt	Google Drive|https://drive.google.com/file/d/1MpvamxqtuDs36nCKiUClXYD7_hCNTV3W/view
 link.pt	MEGA|https://mega.nz/file/ggEWXKxb#j3McOGblU7Gz76jTtNdEUWW23NQJNzDEvw9SK5VBgko
-link.pt	Ver post original|https://wolffsroom.wordpress.com/2025/01/25/psv-iconoclasts-traducao-pt-br/
 title.en	Iconoclasts
 tag.en	PT-BR translation · PS Vita
 status.en	70% · Available
@@ -1832,7 +1973,7 @@ item.en	Game installed on the Vita (USA, PCSE01177)
 item.en	rePatch plugin
 item.en	VitaShell, to create folders and extract the ZIP
 sec.en	Installation
-item.en	Download the archive and extract it with VitaShell
+item.en	Download the ZIP and extract it using password wolffsroom (in VitaShell or on a computer)
 item.en	Create the rePatch folder in ux0:
 item.en	Copy the PCSE01177 folder to ux0:rePatch/
 item.en	Restart the Vita
@@ -1847,14 +1988,88 @@ bar.en	Proofreading|80|
 bar.en	Graphics|0|
 bar.en	Cutscenes|100|
 bar.en	Testing|70|
-info.en	Status|Available
-info.en	Game version|PCSE01177 (USA)
-info.en	Updated|12/01/2025
+info.en	Release date|January 23, 2018
+info.en	Developer|Joakim Sandberg and MP2 Games
+info.en	Version|PCSE01177 (USA)
+info.en	Platforms|Windows, Linux, macOS, PlayStation 4, PlayStation Vita, Nintendo Switch and Xbox One
+info.en	Installation|rePatch (base game required)
 info.en	Archive password|wolffsroom
+info.en	Tools used|Adobe Photoshop 2025, Sublime Text, Python and IconoParser
 link.en	MediaFire|https://www.mediafire.com/file/gl4pa9kup40lwtu/PCSE01177.zip/file
 link.en	Google Drive|https://drive.google.com/file/d/1MpvamxqtuDs36nCKiUClXYD7_hCNTV3W/view
 link.en	MEGA|https://mega.nz/file/ggEWXKxb#j3McOGblU7Gz76jTtNdEUWW23NQJNzDEvw9SK5VBgko
-link.en	Original post|https://wolffsroom.wordpress.com/2025/01/25/psv-iconoclasts-traducao-pt-br/
 cover	1
-shots	3
-end	-
+shots	4
+end	
+post	va-11-hall-a-ptbr
+cat	traducoes
+group	1
+date	2025-01-12
+updated	2026-11-16
+progress	69
+title.pt	VA-11 HALL-A [Tradução PT-BR]
+tag.pt	Tradução · PS Vita · PT-BR
+status.pt	Disponível · Em revisão
+desc.pt	Viva as histórias de VA-11 HALL-A em português brasileiro no PS Vita, com diálogos, interface e gráficos adaptados.
+feature_text.pt	Uma noite no bar mais cyberpunk de Glitch City, agora em português brasileiro.
+about.pt	Um bar cyberpunk, personagens marcantes e histórias que se revelam a cada drink. *VA-11 HALL-A: Cyberpunk Bartender Action* combina narrativa, pixel art e uma trilha sonora envolvente em um futuro distópico.
+sec.pt	Sobre a tradução
+para.pt	Meu primeiro projeto como tradutor no PS Vita. Adaptei a tradução brasileira originalmente realizada por CoffeLordran no PC para a versão PCSE00756 (USA) do Vita, aproveitando também a estrutura de acentuação de uma tradução espanhola.
+para.pt	O trabalho incluiu revisão de diálogos, correção de quebras de linha para a tela do portátil, recriação de sprites e elementos gráficos e a adaptação de ferramentas próprias de conversão.
+sec.pt	Estado da revisão
+para.pt	A tradução está disponível, embora algumas quebras de linha e pequenas correções ortográficas ainda estejam em revisão. Os textos, gráficos e vídeos traduzidos podem ser aproveitados normalmente.
+sec.pt	Instalação
+item.pt	É obrigatório possuir VA-11 HALL-A PCSE00756 (USA) e o plugin rePatch ativado no PS Vita.
+item.pt	Extraia o arquivo ZIP com a senha wolffsroom.
+item.pt	Copie a pasta PCSE00756 para ux0:rePatch/PCSE00756/. Os arquivos traduzidos devem ficar dentro de games/.
+item.pt	Reinicie o PS Vita após a instalação para garantir o carregamento do plugin.
+item.pt	Na Wolff's Store para Vita, utilize Instalar tradução; Google Drive, MediaFire e MEGA são espelhos do mesmo pacote.
+sec.pt	Créditos
+para.pt	A tradução para PC foi elaborada por CoffeLordran; a adaptação, revisão e edição de gráficos para o PS Vita foram realizadas por Wolff. A estrutura de caracteres foi baseada também na tradução espanhola para Vita. Agradecimentos a André, da PKGj Brasil.
+bar.pt	Scripts|100|
+bar.pt	Ortografia|20|
+bar.pt	Gráficos|100|
+bar.pt	Cinemáticas|100|
+bar.pt	Testes|25|
+info.pt	Lançamento|21 de junho de 2016
+info.pt	Desenvolvedor|Sukeban Games e Wolfgame
+info.pt	Versão|PCSE00756 (USA)
+info.pt	Plataformas|Nintendo Switch, PlayStation 4, Microsoft Windows, Linux, MacOS e PlayStation Vita
+info.pt	Ferramentas usadas|Sublime Text, Photoshop 2025, WinRAR, PyCharm e Undertale Mod Tool
+link.pt	Google Drive|https://drive.google.com/file/d/15nluzvtoQhyojvlbYTEq6szQi38hVvZv/view
+link.pt	MEGA|https://mega.nz/file/cl92nKLS#NZd4PB2IACGd8YwyhJpYudO4DNRlEtDPlPJ6IyUWn-4
+link.pt	MediaFire|https://www.mediafire.com/file/t86bnirt2nx5s2c/PCSE00756.zip/file
+title.en	VA-11 HALL-A [Brazilian Portuguese Translation]
+tag.en	Translation · PS Vita · PT-BR
+status.en	Available · Under review
+desc.en	Experience VA-11 HALL-A on PS Vita in Brazilian Portuguese, with adapted text, interface and graphics.
+feature_text.en	Visit Glitch City's most cyberpunk bar, now in Brazilian Portuguese.
+about.en	*VA-11 HALL-A: Cyberpunk Bartender Action* is a cyberpunk visual novel about mixing drinks and getting to know your customers.
+sec.en	About this translation
+para.en	This PS Vita port adapts CoffeLordran's original Brazilian Portuguese PC translation to the USA build PCSE00756, incorporating Spanish Vita localization work to improve accented glyphs and adjusting text wrapping and graphics.
+sec.en	Translation status
+para.en	The patch is available, though some minor line breaks and proofreading are still being reviewed.
+sec.en	Installation
+item.en	The USA PS Vita game PCSE00756 and an enabled rePatch plugin are required.
+item.en	Extract the ZIP using password wolffsroom.
+item.en	Place the PCSE00756 folder at ux0:rePatch/PCSE00756/. Game assets must be under games/.
+item.en	Restart the console if rePatch is newly installed.
+item.en	The Vita Store offers one Install translation button, with multiple mirrors as fallback downloads.
+sec.en	Credits
+para.en	Original PC translation by CoffeLordran. PS Vita adaptation, revisions and graphical adjustments by Wolff, with reference to the Spanish Vita patch. Thanks to André of PKGj Brasil.
+bar.en	Scripts|100|
+bar.en	Ortografia|20|
+bar.en	Gráficos|100|
+bar.en	Cinemáticas|100|
+bar.en	Testes|25|
+info.en	Release date|June 21, 2016
+info.en	Developer|Sukeban Games and Wolfgame
+info.en	Version|PCSE00756 (USA)
+info.en	Platforms|Nintendo Switch, PlayStation 4, Microsoft Windows, Linux, macOS and PlayStation Vita
+info.en	Tools used|Sublime Text, Photoshop 2025, WinRAR, PyCharm and Undertale Mod Tool
+link.en	Google Drive|https://drive.google.com/file/d/15nluzvtoQhyojvlbYTEq6szQi38hVvZv/view
+link.en	MEGA|https://mega.nz/file/cl92nKLS#NZd4PB2IACGd8YwyhJpYudO4DNRlEtDPlPJ6IyUWn-4
+link.en	MediaFire|https://www.mediafire.com/file/t86bnirt2nx5s2c/PCSE00756.zip/file
+cover	1
+shots	5
+end	

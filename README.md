@@ -1,5 +1,22 @@
 # Wolff's Store
 
+### v1.0 - Traduções instaláveis e catálogo reorganizado
+
+- Downloads ocupa a primeira caixa lateral dos posts, antes de Detalhes. Se um arquivo
+  ainda não puder ser instalado pelo app, são exibidos os links manuais.
+- Traduções VPK dentro de ZIP: extração do ZIP (inclusive com senha) e instalação do
+  VPK pela rotina nativa do Wolff's Store (promoter).
+- Traduções rePatch ZIP: verificação do plugin no taiHEN, confirmação e cópia de
+  segurança _bkp antes de substituir modificações existentes.
+- Arquivos WipEout 2048: modo app_arquivos, destino ux0:app/PCSF00007/,
+  backup dos arquivos substituídos e aviso para atualizar LiveArea usando FMVita
+  ou File Manager; downloads que contêm apenas o torrent não são instaláveis.
+- Os arquivos do site usam a data original de publicação; o app não confunde
+  atualização de ficha com novidade. A integração mantém a música/OST e o
+  atualizador com Title ID WFFS00042 da série 0.99.x.
+
+
+
 O site [Wolff's Room](https://wolffsroom.github.io/WolffsRoomSite/) como app de PS Vita: mesmo visual, fontes,
 organização, animações e sons.
 

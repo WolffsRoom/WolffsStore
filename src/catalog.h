@@ -26,13 +26,16 @@ typedef struct {
     Pair clock[MAX_PAIRS]; int nclock;  /* caixa Clock recomendado */
 } PostText;
 
-enum { DL_VPK, DL_TRANS, DL_PLUGIN, DL_FILE, DL_DATA }; /* DL_DATA: zip extraído em ux0:data/ */
+enum { DL_VPK, DL_TRANS, DL_PLUGIN, DL_FILE, DL_DATA, DL_APP_FILES }; /* DL_DATA: zip extraído em ux0:data/ */
 #define MAX_DLS 8
+#define MAX_MIRRORS 3
 #define MAX_SHOTS 16
 
 typedef struct {
     int type;
     char *name, *url, *version, *file, *instr, *plugin;
+    char *mirrors[MAX_MIRRORS]; int nmirrors;
+    char *password;  /* optional password for encrypted ZIP translation */
     long long size;
     int needs_data;
     char tids[8][10];
@@ -42,7 +45,8 @@ typedef struct {
 typedef struct {
     char slug[48];
     int cat, group, feat, pixel, progress, cover, shots;
-    char date[16];
+    char date[16];       /* publicação ISO YYYY-MM-DD */
+    char updated[16];    /* última alteração do post; vazio se não houver */
     char *video;
     int trophies;     /* troféus nativos (NoTrpDrm) */
     char *author;     /* crédito opcional: autor do port externo */

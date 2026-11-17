@@ -86,6 +86,7 @@ int store_parse(const char *text, Post *out, int max, AppRelease *app) {
         p->group = (int)json_number(json_object_get(o, "grupo"), 0);
         if (p->group < 0 || p->group >= GRP_COUNT) p->group = 0;
         snprintf(p->date, sizeof(p->date), "%s", json_string(json_object_get(o, "data"), ""));
+        snprintf(p->updated, sizeof(p->updated), "%s", json_string(json_object_get(o, "atualizado_em"), ""));
         p->feat = json_bool(json_object_get(o, "destaque"), 0);
         p->pixel = json_bool(json_object_get(o, "pixel"), 0);
         p->progress = (int)json_number(json_object_get(o, "progresso"), -1);
@@ -112,13 +113,19 @@ int store_parse(const char *text, Post *out, int max, AppRelease *app) {
             const JsonValue *d = json_array_get(dls, k);
             Download *x = &p->dls[p->ndls++];
             const char *tp = json_string(json_object_get(d, "tipo"), "vpk");
-            x->type = !strcmp(tp, "traducao") ? DL_TRANS : !strcmp(tp, "plugin") ? DL_PLUGIN : !strcmp(tp, "arquivo") ? DL_FILE : !strcmp(tp, "dados") ? DL_DATA : DL_VPK;
+            x->type = !strcmp(tp, "traducao") ? DL_TRANS : !strcmp(tp, "app_arquivos") ? DL_APP_FILES : !strcmp(tp, "plugin") ? DL_PLUGIN : !strcmp(tp, "arquivo") ? DL_FILE : !strcmp(tp, "dados") ? DL_DATA : DL_VPK;
             x->name = S(d, "nome");
             x->url = S(d, "url");
             x->version = S(d, "versao");
             x->file = S(d, "arquivo");
             x->instr = S(d, "instrucoes");
             x->plugin = S(d, "plugin");
+            x->password = S(d, "senha");
+            const JsonValue *mirrors = json_object_get(d, "alternativas");
+            for (int z = 0; z < json_array_count(mirrors) && x->nmirrors < MAX_MIRRORS; z++) {
+                const char *u = json_string(json_array_get(mirrors, z), "");
+                if (!strncmp(u, "https://", 8)) x->mirrors[x->nmirrors++] = dup_latin1(u);
+            }
             x->size = (long long)json_number(json_object_get(d, "tamanho"), 0);
             x->needs_data = json_bool(json_object_get(d, "precisa_dados"), 0);
             const JsonValue *t = json_object_get(d, "titleids");

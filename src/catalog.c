@@ -65,6 +65,7 @@ int catalog_load(const char *path) {
         if (!strcmp(k, "cat")) p->cat = cat_id(v);
         else if (!strcmp(k, "group")) p->group = atoi(v);
         else if (!strcmp(k, "date")) snprintf(p->date, sizeof(p->date), "%s", v);
+        else if (!strcmp(k, "updated")) snprintf(p->updated, sizeof(p->updated), "%s", v);
         else if (!strcmp(k, "feat")) p->feat = 1;
         else if (!strcmp(k, "pixel")) p->pixel = 1;
         else if (!strcmp(k, "trofeus")) p->trophies = 1;

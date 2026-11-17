@@ -124,8 +124,17 @@ def main():
     import build  # leitor oficial dos posts do site
 
     if os.path.isdir(OUT):
-        shutil.rmtree(OUT)
-    os.makedirs(os.path.join(OUT, 'tex'))
+        # v0.99.9 introduced the bundled daypart OST under data/music.
+        # Refresh generated images/catalog without deleting the actual music.
+        for name in os.listdir(OUT):
+            if name == 'music':
+                continue
+            target = os.path.join(OUT, name)
+            if os.path.isdir(target):
+                shutil.rmtree(target)
+            else:
+                os.remove(target)
+    os.makedirs(os.path.join(OUT, 'tex'), exist_ok=True)
     font_title()
     font_body()
     for n in ('paw4', 'halo24', 'halo12', 'w25', 'w50', 'w75'):
@@ -146,6 +155,8 @@ def main():
         put('cat', p['cat'])
         put('group', build.GROUPS.index(p['group']))
         put('date', p['date'].isoformat())
+        if p.get('updated'):
+            put('updated', p['updated'].isoformat())
         if slug == feat:
             put('feat', 1)
         if p['pixel']:

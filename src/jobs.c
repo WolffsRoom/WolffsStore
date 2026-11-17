@@ -3,6 +3,8 @@
 #include "install.h"
 
 #include <psp2/io/fcntl.h>
+#include <psp2/io/dirent.h>
+#include <psp2/io/stat.h>
 #include <psp2/kernel/processmgr.h>
 #include <psp2/kernel/threadmgr.h>
 #include <psp2/shellutil.h>
@@ -91,7 +93,7 @@ static Job *slot(void) {
     return j;
 }
 
-int jobs_add(const Post *p, int dl, const char *title) {
+int jobs_add(const Post *p, int dl, const char *title, int confirm_replace) {
     if (dl < 0 || dl >= p->ndls) return -1;
     const Download *d = &p->dls[dl];
     Job *old = jobs_find(p->slug, dl);
@@ -102,9 +104,14 @@ int jobs_add(const Post *p, int dl, const char *title) {
         unlock();
         return -1;
     }
-    j->kind = d->type == DL_TRANS ? JK_TRANS : d->type == DL_PLUGIN ? JK_PLUGIN : d->type == DL_FILE ? JK_FILE : d->type == DL_DATA ? JK_DATA : JK_VPK;
+    j->kind = d->type == DL_TRANS ? JK_TRANS : d->type == DL_APP_FILES ? JK_APP_FILES : d->type == DL_PLUGIN ? JK_PLUGIN : d->type == DL_FILE ? JK_FILE : d->type == DL_DATA ? JK_DATA : JK_VPK;
     snprintf(j->name, sizeof(j->name), "%s", title);
     snprintf(j->url, sizeof(j->url), "%s", d->url);
+    j->nmirrors = d->nmirrors;
+    for (int k = 0; k < j->nmirrors; k++)
+        snprintf(j->mirrors[k], sizeof(j->mirrors[k]), "%s", d->mirrors[k]);
+    snprintf(j->password, sizeof(j->password), "%s", d->password ? d->password : "");
+    j->confirm_replace = confirm_replace && (d->type == DL_TRANS || d->type == DL_APP_FILES);
     snprintf(j->file, sizeof(j->file), "%s", d->file[0] ? d->file : "download.bin");
     snprintf(j->version, sizeof(j->version), "%s", d->version);
     snprintf(j->slug, sizeof(j->slug), "%s", p->slug);
@@ -157,33 +164,228 @@ static int check_space(Job *j, double factor) {
     return 0;
 }
 
+/* Resolve o botão do MediaFire sem depender de links temporários. */
+static int resolve_mediafire(const char *page_url, char *out, size_t cap) {
+    int size = 0;
+    char *html = net_fetch(page_url, &size);
+    if (!html) return -1;
+    char *btn = strstr(html, "id=\"downloadButton\"");
+    char *href = NULL, *scan = html;
+    while (btn && (scan = strstr(scan, "href=\"")) && scan < btn) {
+        href = scan + 6;
+        scan += 6;
+    }
+    int result = -1;
+    if (href && !strncmp(href, "https://download", 16)) {
+        const char *end = strchr(href, '"');
+        if (end && end > href && (size_t)(end - href) < cap) {
+            memcpy(out, href, (size_t)(end - href));
+            out[end - href] = 0;
+            if (strstr(out, ".mediafire.com/")) result = 0;
+        }
+    }
+    free(html);
+    return result;
+}
+
 static int download(Job *j, const char *dst) {
     set_state(j, J_DOWNLOAD);
     char part[300];
     snprintf(part, sizeof(part), "%s.part", dst);
-    int r = net_download(j->url, part, &j->pr);
-    if (r != NET_OK) {
-        fail(j, r == NET_CANCELED ? "Cancelado." : net_error());
-        return -1;
-    }
-    if (j->kind == JK_VPK || j->kind == JK_SELF || j->kind == JK_TRANS || j->kind == JK_DATA) {
-        /* zip/VPK começa com "PK"; uma página HTML (ex.: aviso do Google Drive) não */
-        unsigned char m[2] = {0, 0};
-        SceUID fd = sceIoOpen(part, SCE_O_RDONLY, 0);
-        if (fd >= 0) {
-            sceIoRead(fd, m, 2);
-            sceIoClose(fd);
+    char original[512];
+    snprintf(original, sizeof(original), "%s", j->url);
+    char error[192] = "";
+    for (int attempt = 0; attempt <= j->nmirrors; attempt++) {
+        if (j->pr.cancel) { fail(j, "Cancelado."); return -1; }
+        const char *candidate = attempt ? j->mirrors[attempt - 1] : original;
+        if (!candidate[0]) continue;
+        char resolved[640];
+        snprintf(resolved, sizeof(resolved), "%s", candidate);
+        if (strstr(candidate, "mega.nz/file/")) {
+            /* Mega usa chave de criptografia e API própria: não é URL de arquivo direto. */
+            ws_log("download: espelho MEGA não suporta acesso direto no Vita: %s", candidate);
+            snprintf(error, sizeof(error), "MEGA requer download manual no navegador.");
+            continue;
         }
-        if (m[0] != 'P' || m[1] != 'K') {
+        if (strstr(candidate, "mediafire.com/file/")) {
+            if (resolve_mediafire(candidate, resolved, sizeof(resolved)) < 0) {
+                ws_log("download: MediaFire não forneceu URL direta");
+                snprintf(error, sizeof(error), "Não foi possível resolver o link MediaFire.");
+                continue;
+            }
+        }
+        snprintf(j->url, sizeof(j->url), "%s", resolved);
+        j->pr.done = 0;
+        j->pr.total = j->size_hint;
+        j->pr.speed = 0;
+        sceIoRemove(part);
+        int r = net_download(resolved, part, &j->pr);
+        if (r != NET_OK) {
+            snprintf(error, sizeof(error), "%s", r == NET_CANCELED ? "Cancelado." : net_error());
+            ws_log("download: espelho %d falhou: %s", attempt + 1, error);
             sceIoRemove(part);
-            fail(j, m[0] == '<' ? "O link abriu uma página em vez do arquivo (Google Drive pedindo confirmação ou link sem acesso público)."
-                               : "O arquivo baixado não é um zip/VPK válido.");
+            if (r == NET_CANCELED || j->pr.cancel) { fail(j, "Cancelado."); return -1; }
+            continue;
+        }
+        if (j->kind == JK_VPK || j->kind == JK_SELF || j->kind == JK_TRANS ||
+            j->kind == JK_DATA || j->kind == JK_APP_FILES) {
+            unsigned char magic[8] = {0};
+            SceUID fd = sceIoOpen(part, SCE_O_RDONLY, 0);
+            if (fd >= 0) { sceIoRead(fd, magic, sizeof(magic)); sceIoClose(fd); }
+            int is_zip = magic[0] == 'P' && magic[1] == 'K';
+            int is_rar = !memcmp(magic, "Rar!\x1A\x07", 6);
+            if (!is_zip && !((j->kind == JK_APP_FILES || j->kind == JK_TRANS) && is_rar)) {
+                snprintf(error, sizeof(error), "O espelho não retornou um ZIP/VPK ou RAR válido.");
+                ws_log("download: espelho %d retornou dados inválidos", attempt + 1);
+                sceIoRemove(part);
+                continue;
+            }
+        }
+        sceIoRemove(dst);
+        if (sceIoRename(part, dst) < 0) {
+            fail(j, "Não foi possível gravar o download.");
             return -1;
         }
+        return 0;
     }
-    sceIoRemove(dst);
-    sceIoRename(part, dst);
-    return 0;
+    fail(j, error[0] ? error : "Nenhum espelho disponível.");
+    return -1;
+}
+
+/* Busca um VPK dentro do ZIP: até 4 níveis, sem instalar arquivos estranhos. */
+static int find_nested_vpk(const char *dir, char *out, size_t cap, int depth) {
+    if (depth > 4) return 0;
+    SceUID d = sceIoDopen(dir);
+    if (d < 0) return 0;
+    int found = 0;
+    SceIoDirent e;
+    while (!found) {
+        memset(&e, 0, sizeof(e));
+        if (sceIoDread(d, &e) <= 0) break;
+        if (!strcmp(e.d_name, ".") || !strcmp(e.d_name, "..")) continue;
+        char path[512];
+        if (snprintf(path, sizeof(path), "%s/%s", dir, e.d_name) >= (int)sizeof(path)) continue;
+        if (SCE_S_ISDIR(e.d_stat.st_mode)) {
+            found = find_nested_vpk(path, out, cap, depth + 1);
+        } else if (SCE_S_ISREG(e.d_stat.st_mode)) {
+            const char *ext = strrchr(e.d_name, '.');
+            if (ext && !strcasecmp(ext, ".vpk") && strlen(path) < cap) {
+                snprintf(out, cap, "%s", path);
+                found = 1;
+            }
+        }
+    }
+    sceIoDclose(d);
+    return found;
+}
+
+/* Arquivos de transporte não pertencem à pasta ux0:app do jogo. */
+static int app_skip_aux(const char *name) {
+    const char *ext = strrchr(name, '.');
+    return !strcasecmp(name, ".DS_Store") ||
+           (ext && (!strcasecmp(ext, ".torrent") ||
+                    !strcasecmp(ext, ".url") || !strcasecmp(ext, ".nfo") ||
+                    !strcasecmp(ext, ".md") || !strcasecmp(ext, ".txt")));
+}
+
+/* Pré-valida a pasta PCSF00007 antes de tocar no jogo instalado.
+ * Um RAR que só contém um .torrent não é um pacote instalável. */
+static int app_payload_valid(const char *dir, int depth, int *files) {
+    if (depth > 12) return -1;
+    SceUID d = sceIoDopen(dir);
+    if (d < 0) return -1;
+    SceIoDirent e;
+    int result = 0;
+    for (;;) {
+        memset(&e, 0, sizeof(e));
+        if (sceIoDread(d, &e) <= 0) break;
+        if (!strcmp(e.d_name, ".") || !strcmp(e.d_name, "..")) continue;
+        char path[512];
+        if (snprintf(path, sizeof(path), "%s/%s", dir, e.d_name) >= (int)sizeof(path)) { result = -1; break; }
+        if (SCE_S_ISDIR(e.d_stat.st_mode)) {
+            if (app_payload_valid(path, depth + 1, files) < 0) { result = -1; break; }
+        } else if (SCE_S_ISREG(e.d_stat.st_mode)) {
+            if (app_skip_aux(e.d_name)) continue;
+            if (e.d_stat.st_size > 0) (*files)++;
+        }
+    }
+    sceIoDclose(d);
+    return result;
+}
+
+/* Primeira passagem: identifica conflitos com backups já existentes antes de copiar. */
+static int app_preflight(const char *src, const char *dst, const char *bak, int depth) {
+    if (depth > 12) return -1;
+    SceUID d = sceIoDopen(src);
+    if (d < 0) return -1;
+    SceIoDirent e;
+    int result = 0;
+    for (;;) {
+        memset(&e, 0, sizeof(e));
+        if (sceIoDread(d, &e) <= 0) break;
+        if (!strcmp(e.d_name, ".") || !strcmp(e.d_name, "..")) continue;
+        char a[512], b[512], c[512];
+        if (snprintf(a, sizeof(a), "%s/%s", src, e.d_name) >= (int)sizeof(a) ||
+            snprintf(b, sizeof(b), "%s/%s", dst, e.d_name) >= (int)sizeof(b) ||
+            snprintf(c, sizeof(c), "%s/%s", bak, e.d_name) >= (int)sizeof(c)) { result = -1; break; }
+        if (app_skip_aux(e.d_name) && SCE_S_ISREG(e.d_stat.st_mode)) continue;
+        if (SCE_S_ISDIR(e.d_stat.st_mode)) {
+            if (fs_exists(b) && !fs_is_dir(b)) { result = -1; break; }
+            if (app_preflight(a, b, c, depth + 1) < 0) { result = -1; break; }
+        } else if (SCE_S_ISREG(e.d_stat.st_mode)) {
+            if (fs_is_dir(b) || (fs_exists(b) && fs_exists(c))) { result = -1; break; }
+        } else { result = -1; break; }
+    }
+    sceIoDclose(d);
+    return result;
+}
+
+/* Mescla arquivos com cópia de segurança dos originais.
+ * Cada arquivo novo é gravado antes em .wsnew, nunca truncando o original. */
+static int app_apply_files(const char *src, const char *dst, const char *bak,
+                           int depth, volatile int *cancel) {
+    if (depth > 12) return -1;
+    SceUID d = sceIoDopen(src);
+    if (d < 0) return -1;
+    SceIoDirent e;
+    int result = 0;
+    for (;;) {
+        memset(&e, 0, sizeof(e));
+        if (sceIoDread(d, &e) <= 0) break;
+        if (cancel && *cancel) { result = -2; break; }
+        if (!strcmp(e.d_name, ".") || !strcmp(e.d_name, "..")) continue;
+        char a[512], b[512], c[512], temp[512];
+        if (snprintf(a, sizeof(a), "%s/%s", src, e.d_name) >= (int)sizeof(a) ||
+            snprintf(b, sizeof(b), "%s/%s", dst, e.d_name) >= (int)sizeof(b) ||
+            snprintf(c, sizeof(c), "%s/%s", bak, e.d_name) >= (int)sizeof(c) ||
+            snprintf(temp, sizeof(temp), "%s.wsnew", b) >= (int)sizeof(temp)) { result = -1; break; }
+        if (app_skip_aux(e.d_name) && SCE_S_ISREG(e.d_stat.st_mode)) continue;
+        if (SCE_S_ISDIR(e.d_stat.st_mode)) {
+            fs_mkdir_p(b);
+            if (app_apply_files(a, b, c, depth + 1, cancel) < 0) { result = -1; break; }
+        } else if (SCE_S_ISREG(e.d_stat.st_mode)) {
+            if (fs_exists(temp)) { result = -1; break; }
+            if (fs_copy(a, temp) < 0) { sceIoRemove(temp); result = -1; break; }
+            int existed = fs_exists(b);
+            if (existed) {
+                fs_mkdir_p(bak);
+                if (fs_copy(b, c) < 0 || sceIoRemove(b) < 0) {
+                    sceIoRemove(temp);
+                    result = -1;
+                    break;
+                }
+            }
+            if (sceIoRename(temp, b) < 0) {
+                if (existed && fs_copy(c, b) < 0)
+                    ws_log("WipeOut: falha ao restaurar %s de %s", b, c);
+                sceIoRemove(temp);
+                result = -1;
+                break;
+            }
+        } else { result = -1; break; }
+    }
+    sceIoDclose(d);
+    return result;
 }
 
 static void run(Job *j) {
@@ -192,8 +394,12 @@ static void run(Job *j) {
     switch (j->kind) {
     case JK_VPK:
     case JK_SELF: {
-        if (!check_space(j, 2.2)) return;
-        snprintf(path, sizeof(path), WS_DL "/%s", j->kind == JK_SELF ? "self.vpk" : "app.vpk");
+        const char *ext = strrchr(j->file, '.');
+        int wrapped = j->kind == JK_VPK && ext &&
+                      (!strcasecmp(ext, ".zip") || !strcasecmp(ext, ".rar"));
+        if (!check_space(j, wrapped ? 4.5 : 2.2)) return;
+        snprintf(path, sizeof(path), WS_DL "/%s",
+                 j->kind == JK_SELF ? "self.vpk" : wrapped ? "wrapped-app.zip" : "app.vpk");
         if (download(j, path) < 0) return;
         if (j->kind == JK_SELF) {
             /* só prepara; quem instala é o updater, com o app fechado */
@@ -211,11 +417,29 @@ static void run(Job *j) {
             set_state(j, J_DONE);
             return;
         }
+        char inner[512];
+        const char *to_install = path;
+        const char *stage = WS_DL "/wrapped-vpk";
+        if (wrapped) {
+            set_state(j, J_EXTRACT);
+            fs_rm_rf(stage);
+            fs_mkdir_p(stage);
+            j->pr.done = 0;
+            int r = inst_extract_password(path, stage, NULL, 0, j->password, &j->pr);
+            if (r < 0 || !find_nested_vpk(stage, inner, sizeof(inner), 0)) {
+                fs_rm_rf(stage);
+                sceIoRemove(path);
+                fail(j, r < 0 ? inst_error() : "O ZIP não contém um VPK instalável.");
+                return;
+            }
+            to_install = inner;
+        }
         set_state(j, J_EXTRACT);
         sceShellUtilLock(SCE_SHELL_UTIL_LOCK_TYPE_PS_BTN); /* não sair no meio da instalação */
         j->pr.done = 0;
-        int r = inst_install_vpk(path, &j->pr, &j->phase); /* phase: 0 extraindo, 1 instalando */
+        int r = inst_install_vpk(to_install, &j->pr, &j->phase); /* promoter nativo do app */
         sceShellUtilUnlock(SCE_SHELL_UTIL_LOCK_TYPE_PS_BTN);
+        if (wrapped) fs_rm_rf(stage);
         sceIoRemove(path);
         if (r < 0) {
             fail(j, inst_error());
@@ -225,23 +449,119 @@ static void run(Job *j) {
         set_state(j, J_DONE);
         return;
     }
+    case JK_APP_FILES: {
+        /* Arquivos de tradução do jogo base: nunca instala um torrent ou RAR vazio. */
+        if (j->ntids != 1 || strcmp(j->tids[0], "PCSF00007")) {
+            fail(j, "Pacote app_arquivos sem TitleID WipEout válido."); return;
+        }
+        if (!j->confirm_replace) {
+            fail(j, "Confirme a instalação sobre os arquivos do jogo."); return;
+        }
+        const char *dst = "ux0:app/PCSF00007";
+        const char *stage = WS_DL "/app-files-stage";
+        const char *backup = "ux0:data/WolffsStore/backups/PCSF00007";
+        if (!fs_is_dir(dst)) {
+            fail(j, "Instale WipEout 2048 PCSF00007 antes da tradução."); return;
+        }
+        if (!check_space(j, 5.0)) return;
+        snprintf(path, sizeof(path), WS_DL "/app-files.rar");
+        if (download(j, path) < 0) return;
+        set_state(j, J_EXTRACT);
+        fs_rm_rf(stage);
+        fs_mkdir_p(stage);
+        const char *strip[] = { "CONSOLE/ux0/app/", "CONSOLE/app/", "ux0/app/", "app/" };
+        j->pr.done = 0;
+        int r = inst_extract_password(path, stage, strip, 4, j->password, &j->pr);
+        char payload[256];
+        snprintf(payload, sizeof(payload), "%s/%s", stage, j->tids[0]);
+        int count = 0;
+        if (r < 0 || !fs_is_dir(payload) ||
+            app_payload_valid(payload, 0, &count) < 0 || !count) {
+            fs_rm_rf(stage);
+            sceIoRemove(path);
+            fail(j, r < 0 ? inst_error() :
+                 "Arquivo só tem torrent ou não contém PCSF00007. Obtenha o pacote completo.");
+            return;
+        }
+        if (app_preflight(payload, dst, backup, 0) < 0) {
+            fs_rm_rf(stage);
+            sceIoRemove(path);
+            fail(j, "Backup ou arquivo do jogo em conflito; instalação cancelada.");
+            return;
+        }
+        set_state(j, J_INSTALL);
+        sceShellUtilLock(SCE_SHELL_UTIL_LOCK_TYPE_PS_BTN);
+        r = app_apply_files(payload, dst, backup, 0, &j->pr.cancel);
+        sceShellUtilUnlock(SCE_SHELL_UTIL_LOCK_TYPE_PS_BTN);
+        fs_rm_rf(stage);
+        sceIoRemove(path);
+        if (r < 0) {
+            fail(j, "Falha na cópia; confira os backups em ux0:data/WolffsStore/backups.");
+            return;
+        }
+        snprintf(j->msg, sizeof(j->msg), "%s", dst);
+        set_state(j, J_DONE);
+        return;
+    }
     case JK_TRANS: {
-        if (!check_space(j, 3.0)) return;
+        if (!check_space(j, 4.0)) return;
+        if (j->ntids < 1) { fail(j, "Tradução sem TitleID."); return; }
         snprintf(path, sizeof(path), WS_DL "/traducao.zip");
         if (download(j, path) < 0) return;
         set_state(j, J_EXTRACT);
+        fs_mkdir_p("ux0:rePatch");
         for (int i = 0; i < j->ntids; i++) {
-            char dst[64], a[40], b[40];
+            char dst[80], backup[96], stage[112], marker[32];
             snprintf(dst, sizeof(dst), "ux0:rePatch/%s", j->tids[i]);
-            snprintf(a, sizeof(a), "rePatch/%s/", j->tids[i]);
-            snprintf(b, sizeof(b), "%s/", j->tids[i]);
-            const char *strip[3] = {a, b, "rePatch/"};
-            fs_mkdir_p(dst);
-            if (inst_extract(path, dst, strip, 3, &j->pr) < 0) {
+            snprintf(backup, sizeof(backup), "%s_bkp", dst);
+            snprintf(stage, sizeof(stage), "ux0:rePatch/.WolffsStore-%s.tmp", j->tids[i]);
+            snprintf(marker, sizeof(marker), "@%s/", j->tids[i]);
+            const char *strip[1] = {marker};
+            if (fs_is_dir(dst) && !j->confirm_replace) {
                 sceIoRemove(path);
-                fail(j, j->pr.cancel ? "Cancelado." : inst_error());
+                fail(j, "Já existe mod para este jogo; confirme o backup antes de instalar.");
                 return;
             }
+            if (fs_exists(dst) && fs_exists(backup)) {
+                sceIoRemove(path);
+                fail(j, "Backup _bkp já existe. Renomeie-o no VitaShell antes de substituir.");
+                return;
+            }
+            /* Prepara fora da pasta ativa; falha de ZIP/senha não altera o mod instalado. */
+            if (fs_exists(stage)) fs_rm_rf(stage);
+            fs_mkdir_p(stage);
+            j->pr.done = 0;
+            int r = inst_extract_password(path, stage, strip, 1, j->password, &j->pr);
+            int files = 0;
+            if (r < 0 || app_payload_valid(stage, 0, &files) < 0 || !files) {
+                fs_rm_rf(stage);
+                sceIoRemove(path);
+                fail(j, j->pr.cancel ? "Cancelado." :
+                     (r < 0 ? inst_error() : "Pacote sem arquivos sob TitleID: tradução inválida."));
+                return;
+            }
+            if (j->pr.cancel) {
+                fs_rm_rf(stage);
+                sceIoRemove(path);
+                fail(j, "Cancelado.");
+                return;
+            }
+            int had_old = fs_exists(dst);
+            if (had_old && sceIoRename(dst, backup) < 0) {
+                fs_rm_rf(stage);
+                sceIoRemove(path);
+                fail(j, "Não foi possível criar PCSE..._bkp; mod anterior preservado.");
+                return;
+            }
+            if (sceIoRename(stage, dst) < 0) {
+                if (had_old && sceIoRename(backup, dst) < 0)
+                    ws_log("ERRO: falha ao restaurar mod %s de %s", dst, backup);
+                fs_rm_rf(stage);
+                sceIoRemove(path);
+                fail(j, "Não foi possível ativar tradução; verifique o backup _bkp.");
+                return;
+            }
+            ws_log("rePatch: %s instalado; backup existente=%d", dst, had_old);
         }
         sceIoRemove(path);
         snprintf(j->msg, sizeof(j->msg), "ux0:rePatch/%s%s", j->tids[0], j->ntids > 1 ? " (+)" : "");
