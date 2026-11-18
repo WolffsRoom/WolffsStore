@@ -33,7 +33,7 @@ enum { DL_VPK, DL_TRANS, DL_PLUGIN, DL_FILE, DL_DATA, DL_APP_FILES }; /* DL_DATA
 
 typedef struct {
     int type;
-    char *name, *url, *version, *file, *instr, *plugin;
+    char *name, *url, *version, *file, *instr, *plugin, *advisory_plugin;
     char *mirrors[MAX_MIRRORS]; int nmirrors;
     char *password;  /* optional password for encrypted ZIP translation */
     long long size;

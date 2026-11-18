@@ -2,6 +2,20 @@
 
 
 
+
+
+### v1.0.3 - CapUnlocker installation warning and YouTube alpha
+
+- The v1.0.3 catalog uses store-v103.json; previous v1.0.x builds remain
+  on their existing feed to avoid showing installs without plugin advisories.
+- VPK items can declare optional aviso_plugin metadata. A blocking UI overlay
+  explains the recommendation before starting the download, but the plugin
+  itself is not required; the user can confirm or cancel the installation.
+- The YouTube on TV alpha v0.34 is added through the Store-only Google Drive
+  mirror and the YTVCB0001 Title ID.
+- Pizza Tower SAGE 2019 v0.62 updates are catalog-only and retain the existing
+  cover; the installer uses its official GitHub release asset.
+
 ### v1.0.2 - Download das traduções GameLab
 
 - Renomeados os downloads: The Wolf Among Us (PTBR),

@@ -30,7 +30,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "1.0.2"
+#define WS_VERSION "1.0.3"
 #endif
 
 /* ================================================================ textos */
@@ -54,7 +54,8 @@ enum {
     S_QUEUE, S_SOURCE, S_CLOCK, S_DL_DATA, S_DATA_TO, S_SYNC_SHORT, S_MUSIC, S_SFX, S_TIP_AUDIO, S_VID_LOAD,
     S_VID_FAIL, S_VID_HINT, S_BARK, S_WATCH_APP, S_VIDEO_NOTE_APP, S_LATEST3, S_TROPHIES, S_OPEN_APP, S_LBL_SYNC, S_LBL_DLS, S_LBL_AUDIO, S_LBL_SETTINGS, S_LBL_SEARCH, S_POST_PUBLISHED, S_POST_UPDATED, S_APP_LIVEAREA,
     S_TRANS_DIALOG_TITLE, S_TRANS_REQUIRE, S_TRANS_DETECTED, S_TRANS_MISSING,
-    S_TRANS_CONFIRM, S_TRANS_CANCEL, S_TRANS_INSTALLING, S_RESOLVING_LINK, S_CONNECTING, S_COUNT
+    S_TRANS_CONFIRM, S_TRANS_CANCEL, S_TRANS_INSTALLING, S_RESOLVING_LINK, S_CONNECTING,
+    S_CAP_TITLE, S_CAP_RECOMMEND, S_CAP_CPU, S_CAP_OPTIONAL, S_COUNT
 };
 
 static const char *UI_UTF8[2][S_COUNT] = {
@@ -91,6 +92,8 @@ static const char *UI_UTF8[2][S_COUNT] = {
         "Plugin detected in taiHEN.", "Plugin missing from taiHEN.",
         "CONFIRM", "CANCEL", "Installing the translation.",
         "Resolving link...", "Connecting...",
+        "RECOMMENDED PLUGIN", "Recommended: ", "CapUnlocker enables all four CPU cores.",
+        "Optional. The app can be installed without this plugin.",
     },
     [LANG_PT] = {
         "Ports", "Ferramentas", "Traduções", "Reviews",
@@ -128,6 +131,8 @@ static const char *UI_UTF8[2][S_COUNT] = {
         "Plugin detectado no taiHEN.", "Plugin ausente no taiHen.",
         "CONFIRMAR", "CANCELAR", "Instalando tradução.",
         "Resolvendo link...", "Conectando...",
+        "PLUGIN RECOMENDADO", "Recomendado: ", "CapUnlocker libera o uso dos quatro núcleos da CPU.",
+        "Opcional. A instalação também funciona sem esse plugin.",
     },
 };
 static char UI[2][S_COUNT][128];
@@ -147,6 +152,7 @@ static int settings_open = 0, settings_row = 0, settings_page = 0, settings_root
 static int trans_confirm_post = -1, trans_confirm_dl = -1;
 static int trans_confirm_mod = 0, trans_confirm_backup = 0, trans_confirm_plugin = 0;
 static int trans_confirm_app = 0, trans_confirm_base_missing = 0;
+static int plugin_advice_post = -1, plugin_advice_dl = -1;
 static double settings_t0 = -10;
 static char search_q[128] = "";
 static int ime_open = 0;
@@ -503,6 +509,15 @@ static void open_translation_confirm(int pi, int di) {
         if (fs_exists(dir)) trans_confirm_mod = 1;
         if (fs_exists(dir) && fs_exists(bak)) trans_confirm_backup = 1;
     }
+    sfx("open");
+}
+
+static void open_plugin_advice(int pi, int di) {
+    if (pi < 0 || pi >= g_nposts || di < 0 || di >= g_posts[pi].ndls) return;
+    const Download *d = &g_posts[pi].dls[di];
+    if (d->type != DL_VPK || !d->advisory_plugin || !d->advisory_plugin[0]) return;
+    plugin_advice_post = pi;
+    plugin_advice_dl = di;
     sfx("open");
 }
 
@@ -2300,6 +2315,18 @@ static void toast(const char *msg) {
     toasts[0].t0 = now_s;
 }
 
+static void close_plugin_advice(int install) {
+    if (plugin_advice_post < 0) return;
+    int pi = plugin_advice_post, di = plugin_advice_dl;
+    plugin_advice_post = plugin_advice_dl = -1;
+    if (install) {
+        Post *p = &g_posts[pi];
+        const char *project = p->t[lang].title;
+        if (jobs_add(p, di, project && project[0] ? project : p->dls[di].name, 0) >= 0)
+            sfx("confirm");
+    } else sfx("back");
+}
+
 static void close_translation_confirm(int install) {
     if (trans_confirm_post < 0) return;
     int pi = trans_confirm_post, di = trans_confirm_dl;
@@ -2725,6 +2752,10 @@ static void activate(int it) {
                 if (g_posts[i].dls[e->dl].type == DL_TRANS ||
                     g_posts[i].dls[e->dl].type == DL_APP_FILES) {
                     open_translation_confirm(i, e->dl);
+                } else if (g_posts[i].dls[e->dl].type == DL_VPK &&
+                           g_posts[i].dls[e->dl].advisory_plugin &&
+                           g_posts[i].dls[e->dl].advisory_plugin[0]) {
+                    open_plugin_advice(i, e->dl);
                 } else if (jobs_add(&g_posts[i], e->dl,
                              project && project[0] ? project : g_posts[i].dls[e->dl].name, 0) >= 0)
                     sfx("confirm");
@@ -2763,6 +2794,12 @@ static void activate(int it) {
         if (p->dls[x->arg].type == DL_TRANS ||
             p->dls[x->arg].type == DL_APP_FILES) {
             open_translation_confirm(view_post, x->arg);
+            break;
+        }
+        if (p->dls[x->arg].type == DL_VPK &&
+            p->dls[x->arg].advisory_plugin &&
+            p->dls[x->arg].advisory_plugin[0]) {
+            open_plugin_advice(view_post, x->arg);
             break;
         }
         const char *project = p->t[lang].title;
@@ -3654,6 +3691,26 @@ static void draw_translation_confirm(void) {
     draw_translation_action(x + 400, by, 328, TXT(S_TRANS_CANCEL), 0, 0);
 }
 
+static void draw_plugin_advice(void) {
+    if (plugin_advice_post < 0) return;
+    const float x = 100, y = 64, w = 760, h = 410;
+    vita2d_draw_rectangle(0, 0, SCR_W, SCR_H, RGBA8(0, 0, 0, 0xE5));
+    halo_draw(x - 16, y - 16, w + 32, h + 32, 0, 1);
+    vita2d_draw_rectangle(x, y, w, h, C_PANEL);
+    frame_rect(x, y, w, h, 4, C_WHITE);
+    const char *heading = TXT(S_CAP_TITLE);
+    title_draw(heading, x + (w - title_width(heading, 2)) / 2, y + 26, 2, C_WHITE);
+    vita2d_draw_rectangle(x + 28, y + 76, w - 56, 4, C_LINE);
+    const Download *d = &g_posts[plugin_advice_post].dls[plugin_advice_dl];
+    char line[160];
+    snprintf(line, sizeof(line), "%s%s", TXT(S_CAP_RECOMMEND), d->advisory_plugin);
+    body_draw(line, x + 28, y + 115, C_GOLD);
+    body_draw(TXT(S_CAP_CPU), x + 28, y + 164, C_WHITE);
+    body_draw(TXT(S_CAP_OPTIONAL), x + 28, y + 217, C_MUTED);
+    draw_translation_action(x + 32, y + 316, 328, TXT(S_TRANS_CONFIRM), 1, 0);
+    draw_translation_action(x + 400, y + 316, 328, TXT(S_TRANS_CANCEL), 0, 0);
+}
+
 /* ================================================================ main */
 
 int main(void) {
@@ -3792,6 +3849,9 @@ int main(void) {
             if (down & SCE_CTRL_RIGHT && snd_row < 1) { snd_row = 1; sfx("hover"); }
             if (down & SCE_CTRL_CROSS) snd_menu_toggle(snd_row);
             if (down & (SCE_CTRL_CIRCLE | SCE_CTRL_UP)) { snd_menu = 0; sfx("back"); }
+        } else if (plugin_advice_post >= 0) {
+            if (down & SCE_CTRL_CIRCLE) close_plugin_advice(0);
+            else if (down & SCE_CTRL_CROSS) close_plugin_advice(1);
         } else if (trans_confirm_post >= 0) {
             if (down & SCE_CTRL_CIRCLE) close_translation_confirm(0);
             else if (down & SCE_CTRL_CROSS) close_translation_confirm(1);
@@ -3883,7 +3943,7 @@ int main(void) {
                 dragged = 1;
             }
             /* passar o dedo no logo: as letras pulam com a nota (como o hover no PC) */
-            if ((started || first_sync) && !vid_open && !settings_open && trans_confirm_post < 0) {
+            if ((started || first_sync) && !vid_open && !settings_open && trans_confirm_post < 0 && plugin_advice_post < 0) {
                 float wy = ty + cam;
                 float logo_x = first_sync ? (SCR_W - title_width(LOGO, 5)) / 2 : LOGO_X;
                 float logo_y = first_sync ? SCR_H / 2 - 52 : 30;
@@ -3896,7 +3956,7 @@ int main(void) {
                     }
                 }
             }
-            if (dragged && viewer < 0 && !vid_open && !settings_open && !snd_menu && trans_confirm_post < 0) {
+            if (dragged && viewer < 0 && !vid_open && !settings_open && !snd_menu && trans_confirm_post < 0 && plugin_advice_post < 0) {
                 cam_target = t_cam0 - (ty - t_y0);
                 cam_clamp();
                 cam = cam_target;
@@ -3911,7 +3971,12 @@ int main(void) {
                     sfx("bark");
                 } else if (!started) start_intro();
                 else if (vid_open) video_toggle_pause();
-                else if (trans_confirm_post >= 0) {
+                else if (plugin_advice_post >= 0) {
+                    if (t_y0 >= 380 && t_y0 < 428) {
+                        if (t_x0 >= 132 && t_x0 < 460) close_plugin_advice(1);
+                        else if (t_x0 >= 500 && t_x0 < 828) close_plugin_advice(0);
+                    } else if (t_y0 < 70 || t_y0 > 475) close_plugin_advice(0);
+                } else if (trans_confirm_post >= 0) {
                     if (t_y0 >= 380 && t_y0 < 428) {
                         if (t_x0 >= 132 && t_x0 < 460) close_translation_confirm(1);
                         else if (t_x0 >= 500 && t_x0 < 828) close_translation_confirm(0);
@@ -3996,6 +4061,7 @@ int main(void) {
         }
         draw_video();
         draw_translation_confirm();
+        draw_plugin_advice();
         /* transição wr-wipe: sólido, 75%, 50%, 25% */
         double we = now_s - wipe_t0;
         if (we < .4) dither_fill((int)(we / .1), 0, 0, SCR_W, SCR_H, C_BG);

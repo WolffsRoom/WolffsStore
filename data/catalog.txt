@@ -1,8 +1,86 @@
+post	youtube-on-vita
+cat	ports
+group	0
+date	2026-11-17
+updated	2026-11-18
+feat	1
+title.pt	Youtube - Unofficial client for PS Vita (alpha)
+tag.pt	Client não oficial · YouTube · PS Vita
+status.pt	Alpha v0.34 · Testes no Vita real
+desc.pt	Interface original do YouTube on TV no PS Vita, com login, toque e reprodução H.264/AAC em até 720p.
+feature_text.pt	YouTube no PS Vita real, com a experiência Starboard 15, controle por toque e vídeo até 720p.
+about.pt	Cliente experimental não oficial do YouTube para PlayStation Vita, utilizando a interface genuína YouTube on TV (Starboard 15). A versão alpha v0.34 já funciona no PS Vita real e no Vita3K, superando as limitações dos primeiros testes da v0.22.
+sec.pt	O que já funciona nos testes
+item.pt	A interface genuína do YouTube on TV roda no PS Vita real e no Vita3K.
+item.pt	Navegação fluida, renderizando em até 60 FPS no hardware.
+item.pt	D-pad e botões físicos, além de gestos na tela: tocar para selecionar, deslizar para rolar e tocar com dois dedos para voltar.
+item.pt	Reprodução por hardware de H.264/AAC de 240p a 720p, incluindo fluxos de 60 fps.
+item.pt	Login e configurações persistem entre sessões.
+item.pt	Controles do player: pausar/retomar e legendas.
+item.pt	Utiliza os quatro núcleos da CPU quando o plugin CapUnlocker está instalado.
+sec.pt	Status alpha e limitações
+para.pt	Esta é uma versão experimental, não estável. Problemas conhecidos: sombras de texto sobre vídeos e miniaturas podem aparecer como caixas escuras, a visualização de letras em videoclipes musicais não reproduz, e ainda podem ocorrer travamentos ocasionais (em investigação). Não há suporte a 1080p, pois o decodificador de vídeo disponibilizado a aplicativos no Vita tem limite de 720p. Controles de velocidade, VP9/AV1 e conteúdos protegidos também não são suportados.
+sec.pt	Instalação
+item.pt	Instale a alpha v0.34 somente pelo download integrado da Wolff's Store, disponibilizado para o PS Vita. O link do arquivo está no catálogo da loja.
+item.pt	CapUnlocker é recomendado, mas não obrigatório. Com ele instalado e ativado no taiHEN, o aplicativo pode utilizar todos os quatro núcleos da CPU. A loja exibe esse aviso antes da instalação.
+item.pt	Reinicie o console após configurar o plugin, se necessário.
+item.pt	Não é necessário um PC ou servidor auxiliar para acessar a interface do app.
+sec.pt	Observações
+para.pt	O login via QR Code, a persistência da sessão e o áudio durante a reprodução já foram validados em testes no Vita real. O projeto permanece em fase alpha e pode apresentar instabilidade.
+sec.pt	Créditos
+item.pt	Port para PS Vita: Wolff's Room
+item.pt	Interface: YouTube on TV / Starboard 15 (Cobalt)
+item.pt	Renderização: VitaGL; backend GXM direto planejado
+info.pt	Version|Alpha v0.34 (experimental)
+info.pt	Platform|Starboard 15 / VitaGL (renderizador GXM direto planejado)
+info.pt	Controls|Botões e gestos na tela sensível ao toque
+info.pt	Video|H.264 até 720p, até 60 fps
+info.pt	Status|Em testes no hardware real
+info.pt	Title ID|YTVCB0001
+info.pt	Plugin recomendado|CapUnlocker (4 núcleos de CPU; opcional)
+link.pt	Wolff's Store (PS Vita)|https://wolffsroom.github.io/WolffsRoomSite/
+title.en	Youtube - Unofficial client for PS Vita (alpha)
+tag.en	Unofficial YouTube client · PS Vita
+status.en	Alpha v0.34 · Real hardware testing
+desc.en	Genuine YouTube on TV interface on PS Vita, with sign-in, touch controls and H.264/AAC playback up to 720p.
+feature_text.en	YouTube on real PS Vita hardware, powered by Starboard 15 with touch input and video up to 720p.
+about.en	An experimental, unofficial YouTube client for the PlayStation Vita, bringing the genuine YouTube on TV interface (Starboard 15) to both real hardware and Vita3K. Alpha v0.34 replaces the earlier v0.22 testing-only status.
+sec.en	What currently works in testing
+item.en	The genuine YouTube on TV interface runs on real PS Vita hardware and in Vita3K.
+item.en	Smooth navigation: the interface renders at up to 60 fps on hardware.
+item.en	D-pad and buttons, plus touchscreen gestures: tap to select, swipe to scroll, two-finger tap to go back.
+item.en	Hardware H.264/AAC playback from 240p to 720p, including 60 fps streams.
+item.en	Sign-in and settings are saved between sessions.
+item.en	Player controls: pause/resume and captions.
+item.en	Uses all four CPU cores when the CapUnlocker plugin is installed.
+sec.en	Alpha status and limitations
+para.en	This is experimental software, not a stable release. Known issues: text shadows over videos and thumbnails show as dark boxes, the lyrics view of music videos does not play, and an occasional crash can still happen (under investigation). 1080p is not available because the Vita's video decoder is limited to 720p for apps. Playback speed controls, VP9/AV1 and protected content are not supported.
+sec.en	Installation
+item.en	Download and install alpha v0.34 through Wolff's Store on PS Vita only. The file link is provided in the Store catalog, not as a separate web download button.
+item.en	CapUnlocker is recommended, not required. When enabled in taiHEN, it allows the app to use all four CPU cores. The Store displays a warning before installation.
+item.en	Restart your Vita after enabling the plugin when necessary.
+item.en	No companion PC or server is required to access the app's interface.
+sec.en	Notes
+para.en	QR sign-in, login persistence and playback audio have been verified in testing on a real PS Vita. This remains an alpha release and occasional crashes are still being investigated.
+sec.en	Credits
+item.en	PS Vita port: Wolff's Room
+item.en	Interface: YouTube on TV / Starboard 15 (Cobalt)
+item.en	Rendering: VitaGL (direct GXM backend planned)
+info.en	Version|Alpha v0.34 (experimental)
+info.en	Platform|Starboard 15 / VitaGL (a direct GXM renderer is planned)
+info.en	Controls|Buttons and touchscreen gestures
+info.en	Video|H.264 up to 720p, up to 60 fps
+info.en	Status|Testing on real hardware
+info.en	Title ID|YTVCB0001
+info.en	Recommended plugin|CapUnlocker (four CPU cores; optional)
+link.en	Wolff's Store (PS Vita)|https://wolffsroom.github.io/WolffsRoomSite/
+cover	1
+shots	7
+end	
 post	pokemon-emerald
 cat	ports
 group	3
 date	2026-11-16
-feat	1
 title.pt	Pokémon Emerald Voxel 3DS - PT-BR v0.5.1
 tag.pt	Port nativo · PS Vita · PT-BR · v0.5.1
 status.pt	Disponível · v0.5.1
@@ -100,16 +178,22 @@ post	pizza
 cat	ports
 group	1
 date	2026-11-14
+updated	2026-11-18
 pixel	1
 video_arquivo	https://wolffsroom.github.io/WolffsRoomSite/posts/pizza/trailer-vita-v2.mp4
 progress	95
 title.pt	Pizza Tower - SAGE 2019 Demo
 tag.pt	Port · GameMaker · PS Vita
-status.pt	v0.55 · Jogável
-desc.pt	Novo lançamento v0.55 do port de Pizza Tower SAGE 2019 Demo (v14) para PS Vita.
+status.pt	v0.62 · Jogável
+desc.pt	Atualização v0.62 do port de Pizza Tower SAGE 2019 Demo (v14), com texturas BC3 residentes e correções de controles.
 feature_text.pt	Pizza Tower SAGE 2019 chegou ao PS Vita! Demo v14 jogável em 60 FPS com Pizzascape, Oregano Desert e Snick Challenge.
-about.pt	Port não oficial da demo gratuita Pizza Tower SAGE 2019 (v14) para PlayStation Vita, lançado na versão v0.55. Utiliza o runner Butterscotch com VitaGL e OpenAL. O projeto relata jogabilidade completa do início ao fim, com 95% de progresso geral.
-sec.pt	Novidades da v0.55
+about.pt	Port não oficial da demo gratuita Pizza Tower SAGE 2019 (v14) para PlayStation Vita, lançado na versão v0.62. Utiliza o runner Butterscotch com VitaGL e OpenAL. O projeto relata jogabilidade completa do início ao fim, com 95% de progresso geral.
+sec.pt	Novidades da v0.62
+item.pt	Texturas BC3 (DXT5) residentes: 35 páginas de texturas (~87 MiB), reduzindo evicções durante a renderização e adicionando uma barreira de sincronização da GPU na troca de salas
+item.pt	Roupa azul SAGE de Peppino renderizada com shader pal_swapper, sem duplicar a VRAM em atlas descompactados
+item.pt	Dash / Super Jump corrigidos: a entrada VK_NOKEY inválida em saveData.ini não aciona mais o pulo automaticamente em Mach 3
+item.pt	Seletores de fases e drift analógico ajustados: Cima utiliza D-pad Up (ou toque configurado), evitando entradas fantasma
+item.pt	Start abre o menu de pausa original SAGE 2019; Select abre os ajustes nativos do port
 item.pt	Três fases jogáveis: Pizzascape, Oregano Desert e The Snick Challenge
 item.pt	Renderização acelerada pelo VitaGL a 60 FPS nos testes em hardware
 item.pt	Super Jump corrigido: acione com X (Pular) ou soltando o direcional
@@ -119,7 +203,7 @@ item.pt	Streaming de áudio OpenAL com menor consumo de memória e menos distorçõe
 item.pt	Fontes do menu de opções e glifos PlayStation revisados
 item.pt	LiveArea e manual próprios, separados do port do jogo completo
 sec.pt	Instalação
-item.pt	Baixe o VPK v0.55 e instale pelo VitaShell
+item.pt	Baixe o VPK v0.62 e instale pelo VitaShell
 item.pt	Obtenha a demo original gratuita na página oficial do Pizza Tower no itch.io
 item.pt	Extraia o arquivo data.win e copie-o para ux0:data/pizzatowersage/data.win
 item.pt	O botão Baixar dados mantém o arquivo externo já disponibilizado; confira se ele corresponde à demo v14
@@ -133,22 +217,27 @@ item.pt	Port de PS Vita: Wolff's Room
 item.pt	Jogo original: Tour de Pizza
 item.pt	Runner: Butterscotch com VitaGL e OpenAL
 info.pt	Status|Lançado · Jogável (95% de progresso)
-info.pt	Versão|v0.55
+info.pt	Versão|v0.62
 info.pt	Demo original|Pizza Tower SAGE 2019 (v14)
 info.pt	Criadores|Tour de Pizza
 info.pt	Engine original|GameMaker
 info.pt	Runtime|Butterscotch + VitaGL + OpenAL
 info.pt	Title ID|PTSAGE001
 info.pt	Dados|ux0:data/pizzatowersage/data.win
-link.pt	Baixar VPK|https://github.com/WolffsRoom/PizzaTowerSage2019Vita/releases/download/v0.55/PizzaTowerSAGE-v0.55.vpk
+link.pt	Baixar VPK|https://github.com/WolffsRoom/PizzaTowerSage2019Vita/releases/download/v0.62/PizzaTowerSAGE-v0.62.vpk
 link.pt	Baixar dados|https://drive.google.com/file/d/1CBof60EExpF4IrZMhyix6CvRicqSONRA/view?usp=sharing
 title.en	Pizza Tower - SAGE 2019 Demo
 tag.en	Port · GameMaker · PS Vita
-status.en	v0.55 · Playable
-desc.en	New v0.55 release of the Pizza Tower SAGE 2019 Demo (v14) PS Vita port.
+status.en	v0.62 · Playable
+desc.en	v0.62 update of the SAGE 2019 Demo (v14) port, improving GPU residency, palette shading, input and pause controls.
 feature_text.en	Pizza Tower SAGE 2019 is now on PS Vita! Three playable v14 demo stages at 60 FPS.
-about.en	Unofficial PlayStation Vita port of the free Pizza Tower SAGE 2019 Demo (v14), newly released as v0.55. Powered by Butterscotch, VitaGL, and OpenAL. The demo is playable from start to finish, with 95% overall project progress.
-sec.en	What's new in v0.55
+about.en	Unofficial PlayStation Vita port of the free Pizza Tower SAGE 2019 Demo (v14), newly released as v0.62. Powered by Butterscotch, VitaGL, and OpenAL. The demo is playable from start to finish, with 95% overall project progress.
+sec.en	What's new in v0.62
+item.en	Permanent BC3 (DXT5) residency for all 35 texture pages (~87 MiB), avoiding mid-frame texture evictions and synchronizing GPU work on room transitions
+item.en	SAGE Blue Peppino costume via the pal_swapper shader without extra uncompressed VRAM texture atlases
+item.en	Dash / Super Jump fix: invalid VK_NOKEY settings can no longer trigger unintended Super Jumps at Mach 3
+item.en	Fixed level selector activation and analog drift: Up now uses D-pad Up (or configured touch Up) to avoid phantom inputs
+item.en	Start opens the original SAGE pause menu; Select opens the port's settings overlay
 item.en	Three playable stages: Pizzascape, Oregano Desert, and The Snick Challenge
 item.en	60 FPS in hardware tests with VitaGL rendering
 item.en	Fixed Super Jump launch on Cross (Jump) or directional release
@@ -157,7 +246,7 @@ item.en	SGX543-compatible palette shader and restored colors
 item.en	Streaming OpenAL audio to reduce memory usage and distortion
 item.en	Cleaner settings fonts, PlayStation glyphs, custom LiveArea and manual
 sec.en	Installation
-item.en	Download the v0.55 VPK and install via VitaShell
+item.en	Download the v0.62 VPK and install via VitaShell
 item.en	Get the original free demo from the official Pizza Tower itch.io page
 item.en	Extract data.win and copy to ux0:data/pizzatowersage/data.win
 item.en	The Download data button preserves the previously shared external archive; verify it contains v14 demo data
@@ -171,14 +260,14 @@ item.en	PS Vita port: Wolff's Room
 item.en	Original game: Tour de Pizza
 item.en	Runner: Butterscotch with VitaGL and OpenAL
 info.en	Status|Released · Playable (95% progress)
-info.en	Version|v0.55
+info.en	Version|v0.62
 info.en	Original demo|Pizza Tower SAGE 2019 (v14)
 info.en	Original game|Tour de Pizza
 info.en	Original engine|GameMaker
 info.en	Runtime|Butterscotch + VitaGL + OpenAL
 info.en	Title ID|PTSAGE001
 info.en	Data|ux0:data/pizzatowersage/data.win
-link.en	Download VPK|https://github.com/WolffsRoom/PizzaTowerSage2019Vita/releases/download/v0.55/PizzaTowerSAGE-v0.55.vpk
+link.en	Download VPK|https://github.com/WolffsRoom/PizzaTowerSage2019Vita/releases/download/v0.62/PizzaTowerSAGE-v0.62.vpk
 link.en	Download data|https://drive.google.com/file/d/1CBof60EExpF4IrZMhyix6CvRicqSONRA/view?usp=sharing
 cover	1
 shots	6
@@ -1048,7 +1137,6 @@ post	wolf
 cat	traducoes
 group	3
 date	2026-02-23
-updated	2026-11-16
 progress	100
 title.pt	The Wolf Among Us
 tag.pt	Tradução PT-BR · GameLab Traduções
@@ -1143,7 +1231,6 @@ post	wipeout
 cat	traducoes
 group	3
 date	2026-02-21
-updated	2026-11-16
 progress	100
 title.pt	WipEout 2048
 tag.pt	Tradução e dublagem PT-BR · Rubinho146
@@ -1223,7 +1310,6 @@ post	twd2
 cat	traducoes
 group	3
 date	2026-02-18
-updated	2026-11-16
 progress	100
 title.pt	The Walking Dead: Temporada 2
 tag.pt	Tradução PT-BR · GameLab Traduções
@@ -1314,7 +1400,6 @@ post	twd1
 cat	traducoes
 group	3
 date	2026-02-17
-updated	2026-11-16
 progress	100
 title.pt	The Walking Dead: Temporada 1
 tag.pt	Tradução PT-BR · GameLab Traduções
@@ -1448,7 +1533,6 @@ post	p4g
 cat	reviews
 group	1
 date	2025-04-26
-updated	2026-11-16
 title.pt	Persona 4 Golden - Análise PS Vita
 tag.pt	Review · PS Vita · JRPG
 status.pt	Nota 8.9/10
@@ -1477,6 +1561,7 @@ item.pt	Masmorras procedurais oferecem desafios, embora a exploração possa se to
 sec.pt	Duração - Ótimo (30/36)
 item.pt	A campanha combina dezenas de horas de história, vínculos sociais e conteúdo opcional.
 item.pt	Minha conclusão levou 86 horas, sem esgotar todas as possibilidades da aventura.
+sec.pt	Recomendo?
 sec.pt	Veredito - 8.9/10
 para.pt	*Esta é uma adaptação da análise publicada no WordPress. Para ler os comentários e argumentos completos, use o link «Ler análise original completa».*
 item.pt	Recomendo! Persona 4 Golden é uma ótima porta de entrada para a série e uma jornada memorável sobre amizade, superação e mistério.
@@ -1523,6 +1608,7 @@ item.en	Procedural dungeons are challenging but can feel repetitive.
 sec.en	Length - Great (30/36)
 item.en	Plenty of story, relationship building and optional content.
 item.en	My playthrough lasted 86 hours.
+sec.en	Recommendation
 sec.en	Verdict - 8.9/10
 para.en	*This page summarizes the author's original Portuguese review; see the linked WordPress article for the full analysis.*
 item.en	Recommended! An excellent introduction to Persona and a memorable journey through friendship, personal growth and mystery.
@@ -1694,7 +1780,6 @@ post	delta1
 cat	traducoes
 group	1
 date	2025-02-06
-updated	2026-11-16
 progress	100
 title.pt	Deltarune: Capítulo 1
 tag.pt	Port + Tradução PT-BR
@@ -1795,7 +1880,6 @@ post	cave
 cat	traducoes
 group	1
 date	2025-02-06
-updated	2026-11-16
 progress	84
 title.pt	Cave Story
 tag.pt	Port + Tradução PT-BR
@@ -2060,7 +2144,6 @@ post	icono
 cat	traducoes
 group	1
 date	2025-01-25
-updated	2026-11-16
 progress	70
 title.pt	Iconoclasts
 tag.pt	Tradução PT-BR · PS Vita
@@ -2143,7 +2226,6 @@ post	va-11-hall-a-ptbr
 cat	traducoes
 group	1
 date	2025-01-12
-updated	2026-11-16
 progress	69
 title.pt	VA-11 HALL-A [Tradução PT-BR]
 tag.pt	Tradução · PS Vita · PT-BR

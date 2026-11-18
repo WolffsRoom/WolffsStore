@@ -120,6 +120,7 @@ int store_parse(const char *text, Post *out, int max, AppRelease *app) {
             x->file = S(d, "arquivo");
             x->instr = S(d, "instrucoes");
             x->plugin = S(d, "plugin");
+            x->advisory_plugin = S(d, "aviso_plugin");
             x->password = S(d, "senha");
             const JsonValue *mirrors = json_object_get(d, "alternativas");
             for (int z = 0; z < json_array_count(mirrors) && x->nmirrors < MAX_MIRRORS; z++) {
