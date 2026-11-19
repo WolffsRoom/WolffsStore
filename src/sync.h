@@ -4,8 +4,8 @@
 #include "catalog.h"
 
 #define STORE_BASE "https://wolffsroom.github.io/WolffsRoomSite/"
-#define STORE_JSON STORE_BASE "store-v103.json"
-#define STORE_CACHE_JSON WS_CACHE "/store-v103.json"
+#define STORE_JSON STORE_BASE "store-v105.json"
+#define STORE_CACHE_JSON WS_CACHE "/store-v105.json"
 #define RELEASE_API "https://api.github.com/repos/WolffsRoom/WolffsStore/releases/latest"
 #define RELEASE_ASSET "WolffsStore.vpk"
 
