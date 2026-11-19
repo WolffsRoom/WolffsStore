@@ -3722,15 +3722,27 @@ static void draw_plugin_advice(void) {
     halo_draw(x - 16, y - 16, w + 32, h + 32, 0, 1);
     vita2d_draw_rectangle(x, y, w, h, C_PANEL);
     frame_rect(x, y, w, h, 4, C_WHITE);
-    const char *heading = TXT(S_CAP_TITLE);
-    title_draw(heading, x + (w - title_width(heading, 2)) / 2, y + 26, 2, C_WHITE);
-    vita2d_draw_rectangle(x + 28, y + 76, w - 56, 4, C_LINE);
-    const Download *d = &g_posts[plugin_advice_post].dls[plugin_advice_dl];
-    char line[160];
-    snprintf(line, sizeof(line), "%s%s", TXT(S_CAP_RECOMMEND), d->advisory_plugin);
-    body_draw(line, x + 28, y + 115, C_GOLD);
-    body_draw(TXT(S_CAP_CPU), x + 28, y + 164, C_WHITE);
-    body_draw(TXT(S_CAP_OPTIONAL), x + 28, y + 217, C_MUTED);
+    const Download *d=&g_posts[plugin_advice_post].dls[plugin_advice_dl];
+    const int tai=d->type==DL_TAI_PLUGIN;
+    const char *heading=tai
+        ? (lang==LANG_PT ? "INSTALAR TOUCHONVITA?" : "INSTALL TOUCHONVITA?")
+        : TXT(S_CAP_TITLE);
+    title_draw(heading,x+(w-title_width(heading,2))/2,y+26,2,C_WHITE);
+    vita2d_draw_rectangle(x+28,y+76,w-56,4,C_LINE);
+    if(tai){
+        body_draw(lang==LANG_PT ? "O jogo Darkest Dungeon deve estar instalado."
+                                : "Darkest Dungeon must be installed.",x+28,y+115,C_GOLD);
+        body_draw(lang==LANG_PT ? "Backup de config.txt e plugin anterior."
+                                : "Backup of config.txt and previous plugin.",x+28,y+164,C_WHITE);
+        body_draw(lang==LANG_PT ? "Instala ur0:tai e ux0:data. Reinicie o jogo."
+                                : "Installs to ur0:tai and ux0:data. Restart game.",x+28,y+217,C_MUTED);
+    }else{
+        char line[160];
+        snprintf(line,sizeof(line),"%s%s",TXT(S_CAP_RECOMMEND),d->advisory_plugin);
+        body_draw(line,x+28,y+115,C_GOLD);
+        body_draw(TXT(S_CAP_CPU),x+28,y+164,C_WHITE);
+        body_draw(TXT(S_CAP_OPTIONAL),x+28,y+217,C_MUTED);
+    }
     draw_translation_action(x + 32, y + 316, 328, TXT(S_TRANS_CONFIRM), 1, 0);
     draw_translation_action(x + 400, y + 316, 328, TXT(S_TRANS_CANCEL), 0, 0);
 }
