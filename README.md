@@ -298,3 +298,10 @@ samples now_s = clock_s() - app_clock_t0 AFTER apply_sync() finishes,
 before resetting title_t0 and scheduling the original letter sound cues.
 The same timestamp reset is used offline. All original 45-ms character
 reveal, cursor, typing SFX and the introductory TV transition remain.
+
+### v1.0.6 - Installed version recognition
+
+- Fixed a persistent Update label after successful VPK installation when the publisher did not bump the internal APP_VER (DeltaruneVita v0.81 contains SFO version 00.80).
+- Only prefer the successful Store installation version when installed.txt matches the actual app Title ID and stored path. External VPK installations and newer internal SFO versions continue to be detected.
+- Existing successful installs already recorded under ux0:data/WolffsStore/installed.txt are recognized immediately; game reinstall is not required.
+- The game VPK and SFO remain untouched.

@@ -27,10 +27,11 @@
 #include "video.h"
 #include "net.h"
 #include "registry.h"
+#include "vpk_version.h"
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "1.0.5"
+#define WS_VERSION "1.0.6"
 #endif
 
 /* ================================================================ textos */
@@ -422,9 +423,15 @@ static void dl_status(const Post *p, int idx, DlStatus *s) {
             if (sfo_get(sfo, "APP_VER", av, sizeof(av)) == 0) {
                 s->installed = 1;
                 snprintf(s->tid, sizeof(s->tid), "%s", t);
-                /* O SFO é a fonte real, inclusive numa instalação limpa ou
-                 * quando o VPK foi atualizado fora da Wolff's Store. */
-                snprintf(s->inst_ver, sizeof(s->inst_ver), "%s", av);
+                /* Prefer the version registered by a successful Store VPK
+                 * install when the package's APP_VER was not bumped. Verify
+                 * matching TitleID/path first; otherwise keep real SFO. */
+                const char *installed_version = ws_vpk_installed_version(
+                    av,
+                    r && r->kind == DL_VPK ? r->version : NULL,
+                    r && r->kind == DL_VPK ? r->path : NULL,
+                    t);
+                snprintf(s->inst_ver, sizeof(s->inst_ver), "%s", installed_version);
             }
         }
     } else if (d->type == DL_TRANS) {

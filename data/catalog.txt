@@ -1,9 +1,164 @@
-post	youtube-on-vita
+post	pizza
 cat	ports
+group	1
+date	2026-11-14
+updated	2026-11-18
+feat	1
+pixel	1
+video_arquivo	https://wolffsroom.github.io/WolffsRoomSite/posts/pizza/trailer-vita-v2.mp4
+progress	95
+title.pt	Pizza Tower - SAGE 2019 Demo
+tag.pt	Port · GameMaker · PS Vita
+status.pt	v0.64 · Jogável
+desc.pt	Atualização v0.64 do Pizza Tower SAGE 2019 no PS Vita, com correção da ordem de camadas e retorno do analógico esquerdo para ações para cima.
+feature_text.pt	Pizza Tower SAGE 2019 chegou ao PS Vita! Demo v14 jogável em 60 FPS com Pizzascape, Oregano Desert e Snick Challenge.
+about.pt	Port não oficial da demo gratuita Pizza Tower SAGE 2019 (v14) para PlayStation Vita, lançado na versão v0.64. Utiliza o runner Butterscotch com VitaGL e OpenAL. O projeto relata jogabilidade completa do início ao fim, com 95% de progresso geral.
+sec.pt	Novidades da v0.64
+item.pt	Ordem de camadas corrigida: Peppino não aparece mais atrás de portas, escadas ou do efeito de provocação (`obj_taunteffect`). A atualização preserva a profundidade (`depth`) das instâncias entre salas e desativa os testes e gravações de profundidade na `application_surface` do VitaGL.
+item.pt	Analógico esquerdo para cima restaurado: o comando vertical volta a funcionar em escadas, portas/portões e ao carregar o Super Jump. O controle possui zona morta (*deadzone*) e verificação do eixo vertical para impedir ativações acidentais durante corridas Mach horizontais.
+sec.pt	Melhorias anteriores (v0.62)
+item.pt	Texturas BC3 (DXT5) residentes: 35 páginas de texturas (~87 MiB), reduzindo evicções durante a renderização e adicionando uma barreira de sincronização da GPU na troca de salas
+item.pt	Roupa azul SAGE de Peppino renderizada com shader pal_swapper, sem duplicar a VRAM em atlas descompactados
+item.pt	Dash / Super Jump corrigidos: a entrada VK_NOKEY inválida em saveData.ini não aciona mais o pulo automaticamente em Mach 3
+item.pt	Ajustes anteriores nos seletores de fases e na zona morta do analógico, complementados na v0.64 pelo retorno do comando para cima no analógico esquerdo
+item.pt	Start abre o menu de pausa original SAGE 2019; Select abre os ajustes nativos do port
+item.pt	Três fases jogáveis: Pizzascape, Oregano Desert e The Snick Challenge
+item.pt	Renderização acelerada pelo VitaGL a 60 FPS nos testes em hardware
+item.pt	Super Jump corrigido: acione com X (Pular) ou soltando o direcional
+item.pt	Deadzone do analógico corrigida para evitar movimentos involuntários
+item.pt	Shader de troca de cores adaptado à GPU SGX543
+item.pt	Streaming de áudio OpenAL com menor consumo de memória e menos distorções
+item.pt	Fontes do menu de opções e glifos PlayStation revisados
+item.pt	LiveArea e manual próprios, separados do port do jogo completo
+sec.pt	Instalação
+item.pt	Baixe o VPK v0.64 e instale pelo VitaShell
+item.pt	Obtenha a demo original gratuita na página oficial do Pizza Tower no itch.io
+item.pt	Extraia o arquivo data.win e copie-o para ux0:data/pizzatowersage/data.win
+item.pt	O botão Baixar dados mantém o arquivo externo já disponibilizado; confira se ele corresponde à demo v14
+item.pt	Abra o jogo pela LiveArea
+sec.pt	Requisitos
+item.pt	PS Vita desbloqueado (HENkaku ou Ens?)
+item.pt	Plugins kubridge.suprx, FdFix e libshacccg.suprx
+item.pt	Arquivo original data.win da demo SAGE 2019 (v14), não incluído no VPK
+sec.pt	Créditos
+item.pt	Port de PS Vita: Wolff's Room
+item.pt	Jogo original: Tour de Pizza
+item.pt	Runner: Butterscotch com VitaGL e OpenAL
+info.pt	Status|Lançado · Jogável (95% de progresso)
+info.pt	Versão|v0.64
+info.pt	Demo original|Pizza Tower SAGE 2019 (v14)
+info.pt	Criadores|Tour de Pizza
+info.pt	Engine original|GameMaker
+info.pt	Runtime|Butterscotch + VitaGL + OpenAL
+info.pt	Title ID|PTSAGE001
+info.pt	Dados|ux0:data/pizzatowersage/data.win
+link.pt	Baixar VPK|https://github.com/WolffsRoom/PizzaTowerSage2019Vita/releases/download/v0.64/PizzaTowerSAGE-v0.64.vpk
+link.pt	Baixar dados|https://drive.google.com/file/d/1CBof60EExpF4IrZMhyix6CvRicqSONRA/view?usp=sharing
+title.en	Pizza Tower - SAGE 2019 Demo
+tag.en	Port · GameMaker · PS Vita
+status.en	v0.64 · Playable
+desc.en	v0.64 update of the SAGE 2019 Demo (v14) port, fixing layer ordering and restoring intentional left analog stick Up input.
+feature_text.en	Pizza Tower SAGE 2019 is now on PS Vita! Three playable v14 demo stages at 60 FPS.
+about.en	Unofficial PlayStation Vita port of the free Pizza Tower SAGE 2019 Demo (v14), newly released as v0.64. Powered by Butterscotch, VitaGL, and OpenAL. The demo is playable from start to finish, with 95% overall project progress.
+sec.en	What's new in v0.64
+item.en	Fixed layer ordering: Peppino no longer renders behind doors, ladders or his own taunt flash (`obj_taunteffect`). Explicit instance `depth` is preserved between room transitions, while depth tests and writes are disabled on VitaGL's `application_surface`.
+item.en	Restored left analog stick Up: upward input now works for ladders, doors/gates and charging the Super Jump. Vertical-axis gating and a deadzone prevent unintended Up actions during horizontal Mach runs.
+sec.en	Previous improvements (v0.62)
+item.en	Permanent BC3 (DXT5) residency for all 35 texture pages (~87 MiB), avoiding mid-frame texture evictions and synchronizing GPU work on room transitions
+item.en	SAGE Blue Peppino costume via the pal_swapper shader without extra uncompressed VRAM texture atlases
+item.en	Dash / Super Jump fix: invalid VK_NOKEY settings can no longer trigger unintended Super Jumps at Mach 3
+item.en	Previous fixes to level selector activation and analog deadzone, extended by v0.64's restored left-stick Up functionality
+item.en	Start opens the original SAGE pause menu; Select opens the port's settings overlay
+item.en	Three playable stages: Pizzascape, Oregano Desert, and The Snick Challenge
+item.en	60 FPS in hardware tests with VitaGL rendering
+item.en	Fixed Super Jump launch on Cross (Jump) or directional release
+item.en	Analog stick deadzone calibration fixes accidental ducking
+item.en	SGX543-compatible palette shader and restored colors
+item.en	Streaming OpenAL audio to reduce memory usage and distortion
+item.en	Cleaner settings fonts, PlayStation glyphs, custom LiveArea and manual
+sec.en	Installation
+item.en	Download the v0.64 VPK and install via VitaShell
+item.en	Get the original free demo from the official Pizza Tower itch.io page
+item.en	Extract data.win and copy to ux0:data/pizzatowersage/data.win
+item.en	The Download data button preserves the previously shared external archive; verify it contains v14 demo data
+item.en	Launch the game from LiveArea
+sec.en	Requirements
+item.en	Homebrew-enabled PS Vita with HENkaku/Ens?
+item.en	kubridge.suprx, FdFix and libshacccg.suprx
+item.en	Original SAGE 2019 Demo (v14) data.win, not included with the VPK
+sec.en	Credits
+item.en	PS Vita port: Wolff's Room
+item.en	Original game: Tour de Pizza
+item.en	Runner: Butterscotch with VitaGL and OpenAL
+info.en	Status|Released · Playable (95% progress)
+info.en	Version|v0.64
+info.en	Original demo|Pizza Tower SAGE 2019 (v14)
+info.en	Original game|Tour de Pizza
+info.en	Original engine|GameMaker
+info.en	Runtime|Butterscotch + VitaGL + OpenAL
+info.en	Title ID|PTSAGE001
+info.en	Data|ux0:data/pizzatowersage/data.win
+link.en	Download VPK|https://github.com/WolffsRoom/PizzaTowerSage2019Vita/releases/download/v0.64/PizzaTowerSAGE-v0.64.vpk
+link.en	Download data|https://drive.google.com/file/d/1CBof60EExpF4IrZMhyix6CvRicqSONRA/view?usp=sharing
+cover	1
+shots	6
+end	
+post	dd-touchonvita
+cat	ferramentas
+group	0
+date	2026-11-18
+updated	2026-11-18
+title.pt	Darkest Dungeon - TouchOnVita
+tag.pt	Plugin taiHEN · Touch · PS Vita
+status.pt	v0.59 Experimental · Testado no Vita real
+desc.pt	Toque real na interface de Darkest Dungeon no PS Vita, sem substituir os controles físicos.
+feature_text.pt	Um toque para selecionar e ativar elementos da interface, com painel próprio e controles preservados.
+about.pt	TouchOnVita é um plugin não oficial para Darkest Dungeon no PS Vita, com interação por toque frontal e painel de configurações personalizado.
+sec.pt	O que funciona
+item.pt	Tocar para selecionar e ativar elementos reconhecidos da interface.
+item.pt	Foco persistente após soltar o dedo, com retorno ao controle físico.
+item.pt	Painel TouchOnVita com indicador ON/OFF, abertura pelo Start + L e animações.
+sec.pt	Versão e limitações
+para.pt	A v0.59 está instalada e foi testada no Vita real com Darkest Dungeon PCSE00919, atualização 1.17. A ativação por toque recebeu retorno positivo na v0.58; as otimizações de FPS e áudio da v0.59 ainda precisam de validação completa.
+para.pt	Arrastar o mapa, drag-and-drop e alguns fluxos avançados ainda não possuem suporte completo. O plugin não altera os arquivos do jogo nem os saves.
+sec.pt	Instalação
+para.pt	Na Wolff's Store v1.0.4 ou superior, escolha entre Apenas baixar (salva em ux0:Downloads/Plugins/) e Baixar e instalar (instala em ur0:tai e ux0:data, com backup automático e confirmação). Reinicie o PS Vita após a primeira instalação. Em versões anteriores da loja, use apenas o download e instale manualmente seguindo o GitHub.
+para.pt	O download não contém dados comerciais ou áudio protegido do jogo.
+info.pt	Versão|v0.59 (experimental)
+info.pt	Jogo|Darkest Dungeon PS Vita
+info.pt	Game ID|PCSE00919
+info.pt	Testado em|Update 1.17 no Vita real
+info.pt	Tipo|Plugin taiHEN (.suprx)
+info.pt	Instalação|Manual com backup da configuração taiHEN
+title.en	Darkest Dungeon - TouchOnVita
+tag.en	PS Vita · Touchscreen · taiHEN plugin
+status.en	v0.59 Experimental · Tested on real hardware
+desc.en	Native touch interactions for Darkest Dungeon on PS Vita, while preserving physical controls.
+feature_text.en	Tap a recognized UI element to select and activate it, with a themed in-game panel.
+about.en	TouchOnVita is an unofficial touchscreen plugin for Darkest Dungeon on PS Vita, adding direct front-touch interaction and a themed settings panel.
+sec.en	Working features
+item.en	Single-tap selection and activation of recognized interface widgets.
+item.en	Persistent touch focus, with handoff back to the physical controller.
+item.en	TouchOnVita panel with ON/OFF indicator, Start + L shortcut and transitions.
+sec.en	Version and limitations
+para.en	v0.59 is installed and has been smoke-tested on real hardware with PCSE00919 update 1.17. Single-tap interaction received positive feedback in v0.58; v0.59 audio and FPS optimizations still require full on-device verification.
+para.en	Map dragging, drag-and-drop and some advanced flows are not yet fully supported. Game archives and saves are not modified.
+sec.en	Installation
+para.en	In Wolff's Store v1.0.4 or newer, choose Download only (saves the ZIP under ux0:Downloads/Plugins/) or Download and install (backs up taiHEN and installs the plugin and assets). Reboot the PS Vita after first-time installation. Older Store versions support download only; follow the GitHub manual instructions.
+para.en	No commercial game data or copyrighted audio is included.
+info.en	Version|v0.59 (experimental)
+info.en	Game|Darkest Dungeon PS Vita
+info.en	Game ID|PCSE00919
+info.en	Tested|Update 1.17 on real PS Vita
+info.en	Format|taiHEN plugin (.suprx)
+cover	1
+shots	4
+end	
+post	youtube-on-vita
+cat	ferramentas
 group	0
 date	2026-11-17
 updated	2026-11-18
-feat	1
 title.pt	Youtube - Unofficial client for PS Vita (alpha)
 tag.pt	Client não oficial · YouTube · PS Vita
 status.pt	Alpha v0.34 · Testes no Vita real
@@ -38,7 +193,7 @@ info.pt	Video|H.264 até 720p, até 60 fps
 info.pt	Status|Em testes no hardware real
 info.pt	Title ID|YTVCB0001
 info.pt	Plugin recomendado|CapUnlocker (4 núcleos de CPU; opcional)
-link.pt	Wolff's Store (PS Vita)|https://wolffsroom.github.io/WolffsRoomSite/
+link.pt	Somente na Wolff's Store|https://wolffsroom.github.io/WolffsRoomSite/
 title.en	Youtube - Unofficial client for PS Vita (alpha)
 tag.en	Unofficial YouTube client · PS Vita
 status.en	Alpha v0.34 · Real hardware testing
@@ -174,104 +329,6 @@ link.en	Download VPK (Google Drive)|https://drive.google.com/file/d/1ZNVd7j6EZyG
 cover	1
 shots	10
 end	
-post	pizza
-cat	ports
-group	1
-date	2026-11-14
-updated	2026-11-18
-pixel	1
-video_arquivo	https://wolffsroom.github.io/WolffsRoomSite/posts/pizza/trailer-vita-v2.mp4
-progress	95
-title.pt	Pizza Tower - SAGE 2019 Demo
-tag.pt	Port · GameMaker · PS Vita
-status.pt	v0.62 · Jogável
-desc.pt	Atualização v0.62 do port de Pizza Tower SAGE 2019 Demo (v14), com texturas BC3 residentes e correções de controles.
-feature_text.pt	Pizza Tower SAGE 2019 chegou ao PS Vita! Demo v14 jogável em 60 FPS com Pizzascape, Oregano Desert e Snick Challenge.
-about.pt	Port não oficial da demo gratuita Pizza Tower SAGE 2019 (v14) para PlayStation Vita, lançado na versão v0.62. Utiliza o runner Butterscotch com VitaGL e OpenAL. O projeto relata jogabilidade completa do início ao fim, com 95% de progresso geral.
-sec.pt	Novidades da v0.62
-item.pt	Texturas BC3 (DXT5) residentes: 35 páginas de texturas (~87 MiB), reduzindo evicções durante a renderização e adicionando uma barreira de sincronização da GPU na troca de salas
-item.pt	Roupa azul SAGE de Peppino renderizada com shader pal_swapper, sem duplicar a VRAM em atlas descompactados
-item.pt	Dash / Super Jump corrigidos: a entrada VK_NOKEY inválida em saveData.ini não aciona mais o pulo automaticamente em Mach 3
-item.pt	Seletores de fases e drift analógico ajustados: Cima utiliza D-pad Up (ou toque configurado), evitando entradas fantasma
-item.pt	Start abre o menu de pausa original SAGE 2019; Select abre os ajustes nativos do port
-item.pt	Três fases jogáveis: Pizzascape, Oregano Desert e The Snick Challenge
-item.pt	Renderização acelerada pelo VitaGL a 60 FPS nos testes em hardware
-item.pt	Super Jump corrigido: acione com X (Pular) ou soltando o direcional
-item.pt	Deadzone do analógico corrigida para evitar movimentos involuntários
-item.pt	Shader de troca de cores adaptado à GPU SGX543
-item.pt	Streaming de áudio OpenAL com menor consumo de memória e menos distorções
-item.pt	Fontes do menu de opções e glifos PlayStation revisados
-item.pt	LiveArea e manual próprios, separados do port do jogo completo
-sec.pt	Instalação
-item.pt	Baixe o VPK v0.62 e instale pelo VitaShell
-item.pt	Obtenha a demo original gratuita na página oficial do Pizza Tower no itch.io
-item.pt	Extraia o arquivo data.win e copie-o para ux0:data/pizzatowersage/data.win
-item.pt	O botão Baixar dados mantém o arquivo externo já disponibilizado; confira se ele corresponde à demo v14
-item.pt	Abra o jogo pela LiveArea
-sec.pt	Requisitos
-item.pt	PS Vita desbloqueado (HENkaku ou Ens?)
-item.pt	Plugins kubridge.suprx, FdFix e libshacccg.suprx
-item.pt	Arquivo original data.win da demo SAGE 2019 (v14), não incluído no VPK
-sec.pt	Créditos
-item.pt	Port de PS Vita: Wolff's Room
-item.pt	Jogo original: Tour de Pizza
-item.pt	Runner: Butterscotch com VitaGL e OpenAL
-info.pt	Status|Lançado · Jogável (95% de progresso)
-info.pt	Versão|v0.62
-info.pt	Demo original|Pizza Tower SAGE 2019 (v14)
-info.pt	Criadores|Tour de Pizza
-info.pt	Engine original|GameMaker
-info.pt	Runtime|Butterscotch + VitaGL + OpenAL
-info.pt	Title ID|PTSAGE001
-info.pt	Dados|ux0:data/pizzatowersage/data.win
-link.pt	Baixar VPK|https://github.com/WolffsRoom/PizzaTowerSage2019Vita/releases/download/v0.62/PizzaTowerSAGE-v0.62.vpk
-link.pt	Baixar dados|https://drive.google.com/file/d/1CBof60EExpF4IrZMhyix6CvRicqSONRA/view?usp=sharing
-title.en	Pizza Tower - SAGE 2019 Demo
-tag.en	Port · GameMaker · PS Vita
-status.en	v0.62 · Playable
-desc.en	v0.62 update of the SAGE 2019 Demo (v14) port, improving GPU residency, palette shading, input and pause controls.
-feature_text.en	Pizza Tower SAGE 2019 is now on PS Vita! Three playable v14 demo stages at 60 FPS.
-about.en	Unofficial PlayStation Vita port of the free Pizza Tower SAGE 2019 Demo (v14), newly released as v0.62. Powered by Butterscotch, VitaGL, and OpenAL. The demo is playable from start to finish, with 95% overall project progress.
-sec.en	What's new in v0.62
-item.en	Permanent BC3 (DXT5) residency for all 35 texture pages (~87 MiB), avoiding mid-frame texture evictions and synchronizing GPU work on room transitions
-item.en	SAGE Blue Peppino costume via the pal_swapper shader without extra uncompressed VRAM texture atlases
-item.en	Dash / Super Jump fix: invalid VK_NOKEY settings can no longer trigger unintended Super Jumps at Mach 3
-item.en	Fixed level selector activation and analog drift: Up now uses D-pad Up (or configured touch Up) to avoid phantom inputs
-item.en	Start opens the original SAGE pause menu; Select opens the port's settings overlay
-item.en	Three playable stages: Pizzascape, Oregano Desert, and The Snick Challenge
-item.en	60 FPS in hardware tests with VitaGL rendering
-item.en	Fixed Super Jump launch on Cross (Jump) or directional release
-item.en	Analog stick deadzone calibration fixes accidental ducking
-item.en	SGX543-compatible palette shader and restored colors
-item.en	Streaming OpenAL audio to reduce memory usage and distortion
-item.en	Cleaner settings fonts, PlayStation glyphs, custom LiveArea and manual
-sec.en	Installation
-item.en	Download the v0.62 VPK and install via VitaShell
-item.en	Get the original free demo from the official Pizza Tower itch.io page
-item.en	Extract data.win and copy to ux0:data/pizzatowersage/data.win
-item.en	The Download data button preserves the previously shared external archive; verify it contains v14 demo data
-item.en	Launch the game from LiveArea
-sec.en	Requirements
-item.en	Homebrew-enabled PS Vita with HENkaku/Ens?
-item.en	kubridge.suprx, FdFix and libshacccg.suprx
-item.en	Original SAGE 2019 Demo (v14) data.win, not included with the VPK
-sec.en	Credits
-item.en	PS Vita port: Wolff's Room
-item.en	Original game: Tour de Pizza
-item.en	Runner: Butterscotch with VitaGL and OpenAL
-info.en	Status|Released · Playable (95% progress)
-info.en	Version|v0.62
-info.en	Original demo|Pizza Tower SAGE 2019 (v14)
-info.en	Original game|Tour de Pizza
-info.en	Original engine|GameMaker
-info.en	Runtime|Butterscotch + VitaGL + OpenAL
-info.en	Title ID|PTSAGE001
-info.en	Data|ux0:data/pizzatowersage/data.win
-link.en	Download VPK|https://github.com/WolffsRoom/PizzaTowerSage2019Vita/releases/download/v0.62/PizzaTowerSAGE-v0.62.vpk
-link.en	Download data|https://drive.google.com/file/d/1CBof60EExpF4IrZMhyix6CvRicqSONRA/view?usp=sharing
-cover	1
-shots	6
-end	
 post	vampire-survivors-vita
 cat	ports
 group	3
@@ -346,6 +403,7 @@ post	shinokai
 cat	ferramentas
 group	3
 date	2026-11-14
+updated	2026-11-15
 title.pt	ShinoKaiVita
 tag.pt	Entretenimento · Anime
 status.pt	Disponível · Brasil
@@ -497,6 +555,7 @@ post	godot-v03
 cat	ferramentas
 group	0
 date	2026-11-13
+updated	2026-11-14
 title.pt	Godot 4 Vita - Release v0.3
 tag.pt	Engine · C++
 status.pt	v0.3 lançada
@@ -570,6 +629,7 @@ post	void
 cat	ports
 group	0
 date	2026-11-11
+updated	2026-11-14
 pixel	1
 progress	95
 title.pt	Void Stranger - PS Vita Edition
@@ -643,6 +703,7 @@ post	delta
 cat	ports
 group	0
 date	2026-11-10
+updated	2026-11-14
 pixel	1
 trofeus	1
 video_arquivo	https://wolffsroom.github.io/WolffsRoomSite/posts/delta/trailer-vita-v2.mp4
@@ -742,6 +803,7 @@ post	ystool
 cat	ferramentas
 group	0
 date	2026-06-10
+updated	2026-11-13
 title.pt	Ys Origins Translation Tool
 tag.pt	Ferramenta · Python
 status.pt	Beta
@@ -777,6 +839,7 @@ post	godot
 cat	ferramentas
 group	0
 date	2026-06-05
+updated	2026-11-13
 title.pt	Godot 4 PSVita
 tag.pt	Engine · C++
 status.pt	2D em GXM nativo · 3D experimental
@@ -824,6 +887,7 @@ post	idol
 cat	ports
 group	0
 date	2026-06-01
+updated	2026-11-14
 title.pt	The Case of the Golden Idol
 tag.pt	Port · Godot · PS Vita
 status.pt	Em andamento
@@ -883,6 +947,7 @@ post	uty
 cat	ports
 group	1
 date	2026-05-20
+updated	2026-11-14
 pixel	1
 title.pt	Undertale Yellow
 tag.pt	Port · GameMaker · PS Vita
@@ -945,6 +1010,7 @@ post	horizon
 cat	ferramentas
 group	1
 date	2026-05-15
+updated	2026-11-13
 title.pt	Horizon Chase Turbo: Patch de Otimização
 tag.pt	Mod · PS Vita
 status.pt	Publicado · 05/2026
@@ -1023,6 +1089,7 @@ post	sonic
 cat	traducoes
 group	0
 date	2026-02-25
+updated	2026-11-13
 progress	58
 title.pt	Sonic Mania Plus
 tag.pt	Tradução PT-BR · PS Vita
@@ -1085,6 +1152,7 @@ post	dontstarve
 cat	traducoes
 group	2
 date	2026-02-25
+updated	2026-11-13
 progress	58
 title.pt	Don't Starve: Reign of Giants
 tag.pt	Tradução PT-BR · PS Vita
@@ -1137,6 +1205,7 @@ post	wolf
 cat	traducoes
 group	3
 date	2026-02-23
+updated	2026-11-16
 progress	100
 title.pt	The Wolf Among Us
 tag.pt	Tradução PT-BR · GameLab Traduções
@@ -1231,6 +1300,7 @@ post	wipeout
 cat	traducoes
 group	3
 date	2026-02-21
+updated	2026-11-16
 progress	100
 title.pt	WipEout 2048
 tag.pt	Tradução e dublagem PT-BR · Rubinho146
@@ -1310,6 +1380,7 @@ post	twd2
 cat	traducoes
 group	3
 date	2026-02-18
+updated	2026-11-16
 progress	100
 title.pt	The Walking Dead: Temporada 2
 tag.pt	Tradução PT-BR · GameLab Traduções
@@ -1400,6 +1471,7 @@ post	twd1
 cat	traducoes
 group	3
 date	2026-02-17
+updated	2026-11-16
 progress	100
 title.pt	The Walking Dead: Temporada 1
 tag.pt	Tradução PT-BR · GameLab Traduções
@@ -1477,6 +1549,7 @@ post	alone
 cat	traducoes
 group	0
 date	2025-06-10
+updated	2026-11-13
 progress	58
 title.pt	Alone With You
 tag.pt	Tradução PT-BR · PS Vita
@@ -1533,6 +1606,7 @@ post	p4g
 cat	reviews
 group	1
 date	2025-04-26
+updated	2026-11-16
 title.pt	Persona 4 Golden - Análise PS Vita
 tag.pt	Review · PS Vita · JRPG
 status.pt	Nota 8.9/10
@@ -1634,6 +1708,7 @@ post	ayesha
 cat	traducoes
 group	2
 date	2025-03-31
+updated	2026-11-13
 progress	1
 title.pt	Atelier Ayesha: The Alchemist of Dusk
 tag.pt	Tradução PT-BR · PS Vita
@@ -1686,6 +1761,7 @@ post	bastion
 cat	traducoes
 group	2
 date	2025-02-20
+updated	2026-11-13
 progress	60
 title.pt	Bastion
 tag.pt	Tradução PT-BR · PS Vita
@@ -1736,6 +1812,7 @@ post	undertale
 cat	traducoes
 group	2
 date	2025-02-12
+updated	2026-11-13
 progress	70
 title.pt	Undertale: Melhorias na Tradução
 tag.pt	Tradução PT-BR · PS Vita
@@ -1780,6 +1857,7 @@ post	delta1
 cat	traducoes
 group	1
 date	2025-02-06
+updated	2026-11-16
 progress	100
 title.pt	Deltarune: Capítulo 1
 tag.pt	Port + Tradução PT-BR
@@ -1880,6 +1958,7 @@ post	cave
 cat	traducoes
 group	1
 date	2025-02-06
+updated	2026-11-16
 progress	84
 title.pt	Cave Story
 tag.pt	Port + Tradução PT-BR
@@ -1964,6 +2043,7 @@ post	ys
 cat	traducoes
 group	2
 date	2025-01-29
+updated	2026-11-13
 progress	38
 title.pt	Ys Origin
 tag.pt	Tradução PT-BR · PS Vita
@@ -2018,6 +2098,7 @@ post	darkest
 cat	ferramentas
 group	0
 date	2025-01-27
+updated	2026-11-13
 title.pt	Darkest Dungeon: Pilha Reforçada
 tag.pt	Mod · PS Vita
 status.pt	Ainda não disponível
@@ -2049,6 +2130,7 @@ post	god-of-war-ragnarok
 cat	reviews
 group	1
 date	2025-01-26
+updated	2026-11-16
 title.pt	God of War Ragnarök - Análise PS4
 tag.pt	Review · PlayStation 4 · Ação
 status.pt	Nota 198/216
@@ -2144,6 +2226,7 @@ post	icono
 cat	traducoes
 group	1
 date	2025-01-25
+updated	2026-11-16
 progress	70
 title.pt	Iconoclasts
 tag.pt	Tradução PT-BR · PS Vita
@@ -2226,6 +2309,7 @@ post	va-11-hall-a-ptbr
 cat	traducoes
 group	1
 date	2025-01-12
+updated	2026-11-16
 progress	69
 title.pt	VA-11 HALL-A [Tradução PT-BR]
 tag.pt	Tradução · PS Vita · PT-BR

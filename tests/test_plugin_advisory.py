@@ -15,8 +15,8 @@ class PluginAdvisoryTests(unittest.TestCase):
     def test_advisory_metadata_round_trip(self):
         self.assertIn("*advisory_plugin;", self.catalog)
         self.assertIn('S(d, "aviso_plugin")', self.parse)
-        self.assertIn("store-v103.json", self.sync)
-        self.assertIn("store-v103.json", self.sync)
+        self.assertIn("store-v105.json", self.sync)
+        self.assertIn("store-v105.json", self.sync)
 
     def test_installer_shows_optional_warning_on_vpk_only(self):
         self.assertIn("static void open_plugin_advice(", self.main)
