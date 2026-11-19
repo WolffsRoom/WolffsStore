@@ -113,7 +113,7 @@ int store_parse(const char *text, Post *out, int max, AppRelease *app) {
             const JsonValue *d = json_array_get(dls, k);
             Download *x = &p->dls[p->ndls++];
             const char *tp = json_string(json_object_get(d, "tipo"), "vpk");
-            x->type = !strcmp(tp, "traducao") ? DL_TRANS : !strcmp(tp, "app_arquivos") ? DL_APP_FILES : !strcmp(tp, "tai_plugin") ? DL_TAI_PLUGIN : !strcmp(tp, "plugin") ? DL_PLUGIN : !strcmp(tp, "arquivo") ? DL_FILE : !strcmp(tp, "dados") ? DL_DATA : DL_VPK;
+            x->type = !strcmp(tp, "traducao") ? DL_TRANS : !strcmp(tp, "app_arquivos") ? DL_APP_FILES : (!strcmp(tp, "plugin") && json_bool(json_object_get(d, "instalar"), 0)) ? DL_TAI_PLUGIN : !strcmp(tp, "tai_plugin") ? DL_TAI_PLUGIN : !strcmp(tp, "plugin") ? DL_PLUGIN : !strcmp(tp, "arquivo") ? DL_FILE : !strcmp(tp, "dados") ? DL_DATA : DL_VPK;
             x->name = S(d, "nome");
             x->url = S(d, "url");
             x->version = S(d, "versao");
