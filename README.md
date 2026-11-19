@@ -74,6 +74,14 @@ organização, animações e sons.
   (abrem no navegador do Vita).
 - Inglês e português (SELECT), som liga/desliga (START). As escolhas ficam em `ux0:data/WolffsStore/`.
 
+### v1.0.4: plugins opcionais no Vita
+
+- Downloads de plugins são organizados em ux0:Downloads/Plugins/.
+- TouchOnVita (PCSE00919) oferece **Apenas baixar** ou **Baixar e instalar**.
+- A instalação ocorre somente após confirmação, valida o ZIP oficial v0.59, cria backup da configuração taiHEN e do plugin existente e instala em ur0:tai/DDTouchUI.suprx e ux0:data/DDTouchUI/.
+- Preserva mode.ini existente; sons protegidos do jogo não são distribuídos. **Reinicie o PS Vita** para aplicar a configuração taiHEN.
+- Em caso de erro de cópia, tenta restaurar o backup em ux0:data/WolffsStore/plugin-backups/DDTouchUI/.
+
 ### v0.2: loja
 
 - **Sincroniza com o site** ao abrir e no △ (ou no botão ↻ do topo): baixa o `store.json` que o site gera

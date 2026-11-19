@@ -2,8 +2,10 @@ name: Build e Release
 
 on:
   push:
-    branches: [main]
+    branches: [main, feature/touchonvita-installer]
     tags: ['v*']
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
