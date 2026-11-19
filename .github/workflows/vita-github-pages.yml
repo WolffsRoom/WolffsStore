@@ -47,6 +47,9 @@ jobs:
           test -s _site/WolffsRoom/DeltaruneVita/index.html
           test -s _site/WolffsRoom/DeltaruneVita/releases/index.html
           test -s _site/WolffsRoom/FileManager/index.html
+          test -s _site/WolffsRoom/DD-TouchOnVita/index.html
+          test -s _site/WolffsRoom/DD-TouchOnVita/releases/index.html
+          grep -qi "TouchOnVita" _site/WolffsRoom/DD-TouchOnVita/index.html
           test -s _site/Federicoilgrandebardo/vampire-survivors-vita/index.html
           test -s _site/Federicoilgrandebardo/vampire-survivors-vita/releases/index.html
           # Pokémon Emerald source link in Wolff's Store must resolve on Vita

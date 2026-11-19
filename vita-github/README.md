@@ -7,6 +7,7 @@ A lightweight, fully static GitHub browser bundled in the **WolffsStore** reposi
 - Home: https://wolffsroom.github.io/WolffsStore/
 - DeltaruneVita: https://wolffsroom.github.io/WolffsStore/WolffsRoom/DeltaruneVita/
 - WolffsStore: https://wolffsroom.github.io/WolffsStore/WolffsRoom/WolffsStore/
+- DD-TouchOnVita: https://wolffsroom.github.io/WolffsStore/WolffsRoom/DD-TouchOnVita/
 
 ## Automatically included repositories
 
@@ -18,7 +19,7 @@ Every GitHub Actions run discovers **all public repositories owned by WolffsRoom
 - MTH-Vita
 - InfinityBladeVita
 
-The two pinned repositories (DeltaruneVita and WolffsStore) are displayed first. Newly public repositories are added on the next build, and repositories that become private disappear from the next generated snapshot. For urgent removal, manually rerun the workflow rather than waiting for its scheduled build.
+Pinned projects (including DeltaruneVita, DD-TouchOnVita and WolffsStore) are displayed first. Newly public repositories are added on the next build, and repositories that become private disappear from the next generated snapshot. For urgent removal, manually rerun the workflow rather than waiting for its scheduled build.
 
 ## Selected external ports
 
