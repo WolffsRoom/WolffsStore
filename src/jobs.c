@@ -1,6 +1,7 @@
 #include "jobs.h"
 #include "fsutil.h"
 #include "install.h"
+#include "touch_plugin.h"
 
 #include <psp2/io/fcntl.h>
 #include <psp2/io/dirent.h>
@@ -104,7 +105,11 @@ int jobs_add(const Post *p, int dl, const char *title, int confirm_replace) {
         unlock();
         return -1;
     }
-    j->kind = d->type == DL_TRANS ? JK_TRANS : d->type == DL_APP_FILES ? JK_APP_FILES : d->type == DL_PLUGIN ? JK_PLUGIN : d->type == DL_FILE ? JK_FILE : d->type == DL_DATA ? JK_DATA : JK_VPK;
+    if(d->type==DL_TAI_PLUGIN &&
+       (strcmp(p->slug,"dd-touchonvita") || strcmp(d->file,"DDTouchUI-v0.59.zip"))) {
+        unlock();return -1;
+    }
+    j->kind = d->type == DL_TAI_PLUGIN ? JK_TAI_PLUGIN : d->type == DL_TRANS ? JK_TRANS : d->type == DL_APP_FILES ? JK_APP_FILES : d->type == DL_PLUGIN ? JK_PLUGIN : d->type == DL_FILE ? JK_FILE : d->type == DL_DATA ? JK_DATA : JK_VPK;
     snprintf(j->name, sizeof(j->name), "%s", title);
     snprintf(j->url, sizeof(j->url), "%s", d->url);
     j->nmirrors = d->nmirrors;
@@ -599,10 +604,27 @@ static void run(Job *j) {
         set_state(j, J_DONE);
         return;
     }
-    default: { /* plugin / arquivo */
+    case JK_TAI_PLUGIN: {
+        /* Download first; the confirmed, allowlisted installer is separate. */
+        if(!check_space(j, 4.0))return;
+        fs_mkdir_p("ux0:Downloads/Plugins");
+        snprintf(path,sizeof(path),"ux0:Downloads/Plugins/%s",j->file);
+        if(download(j,path)<0)return;
+        if(j->pr.cancel){fail(j,"Cancelado.");return;}
+        set_state(j,J_INSTALL);
+        sceShellUtilLock(SCE_SHELL_UTIL_LOCK_TYPE_PS_BTN);
+        int result=touch_plugin_install(path,&j->pr);
+        sceShellUtilUnlock(SCE_SHELL_UTIL_LOCK_TYPE_PS_BTN);
+        if(result<0){fail(j,touch_plugin_error());return;}
+        snprintf(j->msg,sizeof(j->msg),"ur0:tai/DDTouchUI.suprx");
+        set_state(j,J_DONE);
+        return;
+    }
+    default: { /* plugin / arquivo: download only, no taiHEN changes */
         if (!check_space(j, 1.05)) return;
-        fs_mkdir_p("ux0:Downloads");
-        snprintf(path, sizeof(path), "ux0:Downloads/%s", j->file);
+        fs_mkdir_p(j->kind==JK_PLUGIN ? "ux0:Downloads/Plugins" : "ux0:Downloads");
+        snprintf(path, sizeof(path), "%s/%s",
+                 j->kind==JK_PLUGIN ? "ux0:Downloads/Plugins" : "ux0:Downloads", j->file);
         if (download(j, path) < 0) return;
         snprintf(j->msg, sizeof(j->msg), "%s", path);
         set_state(j, J_DONE);
