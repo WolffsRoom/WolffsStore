@@ -17,6 +17,8 @@ int net_online(int wait_ms);                       /* 1 se conectado */
 char *net_fetch(const char *url, int *size);      /* corpo inteiro (malloc, termina em \0) ou NULL */
 char *net_fetch_timeout(const char *url, int *size, long seconds); /* resolução rápida de espelhos */
 int net_download(const char *url, const char *path, NetProgress *pr); /* NET_* */
+/* Polls only: verified HTTPS, unlike legacy compatibility downloads. */
+int net_json_verified(const char *url, const char *post_json, char *reply, int reply_size);
 const char *net_error(void);                      /* texto do último erro */
 
 #endif

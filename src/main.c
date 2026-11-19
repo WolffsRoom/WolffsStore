@@ -27,11 +27,12 @@
 #include "video.h"
 #include "net.h"
 #include "registry.h"
+#include "polls.h"
 #include "vpk_version.h"
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "1.0.6"
+#define WS_VERSION "1.0.7"
 #endif
 
 /* ================================================================ textos */
@@ -61,8 +62,8 @@ enum {
 
 static const char *UI_UTF8[2][S_COUNT] = {
     [LANG_EN] = {
-        "Ports", "Tools", "Translations", "Reviews",
-        "In progress", "Finished", "Upcoming", "Other teams",
+        "Ports", "Apps/Mods", "Translations", "Journal",
+        "In development", "Completed", "Upcoming", "Other teams",
         "Nothing here yet.", "Back", "Back to home", "All repositories on GitHub", "Screenshots", "Video",
         "Watch on YouTube", "The video opens in the browser.",
         "Details", "Downloads", "Total", "Progress", "Latest in", "See all", "See details", "View on GitHub",
@@ -97,8 +98,8 @@ static const char *UI_UTF8[2][S_COUNT] = {
         "Optional. The app can be installed without this plugin.",
     },
     [LANG_PT] = {
-        "Ports", "Ferramentas", "Traduções", "Reviews",
-        "Em andamento", "Finalizado", "Próximos", "Outras equipes",
+        "Ports", "Apps/Mods", "Traduções", "Journal",
+        "Em desenvolvimento", "Finalizados", "Próximos", "Outras equipes",
         "Nada por aqui ainda.", "Voltar", "Voltar ao início", "Todos os repositórios no GitHub",
         "Capturas de tela", "Vídeo", "Assistir no YouTube", "O vídeo abre no navegador.",
         "Detalhes", "Downloads", "Total", "Progresso", "Últimos em", "Ver todos", "Ver detalhes", "Ver no GitHub",
@@ -150,6 +151,8 @@ static int dls_from = V_HOME, dls_from_arg = 0;
 static float hint_h = 36; /* barra de dicas (+ faixa de status quando aparece) */
 static int brightness = 100;  /* % (escurece a imagem do app; 40..100) */
 static int settings_open = 0, settings_row = 0, settings_page = 0, settings_root_row = 0;
+static int poll_selected = -1;
+static unsigned poll_seen_version = 0;
 static int trans_confirm_post = -1, trans_confirm_dl = -1;
 static int trans_confirm_mod = 0, trans_confirm_backup = 0, trans_confirm_plugin = 0;
 static int trans_confirm_app = 0, trans_confirm_base_missing = 0;
@@ -160,6 +163,8 @@ static int ime_open = 0;
 static int sync_manual = 0, sync_reported = 1;
 static AppRelease app_rel;
 static int upd_job = -1, upd_skipped = 0; /* atualização do próprio app */
+static int update_notes_pending = 0, update_notes_visible = 0;
+static double update_notes_t0 = -100;
 static int updater_cleanup_pending = 0;
 static int legacy_updater_cleanup_pending = 0;
 static double letter_hop[16] = {-100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100};
@@ -197,7 +202,8 @@ static double clock_s(void) { return sceKernelGetProcessTimeWide() / 1000000.0; 
 enum { OP_RECT, OP_FRAME, OP_TITLE, OP_BODY, OP_TEX, OP_HALO, OP_BAR, OP_STAGE, OP_LOGO, OP_PLAY, OP_TRI,
        OP_BADGE, OP_DLJOB, OP_JOBROW, OP_WARN, OP_HLABEL, OP_ICON, OP_TROPHY };
 enum { A_NONE, A_POST, A_PEEK, A_ALL, A_HOME, A_BACK, A_URL, A_SHOT, A_TOP, A_START,
-       A_SYNC, A_DLS, A_LANG, A_SOUND, A_DL, A_CANCEL, A_CLEAR, A_SETTINGS, A_SEARCH, A_SEARCHBOX, A_REGUPD, A_VIDEO, A_LAUNCH };
+       A_SYNC, A_DLS, A_LANG, A_SOUND, A_DL, A_CANCEL, A_CLEAR, A_SETTINGS, A_SEARCH, A_SEARCHBOX, A_REGUPD, A_VIDEO, A_LAUNCH,
+       A_POLL_CHOOSE, A_POLL_SEND };
 
 typedef struct {
     int type, item, scale, bold;
@@ -509,7 +515,7 @@ static void open_translation_confirm(int pi, int di) {
         char game[96];
         snprintf(game, sizeof(game), "ux0:app/%s", dl->ntids ? dl->tids[0] : "?");
         trans_confirm_base_missing = !dl->ntids || !fs_is_dir(game);
-        sfx("open");
+        sfx("notice");
         return;
     }
     for (int i = 0; i < dl->ntids; i++) {
@@ -529,7 +535,7 @@ static void open_plugin_advice(int pi, int di) {
        (d->type != DL_VPK || !d->advisory_plugin || !d->advisory_plugin[0]))return;
     plugin_advice_post = pi;
     plugin_advice_dl = di;
-    sfx("open");
+    sfx("notice");
 }
 
 static void fmt_size(long long b, char *out, int n) {
@@ -620,6 +626,15 @@ static void card(int pi, float x, float y, float h, double pop) {
     } else {
         rect(x + 4, y + 4, COVER_W, COVER_H, RGBA8(0x16, 0x16, 0x16, 0xFF));
         para(t->title, x + 16, y + 4 + COVER_H / 2 - BODY_LINE / 2, COVER_W - 24, C_MUTED, 1, 2, 0);
+    }
+    if (p->poll_id[0]) {
+        const char *chip=poll_local_answered(p->poll_id)?
+            (lang==LANG_PT?"RESPONDIDA":"ANSWERED"):
+            (lang==LANG_PT?"ENQUETE":"POLL");
+        float cw=body_width(chip)+22;
+        rect(x+12,y+12,cw,28,RGBA8(0x06,0x06,0x06,0xE6));
+        frame(x+12,y+12,cw,28,C_GOLD,C_GOLD,-1)->bold=2;
+        body(chip,x+23,y+13,C_WHITE)->bold=1;
     }
     if (p->ndls) {
         /* etiqueta no canto da capa: atualização disponível ou o tipo do download */
@@ -790,6 +805,16 @@ static double nav_pop(int i) {
 
 static const char *vita_github_url(const char *url, char *out, size_t cap);
 
+static int featured_post_for_device(void) {
+    int chosen=catalog_featured();
+    if(chosen>=0 && chosen<g_nposts &&
+       g_posts[chosen].poll_id[0] && poll_local_answered(g_posts[chosen].poll_id)) {
+        for(int i=0;i<g_nposts;i++)
+            if(!g_posts[i].poll_id[0] && g_posts[i].news_kind) return i;
+    }
+    return chosen;
+}
+
 static void build_home(void) {
     layout_begin();
     float y = header() + 32;
@@ -863,7 +888,8 @@ static void build_home(void) {
     y = sy + sh + 44;
     {
         int ids[3], n = 0;
-        for (int i = 0; i < g_nposts && n < 3; i++) ids[n++] = i;
+        for (int i = 0; i < g_nposts && n < 3; i++)
+            if (!g_posts[i].poll_id[0]) ids[n++] = i;
         if (n) {
             int f0 = nops;
             y += heading(TXT(S_LATEST3), 24, y, 912, 2, C_SOFT, 0, 1, 1, 24) + 24;
@@ -957,17 +983,32 @@ static void build_cat(int c) {
     y += 56;
     rect(24, y, 912, 4, C_LINE);
     y += 4 + 44;
-    int has_others = 0;
-    for (int i = 0; i < g_nposts; i++)
-        if (g_posts[i].cat == c && g_posts[i].group == GRP_OTHERS) has_others = 1;
-    for (int g = 0; g < (has_others ? 4 : 3); g++) {
+    /* Ports: completed, in development, upcoming, other teams.
+     * Apps/Mods and Journal: explicit themed subcategories.
+     * Original group metadata is preserved for compatible older clients. */
+    static const int ports_groups[4] = {GRP_DONE, GRP_DOING, GRP_NEXT, GRP_OTHERS};
+    static const int apps_subcats[4] = {SUB_APP, SUB_TOOL, SUB_MOD, SUB_PLUGIN};
+    static const int journal_subcats[3] = {SUB_NEWS, SUB_REVIEW, SUB_POLL};
+    const int is_subcats = c == CAT_TOOLS || c == CAT_REVIEWS;
+    const int count = c == CAT_TOOLS ? 4 : c == CAT_REVIEWS ? 3 : 4;
+    for (int section = 0; section < count; section++) {
+        int category_key = is_subcats
+            ? (c == CAT_TOOLS ? apps_subcats[section] : journal_subcats[section])
+            : (c == CAT_PORTS ? ports_groups[section] : section);
         int ids[MAX_POSTS], n = 0;
         for (int i = 0; i < g_nposts; i++)
-            if (g_posts[i].cat == c && g_posts[i].group == g) ids[n++] = i;
+            if (g_posts[i].cat == c &&
+                (is_subcats ? g_posts[i].subcat == category_key :
+                              g_posts[i].group == category_key)) ids[n++] = i;
+        static const char *en[] = {"Apps", "Tools", "Mods", "Plugins", "News", "Reviews", "Polls"};
+        static const char *pt[] = {"Apps", "Ferramentas", "Modificações", "Plugins", "Notícias", "Reviews", "Enquetes"};
+        char name[64] = "";
+        if (is_subcats) utf8_to_latin1(lang == LANG_PT ? pt[category_key] : en[category_key], name, sizeof(name));
+        else snprintf(name, sizeof(name), "%s", TXT(S_GRP0 + category_key));
         char gh[96];
-        snprintf(gh, sizeof(gh), "%s (%d)", TXT(S_GRP0 + g), n);
+        snprintf(gh, sizeof(gh), "%s (%d)", name, n);
         y += heading(gh, 24, y, 912, 2, C_SOFT, 0, 1, 1, 24) + 28;
-        if (n) y += grid(ids, n, y, view_t0 + .12 + g * .1, .06);
+        if (n) y += grid(ids, n, y, view_t0 + .12 + section * .1, .06);
         else y += para(TXT(S_NOTHING), 24, y, 912, C_MUTED, 1, 1, 0);
         y += 44;
     }
@@ -1067,7 +1108,179 @@ static int post_date_display(const char *iso, char *out, size_t len) {
     return 1;
 }
 
+/* Journal/News: brief feed-style native article, media and timestamp.
+ * Separate from verbose release/port details. */
+static void build_news(int pi) {
+    Post *p = &g_posts[pi];
+    PostText *t = &p->t[lang];
+    layout_begin();
+    float y = page_bar(header() + 24, A_BACK, TXT(S_CAT3), t->title) + 24;
+    rect(80, y, 800, 5, C_LINE);
+    y += 22;
+    y += heading(t->title, 90, y, 780, 3, C_WHITE, C_SHADOW, 1, 0, 32) + 12;
+    char stamp[54];
+    if (post_date_display(p->updated[0] ? p->updated : p->date, stamp, sizeof(stamp)))
+        y += para(stamp, 90, y, 780, C_MUTED, 0, 2, 0) + 20;
+    if (t->about && t->about[0])
+        y += para(t->about, 90, y, 780, C_TEXT, 0, 36, 0) + 18;
+    for (int j = 0; j < t->nblocks; j++) {
+        Block *block = &t->blocks[j];
+        if (block->type == BLK_SEC)
+            y += heading(block->text, 90, y, 780, 2, C_SOFT, 0, 0, 1, 24) + 8;
+        else if (block->type == BLK_ITEM) {
+            rect(93, y + 9, 6, 6, C_GOLD);
+            y += para(block->text, 112, y, 744, C_TEXT, 0, 16, 0) + 10;
+        } else y += para(block->text, 90, y, 780, C_TEXT, 0, 20, 0) + 10;
+    }
+    if (cover_tex[pi]) {
+        float h = 780 * 9 / 16.f;
+        rect(90, y, 780, h, C_DARK);
+        Op *pic = op(OP_TEX, 94, y + 4, 772, h - 8);
+        pic->tex = cover_tex[pi];
+        frame(90, y, 780, h, C_BORDER, C_WHITE, -1);
+        y += h + 24;
+    }
+    if (shot_count) {
+        const float sw=382, sh=214;
+        for (int j=0; j<shot_count; j++) {
+            const float x=90 + (j % 2) * 398;
+            const float py=y + (j/2) * (sh+18);
+            int it=item(x,py,sw,sh,A_SHOT,j,NULL);
+            rect(x,py,sw,sh,C_DARK);
+            Op *pic=op(OP_TEX,x+4,py+4,sw-8,sh-8);
+            pic->tex=shot_tex[j];
+            frame(x,py,sw,sh,C_BORDER,C_WHITE,it);
+        }
+        y += ((shot_count+1)/2) * (sh+18) + 4;
+    }
+    if (p->video_file || p->video) {
+        y += heading(TXT(S_VIDEO),90,y,780,2,C_SOFT,0,0,1,24) + 18;
+        int it = p->video_file
+            ? item(90,y,780,250,A_VIDEO,pi,NULL)
+            : item(90,y,780,250,A_URL,0,p->video);
+        rect(90,y,780,250,C_DARK);
+        if (cover_tex[pi]) {
+            Op *o=op(OP_TEX,94,y+4,772,242);
+            o->tex=cover_tex[pi];
+        }
+        frame(90,y,780,250,C_BORDER,C_WHITE,it);
+        op(OP_PLAY,448,y+83,64,64);
+        y += 270;
+    }
+    rect(80,y,800,5,C_LINE);
+    page_h=footer(y+28);
+}
+
+static void build_poll(int pi) {
+    Post *p=&g_posts[pi];
+    PollState ps;
+    poll_state(&ps);
+    const int ended=poll_local_ended(p->poll_ends_at);
+    layout_begin();
+    float y=page_bar(header()+24,A_BACK,TXT(S_CAT3),p->t[lang].title)+28;
+    char title_text[144];
+    snprintf(title_text,sizeof(title_text),"%s",
+        lang==LANG_PT ? "ENQUETE!" : "POLL!");
+    y+=heading(title_text,24,y,912,4,C_WHITE,C_SHADOW,1,0,48)+24;
+    y+=para(p->poll_question,24,y,912,C_WHITE,0,5,1)+24;
+    char time_label[96];
+    snprintf(time_label,sizeof(time_label),
+             lang==LANG_PT ? "Resultado em %d dia(s)" : "Results in %d day(s)",
+             poll_days_remaining(p->poll_ends_at));
+    y+=para(time_label,24,y,912,C_MUTED,0,2,0)+16;
+    rect(24,y,912,4,C_LINE);
+    y+=24;
+    int matched=strcmp(ps.id,p->poll_id)==0;
+    int answered=matched ? ps.answered : poll_local_answered(p->poll_id);
+    if(ended) {
+        const char *heading_text=lang==LANG_PT?"RESULTADOS":"RESULTS";
+        y+=heading(heading_text,24,y,912,3,C_SOFT,0,0,1,32)+20;
+        if(matched && ps.results_ready) {
+            for(int i=0;i<p->poll_count;i++) {
+                int pct=ps.total ? (ps.votes[i]*100+ps.total/2)/ps.total : 0;
+                char label[172], right[24];
+                snprintf(label,sizeof(label),"%s%s",p->poll_options[i],
+                         ps.selected==i ? (lang==LANG_PT?" * SUA ESCOLHA":" * YOUR CHOICE") : "");
+                snprintf(right,sizeof(right),"%d%%",pct);
+                body(keep(label),24,y,ps.selected==i ? C_GOLD : C_WHITE);
+                title(keep(right),844,y,2,C_GOLD,0);
+                y+=32;
+                Op *bar=op(OP_BAR,24,y,912,24);
+                bar->scale=pct;
+                bar->bold=3; /* animate result fill from 0% on opening */
+                bar->pop=view_t0+.08+i*.15;
+                y+=56;
+            }
+        } else {
+            y+=para(!poll_api_ready()
+                     ? (lang==LANG_PT ? "Resultados indisponíveis: servidor não configurado." :
+                                         "Results unavailable: backend not configured.")
+                     : (matched && ps.error)
+                     ? (lang==LANG_PT ? "Falha ao obter resultados. Tente abrir novamente." :
+                                         "Unable to load results. Reopen the poll to retry.")
+                     : (lang==LANG_PT ? "Carregando resultados..." : "Loading results..."),
+                     24,y,912,C_MUTED,0,4,0)+16;
+        }
+    } else if(answered) {
+        y+=heading(lang==LANG_PT?"RESPONDIDA":"ANSWERED",
+                   24,y,912,3,C_GOLD,0,0,1,36)+22;
+        y+=para(lang==LANG_PT
+                ? "Obrigado por participar! A resposta foi registrada."
+                : "Thank you for participating! Your vote is recorded.",
+                24,y,912,C_WHITE,0,3,0)+16;
+        y+=para(time_label,24,y,912,C_SOFT,0,2,0)+24;
+    } else {
+        y+=para(lang==LANG_PT ? "Escolha uma opção:" : "Choose one option:",
+                24,y,912,C_SOFT,0,2,0)+18;
+        for(int i=0;i<p->poll_count;i++) {
+            char label[178];
+            snprintf(label,sizeof(label),"%s %s",
+                     poll_selected==i?"[X]":"[ ]",p->poll_options[i]);
+            int button_id=button(keep(label),24,y,912,poll_selected==i,
+                                 A_POLL_CHOOSE,i,NULL,view_t0+.07+i*.09);
+            y+=(button_id>=0?items[button_id].h:48)+16;
+        }
+        if(matched && ps.busy) {
+            y+=para(lang==LANG_PT?"Enviando/consultando voto..." :
+                    "Submitting/checking vote...",24,y,912,C_MUTED,0,3,0)+22;
+        } else if(matched && ps.error) {
+            y+=para(lang==LANG_PT?
+                    "Falha no serviço. Tente novamente com HTTPS ativo.":
+                    "Voting service unavailable. Please retry with secure HTTPS.",
+                    24,y,912,C_MUTED,0,3,0)+18;
+        }
+        if(poll_selected>=0 && poll_api_ready() && !(matched && ps.busy)) {
+            y+=24;
+            int button_id=button(lang==LANG_PT?"ENVIAR RESPOSTA":"SEND RESPONSE",
+                                  24,y,912,1,A_POLL_SEND,0,NULL,view_t0+.45);
+            y+=(button_id>=0?items[button_id].h:48)+16;
+        } else if(!poll_api_ready()) {
+            y+=para(lang==LANG_PT?
+                    "A votação abrirá quando o servidor seguro estiver configurado.":
+                    "Voting opens when the secure server has been configured.",
+                    24,y,912,C_MUTED,0,4,0)+16;
+        }
+    }
+    y+=32;
+    rect(24,y,912,4,C_LINE);
+    y+=20;
+    y+=para(lang==LANG_PT?
+            "Privacidade: somente um identificador derivado por hash sai do Vita.":
+            "Privacy: only a hashed device pseudonym leaves your Vita.",
+            24,y,912,C_MUTED,0,3,0)+12;
+    page_h=footer(y);
+}
+
 static void build_post(int pi) {
+    if(pi>=0 && pi<g_nposts && g_posts[pi].poll_id[0]) {
+        build_poll(pi);
+        return;
+    }
+    if(pi>=0 && pi<g_nposts && g_posts[pi].cat==CAT_REVIEWS &&
+       g_posts[pi].subcat==SUB_NEWS) {
+        build_news(pi);
+        return;
+    }
     layout_begin();
     Post *p = &g_posts[pi];
     PostText *t = &p->t[lang];
@@ -1946,7 +2159,7 @@ static void draw_dljob(const Op *o, float x, float y, float al) {
                (j->state == J_DOWNLOAD && j->pr.done <= 0);
     if (busy && (j->state != J_EXTRACT || j->phase)) {
         /* instalando/na fila: listras andando */
-        int off = (int)(now_s * 24) % 24;
+        int off = (int)(now_s * 35) % 24;
         for (float sx = -24 + off; sx < w - 16; sx += 24)
             if (sx >= 0) vita2d_draw_rectangle(x + 8 + sx, y + h - 12, 12, 4, col_alpha(C_SOFT, al));
     } else {
@@ -1966,6 +2179,15 @@ static void draw_jobrow(const Op *o, float x, float y, float al) {
     Job *j = job_by_id(o->scale);
     if (!j) return;
     float k = job_frac(j);
+    /* Warm scanning light during multi-stage download/extract/install. */
+    if (j->state < J_DONE) {
+        float scan = fmodf((float)now_s * 105.f, o->w + 64.f) - 32.f;
+        float left = fmaxf(0.f, scan);
+        float sw = fmaxf(0.f, fminf(32.f, o->w - left));
+        vita2d_draw_rectangle(x, y + 26, o->w, 3, col_alpha(C_LINE, al));
+        if (sw > 0) vita2d_draw_rectangle(x + left, y + 26, sw, 3,
+                                           col_alpha(C_GOLD, al * .7f));
+    }
     char t[256], a[24], b[24];
     fmt_size(j->pr.done, a, sizeof(a));
     fmt_size(j->pr.total, b, sizeof(b));
@@ -1991,7 +2213,7 @@ static void draw_jobrow(const Op *o, float x, float y, float al) {
                    j->state == J_RESOLVE || (j->state == J_DOWNLOAD && j->pr.done <= 0);
         vita2d_draw_rectangle(x, y + 26, o->w, 16, col_alpha(C_DARK, al));
         if (busy) {
-            int off = (int)(now_s * 24) % 24;
+            int off = (int)(now_s * 35) % 24;
             for (float sx = -24 + off; sx < o->w; sx += 24)
                 if (sx >= 0) vita2d_draw_rectangle(x + sx, y + 30, 12, 8, col_alpha(C_SOFT, al));
         } else {
@@ -2052,7 +2274,16 @@ static void draw_page(void) {
             if (a > 0) halo_draw(x + d, y + d, o->w - 2 * d, o->h - 2 * d, o->scale, a * al);
             break;
         }
-        case OP_BAR: draw_bar(x, y, o->w, o->scale); break;
+        case OP_BAR: {
+            int pct=o->scale;
+            if(o->bold==3) {
+                float elapsed=fmaxf(0.f,fminf(1.f,(float)((now_s-o->pop)/.70)));
+                elapsed=1.f-powf(1.f-elapsed,3.f);
+                pct=(int)(pct*elapsed+.5f);
+            }
+            draw_bar(x,y,o->w,pct);
+            break;
+        }
         case OP_STAGE: draw_stage(o, oy); break;
         case OP_LOGO: draw_logo(x, y); break;
         case OP_PLAY: draw_play(x, y); break;
@@ -2336,6 +2567,13 @@ static void toast(const char *msg) {
     toasts[0].t0 = now_s;
 }
 
+static void close_update_notes(void) {
+    update_notes_visible = 0;
+    fs_write(WS_DATA "/release_notes_seen.txt", WS_VERSION,
+             (int)strlen(WS_VERSION));
+    sfx("confirm");
+}
+
 static void close_plugin_advice(int install) {
     if (plugin_advice_post < 0) return;
     int pi = plugin_advice_post, di = plugin_advice_dl;
@@ -2344,8 +2582,8 @@ static void close_plugin_advice(int install) {
         Post *p = &g_posts[pi];
         const char *project = p->t[lang].title;
         if (jobs_add(p, di, project && project[0] ? project : p->dls[di].name, 0) >= 0)
-            sfx("confirm");
-    } else sfx("back");
+            sfx("download");
+    } else sfx("cancel");
 }
 
 static void close_translation_confirm(int install) {
@@ -2488,7 +2726,8 @@ static void settings_change(int dir) {
 static void draw_settings(void) {
     if (!settings_open) return;
     double e = now_s - settings_t0;
-    float k = e >= .16 ? 1 : ((int)(e / .04) + 1) / 4.f;
+    float progress = fmaxf(0.f, fminf(1.f, (float)(e / .23)));
+    float k = 1.f - powf(1.f - progress, 3.f);
     vita2d_draw_rectangle(0, 0, SCR_W, SCR_H, RGBA8(0, 0, 0, (int)(0xD0 * k)));
     float x, y, w, h, rh;
     settings_geometry(&x, &y, &w, &h, &rh);
@@ -2514,9 +2753,16 @@ static void draw_settings(void) {
     static const char *tracks[] = {"", "Original", "Morning Pixels", "Afternoon Arcade", "Night Shift"};
 
     for (int r = 0; r < rows; ++r) {
-        float ry = y + 90 + r * rh, rx = x + 24, rw = w - 48;
+        float stagger = fmaxf(0.f, fminf(1.f, (float)((e - r * .038) / .20)));
+        stagger = 1.f - powf(1.f - stagger, 3.f);
+        float ry = y + 90 + r * rh + 10.f * (1.f - stagger);
+        float rx = x + 24 + 16.f * (1.f - stagger), rw = w - 48;
         int focus_row = r == settings_row;
-        if (focus_row) vita2d_draw_rectangle(rx, ry, rw, rh - 7, col_alpha(C_WHITE, k));
+        if (focus_row) {
+            float glow = .85f + .15f * sinf((float)now_s * 4.f);
+            vita2d_draw_rectangle(rx, ry, rw, rh - 7, col_alpha(C_WHITE, k * glow));
+            vita2d_draw_rectangle(rx, ry + rh - 11, rw, 4, col_alpha(C_GOLD, k));
+        }
         unsigned tc = col_alpha(focus_row ? C_DARK : C_WHITE, k);
         int option = settings_option(r);
         const char *label = option < 0 ? TXT(groups[r]) : TXT(options[option]);
@@ -2832,12 +3078,12 @@ static void activate(int it) {
         const char *project = p->t[lang].title;
         if (jobs_add(p, x->arg,
                      project && project[0] ? project : p->dls[x->arg].name, 0) >= 0)
-            sfx("confirm");
+            sfx("download");
         break;
     }
     case A_CANCEL:
         jobs_cancel(x->arg);
-        sfx("back");
+        sfx("cancel");
         break;
     case A_CLEAR:
         jobs_clear_finished();
@@ -2847,7 +3093,27 @@ static void activate(int it) {
         break;
     case A_POST:
         sfx("open");
+        if(x->arg>=0 && x->arg<g_nposts && g_posts[x->arg].poll_id[0]) {
+            Post *poll=&g_posts[x->arg];
+            poll_selected=-1;
+            poll_open(poll->poll_id,poll->poll_ends_at,
+                      poll->poll_count,poll_local_ended(poll->poll_ends_at));
+        }
         go(V_POST, x->arg);
+        break;
+    case A_POLL_CHOOSE:
+        if(view==V_POST && view_post>=0 && g_posts[view_post].poll_id[0]) {
+            poll_selected=x->arg;
+            sfx("tick");
+            rebuild();
+        }
+        break;
+    case A_POLL_SEND:
+        if(view==V_POST && view_post>=0 && poll_selected>=0 &&
+           g_posts[view_post].poll_id[0] && poll_vote(poll_selected)) {
+            sfx("download");
+            rebuild();
+        } else sfx("notice");
         break;
     case A_PEEK:
         if (peek == x->arg) {
@@ -3069,7 +3335,7 @@ static void draw_first_sync(void) {
      * intro is allowed to begin. Cached content is the offline fallback,
      * not a reason to delay updating until after Home. */
     const int sc = 5, step = 8 * sc;
-    paw_draw(SCR_W / 2 - 36, SCR_H / 2 - 132, 1, 1);
+    /* Sync shows the animated logo without the paw icon. */
     float lw = title_width(LOGO, sc);
     for (int i = 0; LOGO[i]; i++) {
         char ch[2] = {LOGO[i], 0};
@@ -3325,7 +3591,7 @@ static void apply_sync(void) {
     memcpy(g_posts, fresh, sizeof(Post) * n);
     g_nposts = n;
     app_rel = app;
-    feat = catalog_featured();
+    feat = featured_post_for_device();
     load_covers();
     make_mosaic();
     view_post = -1;
@@ -3403,6 +3669,16 @@ static void start_updater_cleanup_once(void) {
 }
 
 static void tick_store(void) {
+    PollState poll_snapshot;
+    poll_state(&poll_snapshot);
+    if(poll_snapshot.version != poll_seen_version) {
+        poll_seen_version = poll_snapshot.version;
+        if(poll_snapshot.answered && feat>=0 && feat<g_nposts &&
+           g_posts[feat].poll_id[0]) feat=featured_post_for_device();
+        if(view==V_POST && view_post>=0 && view_post<g_nposts &&
+           g_posts[view_post].poll_id[0] &&
+           !strcmp(g_posts[view_post].poll_id,poll_snapshot.id)) rebuild();
+    }
     int intro_done = started && now_s - intro_t0 >= T_DONE;
     /* Remove only our updater, only after the Home has been continuously
      * stable. This avoids SceShell refresh during the fragile first frames
@@ -3457,6 +3733,14 @@ static void tick_store(void) {
         toast(TXT(st == SYNC_OFFLINE ? S_SYNC_OFF : S_SYNC_FAIL));
     }
     if (intro_done) maybe_self_update();
+    if (update_notes_pending && !first_sync && intro_done &&
+        !update_notes_visible && upd_job < 0 && view == V_HOME &&
+        !settings_open && !vid_open && !snd_menu) {
+        update_notes_pending = 0;
+        update_notes_visible = 1;
+        update_notes_t0 = now_s;
+        sfx("updates");
+    }
     /* trabalhos que terminaram */
     if (jobs_version() != jobs_seen_version) {
         jobs_seen_version = jobs_version();
@@ -3488,7 +3772,7 @@ static void tick_store(void) {
                 if (kind == DL_TRANS) snprintf(path, sizeof(path), "ux0:rePatch/%s", j->tids[0]);
                 else snprintf(path, sizeof(path), "%s", j->msg);
                 reg_set(j->slug, j->dl, kind, j->version, j->name, path);
-                sfx("ready");
+                sfx("complete");
                 if (j->kind == JK_TAI_PLUGIN)
                     snprintf(t,sizeof(t),"%s: %s",j->name,
                       lang==LANG_PT ? "instalado, reinicie o Vita" : "installed, reboot the Vita");
@@ -3754,6 +4038,42 @@ static void draw_plugin_advice(void) {
     draw_translation_action(x + 400, y + 316, 328, TXT(S_TRANS_CANCEL), 0, 0);
 }
 
+/* Patch notes are a one-time modal AFTER the welcome animation. */
+static void draw_update_notes(void) {
+    if (!update_notes_visible) return;
+    float p = fmaxf(0.f, fminf(1.f, (float)((now_s - update_notes_t0) / .25)));
+    p = 1.f - powf(1.f - p, 3.f);
+    const float x = 110, y = 74 + 18 * (1 - p), w = 740, h = 396;
+    vita2d_draw_rectangle(0, 0, SCR_W, SCR_H, RGBA8(0, 0, 0, (int)(0xDD * p)));
+    halo_draw(x - 16, y - 16, w + 32, h + 32, 1, p);
+    vita2d_draw_rectangle(x, y, w, h, col_alpha(C_PANEL, p));
+    frame_rect(x, y, w, h, 4, col_alpha(C_WHITE, p));
+    char headline[100], line[220], details[3][220];
+    utf8_to_latin1(lang == LANG_PT ? "NOTAS DA ATUALIZAÇÃO" : "UPDATE NOTES",
+                   headline, sizeof(headline));
+    title_draw(headline, x + (w - title_width(headline, 2)) / 2,
+               y + 34, 2, col_alpha(C_WHITE, p));
+    snprintf(line, sizeof(line), "Wolff's Store v%s", WS_VERSION);
+    body_draw(line, x + (w - body_width(line)) / 2, y + 79, col_alpha(C_GOLD, p));
+    vita2d_draw_rectangle(x + 32, y + 111, w - 64, 4, col_alpha(C_LINE, p));
+    static const char *pt[] = {
+        "Novas seções: Apps/Mods, Journal e subcategorias.",
+        "Animações e sons renovados na interface.",
+        "Instalações e atualizações com estados mais claros."};
+    static const char *en[] = {
+        "New Apps/Mods and Journal sections and subcategories.",
+        "Refreshed interface animations and sounds.",
+        "Clearer download and installation states."};
+    for (int i = 0; i < 3; i++) {
+        utf8_to_latin1(lang == LANG_PT ? pt[i] : en[i], details[i], sizeof(details[i]));
+        body_draw(details[i], x + 40, y + 138 + i * 52, col_alpha(C_WHITE, p));
+    }
+    vita2d_draw_rectangle(x + 32, y + 324, w - 64, 4, col_alpha(C_LINE, p));
+    const char *close = lang == LANG_PT ? "X  FECHAR" : "X  CLOSE";
+    title_draw(close, x + (w - title_width(close, 2)) / 2,
+               y + 347, 2, col_alpha(C_WHITE, p));
+}
+
 /* ================================================================ main */
 
 int main(void) {
@@ -3781,7 +4101,7 @@ int main(void) {
     first_sync = 1;
     if (cached > 0) g_nposts = cached;
     else catalog_load("app0:data/catalog.txt");
-    feat = catalog_featured();
+    feat = featured_post_for_device();
     load_covers();
     make_mosaic();
     /* Defer helper removal only until it has finished exiting, not until a
@@ -3796,6 +4116,14 @@ int main(void) {
             free(last);
         }
         fs_write(WS_DATA "/last_started_version.txt", WS_VERSION, (int)strlen(WS_VERSION));
+        char *seen = fs_read(WS_DATA "/release_notes_seen.txt", NULL);
+        if (last_len <= 0 && !seen) {
+            /* Fresh Store installation is not an update. */
+            fs_write(WS_DATA "/release_notes_seen.txt", WS_VERSION, (int)strlen(WS_VERSION));
+        } else if (!seen || strcmp(seen, WS_VERSION) != 0) {
+            update_notes_pending = 1;
+        }
+        free(seen);
     }
     updater_cleanup_pending =
         fs_exists("ux0:app/WFFS00043/sce_sys/param.sfo") &&
@@ -3880,6 +4208,9 @@ int main(void) {
                 for (int i = 0; i < nitems; i++)
                     if (items[i].act == A_POST && items[i].arg == feat && items[i].h <= 96) focus = i;
             }
+        } else if (update_notes_visible) {
+            if (down & (SCE_CTRL_CROSS | SCE_CTRL_CIRCLE | SCE_CTRL_START))
+                close_update_notes();
         } else if (ime_open) {
             /* o teclado do sistema cuida da entrada */
         } else if (vid_open) {
@@ -3999,7 +4330,7 @@ int main(void) {
                     }
                 }
             }
-            if (dragged && viewer < 0 && !vid_open && !settings_open && !snd_menu && trans_confirm_post < 0 && plugin_advice_post < 0) {
+            if (dragged && viewer < 0 && !vid_open && !settings_open && !snd_menu && !update_notes_visible && trans_confirm_post < 0 && plugin_advice_post < 0) {
                 cam_target = t_cam0 - (ty - t_y0);
                 cam_clamp();
                 cam = cam_target;
@@ -4014,6 +4345,7 @@ int main(void) {
                     sfx("bark");
                 } else if (!started) start_intro();
                 else if (vid_open) video_toggle_pause();
+                else if (update_notes_visible) close_update_notes();
                 else if (plugin_advice_post >= 0) {
                     if (t_y0 >= 380 && t_y0 < 428) {
                         if (t_x0 >= 132 && t_x0 < 460) close_plugin_advice(1);
@@ -4105,6 +4437,7 @@ int main(void) {
         draw_video();
         draw_translation_confirm();
         draw_plugin_advice();
+        draw_update_notes();
         /* transição wr-wipe: sólido, 75%, 50%, 25% */
         double we = now_s - wipe_t0;
         if (we < .4) dither_fill((int)(we / .1), 0, 0, SCR_W, SCR_H, C_BG);

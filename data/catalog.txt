@@ -1,5 +1,6 @@
 post	pizza
 cat	ports
+subcat	
 group	1
 date	2026-11-14
 updated	2026-11-18
@@ -105,6 +106,7 @@ shots	6
 end	
 post	dd-touchonvita
 cat	ferramentas
+subcat	plugins
 group	0
 date	2026-11-18
 updated	2026-11-18
@@ -156,6 +158,7 @@ shots	4
 end	
 post	youtube-on-vita
 cat	ferramentas
+subcat	apps
 group	0
 date	2026-11-17
 updated	2026-11-18
@@ -234,6 +237,7 @@ shots	7
 end	
 post	pokemon-emerald
 cat	ports
+subcat	
 group	3
 date	2026-11-16
 title.pt	Pokémon Emerald Voxel 3DS - PT-BR v0.5.1
@@ -331,6 +335,7 @@ shots	10
 end	
 post	vampire-survivors-vita
 cat	ports
+subcat	
 group	3
 date	2026-11-14
 trofeus	1
@@ -401,9 +406,10 @@ shots	6
 end	
 post	shinokai
 cat	ferramentas
+subcat	apps
 group	3
 date	2026-11-14
-updated	2026-11-15
+updated	2026-11-19
 title.pt	ShinoKaiVita
 tag.pt	Entretenimento · Anime
 status.pt	Disponível · Brasil
@@ -455,8 +461,10 @@ shots	3
 end	
 post	file-manager
 cat	ferramentas
+subcat	apps
 group	0
 date	2026-11-14
+updated	2026-11-19
 progress	70
 title.pt	File Manager
 tag.pt	Ferramenta · Arquivos
@@ -502,8 +510,10 @@ shots	2
 end	
 post	fm
 cat	ferramentas
+subcat	apps
 group	1
 date	2026-11-14
+updated	2026-11-19
 title.pt	FMVita
 tag.pt	Ferramenta · Arquivos
 status.pt	v0.6.2
@@ -553,9 +563,10 @@ shots	3
 end	
 post	godot-v03
 cat	ferramentas
+subcat	ferramentas
 group	0
 date	2026-11-13
-updated	2026-11-14
+updated	2026-11-19
 title.pt	Godot 4 Vita - Release v0.3
 tag.pt	Engine · C++
 status.pt	v0.3 lançada
@@ -627,6 +638,7 @@ shots	0
 end	
 post	void
 cat	ports
+subcat	
 group	0
 date	2026-11-11
 updated	2026-11-14
@@ -701,6 +713,7 @@ shots	0
 end	
 post	delta
 cat	ports
+subcat	
 group	0
 date	2026-11-10
 updated	2026-11-14
@@ -801,9 +814,10 @@ shots	8
 end	
 post	ystool
 cat	ferramentas
+subcat	ferramentas
 group	0
 date	2026-06-10
-updated	2026-11-13
+updated	2026-11-19
 title.pt	Ys Origins Translation Tool
 tag.pt	Ferramenta · Python
 status.pt	Beta
@@ -837,9 +851,10 @@ shots	2
 end	
 post	godot
 cat	ferramentas
+subcat	ferramentas
 group	0
 date	2026-06-05
-updated	2026-11-13
+updated	2026-11-19
 title.pt	Godot 4 PSVita
 tag.pt	Engine · C++
 status.pt	2D em GXM nativo · 3D experimental
@@ -885,6 +900,7 @@ shots	0
 end	
 post	idol
 cat	ports
+subcat	
 group	0
 date	2026-06-01
 updated	2026-11-14
@@ -945,6 +961,7 @@ shots	0
 end	
 post	uty
 cat	ports
+subcat	
 group	1
 date	2026-05-20
 updated	2026-11-14
@@ -1008,9 +1025,10 @@ shots	0
 end	
 post	horizon
 cat	ferramentas
+subcat	modificacoes
 group	1
 date	2026-05-15
-updated	2026-11-13
+updated	2026-11-19
 title.pt	Horizon Chase Turbo: Patch de Otimização
 tag.pt	Mod · PS Vita
 status.pt	Publicado · 05/2026
@@ -1087,6 +1105,7 @@ video	https://youtu.be/uLmCN01wOwo
 end	
 post	sonic
 cat	traducoes
+subcat	
 group	0
 date	2026-02-25
 updated	2026-11-13
@@ -1150,6 +1169,7 @@ shots	0
 end	
 post	dontstarve
 cat	traducoes
+subcat	
 group	2
 date	2026-02-25
 updated	2026-11-13
@@ -1203,6 +1223,7 @@ shots	0
 end	
 post	wolf
 cat	traducoes
+subcat	
 group	3
 date	2026-02-23
 updated	2026-11-16
@@ -1298,6 +1319,7 @@ shots	9
 end	
 post	wipeout
 cat	traducoes
+subcat	
 group	3
 date	2026-02-21
 updated	2026-11-16
@@ -1378,6 +1400,7 @@ video	https://youtu.be/mbDw97XA5Mg
 end	
 post	twd2
 cat	traducoes
+subcat	
 group	3
 date	2026-02-18
 updated	2026-11-16
@@ -1469,6 +1492,7 @@ shots	6
 end	
 post	twd1
 cat	traducoes
+subcat	
 group	3
 date	2026-02-17
 updated	2026-11-16
@@ -1547,6 +1571,7 @@ shots	6
 end	
 post	alone
 cat	traducoes
+subcat	
 group	0
 date	2025-06-10
 updated	2026-11-13
@@ -1603,10 +1628,11 @@ cover	1
 shots	3
 end	
 post	p4g
-cat	reviews
+cat	journal
+subcat	reviews
 group	1
 date	2025-04-26
-updated	2026-11-16
+updated	2026-11-19
 title.pt	Persona 4 Golden - Análise PS Vita
 tag.pt	Review · PS Vita · JRPG
 status.pt	Nota 8.9/10
@@ -1706,6 +1732,7 @@ shots	2
 end	
 post	ayesha
 cat	traducoes
+subcat	
 group	2
 date	2025-03-31
 updated	2026-11-13
@@ -1759,6 +1786,7 @@ shots	1
 end	
 post	bastion
 cat	traducoes
+subcat	
 group	2
 date	2025-02-20
 updated	2026-11-13
@@ -1810,6 +1838,7 @@ shots	1
 end	
 post	undertale
 cat	traducoes
+subcat	
 group	2
 date	2025-02-12
 updated	2026-11-13
@@ -1855,6 +1884,7 @@ shots	1
 end	
 post	delta1
 cat	traducoes
+subcat	
 group	1
 date	2025-02-06
 updated	2026-11-16
@@ -1956,6 +1986,7 @@ shots	5
 end	
 post	cave
 cat	traducoes
+subcat	
 group	1
 date	2025-02-06
 updated	2026-11-16
@@ -2041,6 +2072,7 @@ shots	6
 end	
 post	ys
 cat	traducoes
+subcat	
 group	2
 date	2025-01-29
 updated	2026-11-13
@@ -2096,9 +2128,10 @@ shots	2
 end	
 post	darkest
 cat	ferramentas
+subcat	modificacoes
 group	0
 date	2025-01-27
-updated	2026-11-13
+updated	2026-11-19
 title.pt	Darkest Dungeon: Pilha Reforçada
 tag.pt	Mod · PS Vita
 status.pt	Ainda não disponível
@@ -2127,10 +2160,11 @@ cover	1
 shots	1
 end	
 post	god-of-war-ragnarok
-cat	reviews
+cat	journal
+subcat	reviews
 group	1
 date	2025-01-26
-updated	2026-11-16
+updated	2026-11-19
 title.pt	God of War Ragnarök - Análise PS4
 tag.pt	Review · PlayStation 4 · Ação
 status.pt	Nota 198/216
@@ -2224,6 +2258,7 @@ shots	3
 end	
 post	icono
 cat	traducoes
+subcat	
 group	1
 date	2025-01-25
 updated	2026-11-16
@@ -2307,6 +2342,7 @@ shots	4
 end	
 post	va-11-hall-a-ptbr
 cat	traducoes
+subcat	
 group	1
 date	2025-01-12
 updated	2026-11-16

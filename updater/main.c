@@ -17,6 +17,7 @@
 #include <psp2/io/stat.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 #define PKG "ux0:data/WolffsStore/pkg"
 #define MAIN_TITLE "WFFS00042"
@@ -223,9 +224,11 @@ static int anim(SceSize a, void *b) {
         vita2d_clear_screen();
         /* A 25% smaller paw, centered 22 px higher in the updater UI. */
         if (brand_paw) {
-            const float scale = 1.5f; /* 75% of the old scale 2.0 */
+            /* Animated pulse and slight floating motion keep the logo alive. */
+            const float scale = 1.5f + .06f * (1.f + sinf(f * .07f));
             float w = vita2d_texture_get_width(brand_paw);
-            draw_paw((960.f - w * scale) / 2.f, 40.f, scale);
+            draw_paw((960.f - w * scale) / 2.f,
+                     40.f - 3.f * sinf(f * .045f), scale);
         }
         const char *brand = "WOLFF'S ROOM";
         int scale = 4;

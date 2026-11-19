@@ -305,3 +305,16 @@ reveal, cursor, typing SFX and the introductory TV transition remain.
 - Only prefer the successful Store installation version when installed.txt matches the actual app Title ID and stored path. External VPK installations and newer internal SFO versions continue to be detected.
 - Existing successful installs already recorded under ux0:data/WolffsStore/installed.txt are recognized immediately; game reinstall is not required.
 - The game VPK and SFO remain untouched.
+
+
+### v1.0.7 — Interface, categorias e Journal
+
+- Categorias no Vita: Ports (Finalizados, Em desenvolvimento, Próximos, Outras equipes), Apps/Mods (Apps, Ferramentas, Modificações, Plugins), Traduções e Journal (News, Reviews, Enquetes).
+- Visual de News mais compacto, sem confundir pequenas notícias com lançamentos/atualizações.
+- Novo conjunto de efeitos sonoros sintéticos de download, cancelamento, conclusão e aviso, mantendo o estilo original.
+- Barra de download com animação de varredura, configurações com entrada suavizada e logo do updater animada; tela de sincronização inicial sem pata.
+- Modal de notas da nova versão após a animação inicial, exibida uma vez por atualização reconhecida.
+- **Enquetes — estrutura experimental:** seleção e confirmação, estado respondido, prazo configurável e barras de resultados animadas. Nenhuma votação real é habilitada enquanto o backend HTTPS com armazenamento seguro não estiver implantado. Consulte a pasta poll-backend do repositório do site. O VPK nunca contém um token GitHub.
+- Os registros de instalação da versão 1.0.6 foram preservados, incluindo a correção do botão Atualizar/Reinstalar.
+
+A categoria e o identificador de enquete são publicados pelo catálogo; a interface do Vita só oferece envio quando um endereço seguro de serviço estiver configurado. Validação em Vita físico de votos e exibição do resultado final continua pendente.

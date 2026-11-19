@@ -6,6 +6,7 @@
 
 enum { LANG_EN = 0, LANG_PT = 1 };
 enum { CAT_PORTS, CAT_TOOLS, CAT_TRANS, CAT_REVIEWS, CAT_COUNT };
+enum { SUB_APP, SUB_TOOL, SUB_MOD, SUB_PLUGIN, SUB_NEWS, SUB_REVIEW, SUB_POLL, SUB_COUNT };
 enum { GRP_DOING, GRP_DONE, GRP_NEXT, GRP_OTHERS, GRP_COUNT };
 enum { BLK_SEC, BLK_PARA, BLK_ITEM };
 
@@ -44,7 +45,10 @@ typedef struct {
 
 typedef struct {
     char slug[48];
-    int cat, group, feat, pixel, progress, cover, shots;
+    int cat, subcat, group, feat, pixel, progress, cover, shots;
+    char poll_id[48], poll_question[192], poll_starts_at[32], poll_ends_at[32];
+    char poll_options[8][112];
+    int poll_count;
     char date[16];       /* publicação ISO YYYY-MM-DD */
     char updated[16];    /* última alteração do post; vazio se não houver */
     char *video;

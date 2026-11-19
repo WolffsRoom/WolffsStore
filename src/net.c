@@ -120,6 +120,45 @@ char *net_fetch(const char *url, int *size) {
     return net_fetch_timeout(url, size, 60L);
 }
 
+/* Ballot requests fail closed if certificate verification is unavailable. */
+int net_json_verified(const char *url, const char *post_json, char *reply, int reply_size) {
+    if (reply && reply_size > 0) reply[0] = 0;
+    if (!inited || !url || strncmp(url, "https://", 8) != 0 || !reply || reply_size < 2)
+        return -1;
+    CURL *c = curl_easy_init();
+    if (!c) return -1;
+    Mem m = {malloc(8192), 0, 8192};
+    if (!m.buf) { curl_easy_cleanup(c); return -1; }
+    m.buf[0] = 0;
+    common(c, url);
+    curl_easy_setopt(c, CURLOPT_SSL_VERIFYPEER, 1L);
+    curl_easy_setopt(c, CURLOPT_SSL_VERIFYHOST, 2L);
+    curl_easy_setopt(c, CURLOPT_FOLLOWLOCATION, 0L);
+    curl_easy_setopt(c, CURLOPT_TIMEOUT, 20L);
+    curl_easy_setopt(c, CURLOPT_FAILONERROR, 0L);
+    curl_easy_setopt(c, CURLOPT_WRITEFUNCTION, mem_cb);
+    curl_easy_setopt(c, CURLOPT_WRITEDATA, &m);
+    curl_easy_setopt(c, CURLOPT_ACCEPT_ENCODING, "");
+    struct curl_slist *headers = NULL;
+    if (post_json) {
+        headers = curl_slist_append(headers, "Content-Type: application/json");
+        curl_easy_setopt(c, CURLOPT_HTTPHEADER, headers);
+        curl_easy_setopt(c, CURLOPT_POST, 1L);
+        curl_easy_setopt(c, CURLOPT_POSTFIELDS, post_json);
+        curl_easy_setopt(c, CURLOPT_POSTFIELDSIZE, (long)strlen(post_json));
+    }
+    CURLcode result = curl_easy_perform(c);
+    long http = 0;
+    curl_easy_getinfo(c, CURLINFO_RESPONSE_CODE, &http);
+    if (headers) curl_slist_free_all(headers);
+    curl_easy_cleanup(c);
+    if (result == CURLE_OK) snprintf(reply, reply_size, "%s", m.buf);
+    else snprintf(err, sizeof(err), "Secure HTTPS: %s", curl_easy_strerror(result));
+    free(m.buf);
+    return result == CURLE_OK ? (int)http : -1;
+}
+
+
 /* ------------------------------------------------------------------ download para arquivo */
 
 #define WBUF (512 * 1024) /* junta os pedaços antes de gravar no cartão */

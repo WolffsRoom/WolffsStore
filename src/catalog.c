@@ -37,7 +37,18 @@ static int cat_id(const char *v) {
     if (!strcmp(v, "ports")) return CAT_PORTS;
     if (!strcmp(v, "ferramentas")) return CAT_TOOLS;
     if (!strcmp(v, "traducoes")) return CAT_TRANS;
+    if (!strcmp(v, "journal") || !strcmp(v, "reviews")) return CAT_REVIEWS;
     return CAT_REVIEWS;
+}
+
+int subcat_id(const char *v) {
+    if (!strcmp(v, "apps")) return SUB_APP;
+    if (!strcmp(v, "ferramentas")) return SUB_TOOL;
+    if (!strcmp(v, "modificacoes")) return SUB_MOD;
+    if (!strcmp(v, "plugins")) return SUB_PLUGIN;
+    if (!strcmp(v, "news")) return SUB_NEWS;
+    if (!strcmp(v, "enquetes")) return SUB_POLL;
+    return SUB_REVIEW;
 }
 
 int catalog_load(const char *path) {
@@ -63,6 +74,13 @@ int catalog_load(const char *path) {
         }
         if (!p) continue;
         if (!strcmp(k, "cat")) p->cat = cat_id(v);
+        else if (!strcmp(k, "subcat")) p->subcat = subcat_id(v);
+        else if (!strcmp(k, "poll_id")) snprintf(p->poll_id,sizeof(p->poll_id),"%s",v);
+        else if (!strcmp(k, "poll_question")) snprintf(p->poll_question,sizeof(p->poll_question),"%s",v);
+        else if (!strcmp(k, "poll_starts_at")) snprintf(p->poll_starts_at,sizeof(p->poll_starts_at),"%s",v);
+        else if (!strcmp(k, "poll_ends_at")) snprintf(p->poll_ends_at,sizeof(p->poll_ends_at),"%s",v);
+        else if (!strcmp(k, "poll_option") && p->poll_count < 8)
+            snprintf(p->poll_options[p->poll_count++],112,"%s",v);
         else if (!strcmp(k, "group")) p->group = atoi(v);
         else if (!strcmp(k, "date")) snprintf(p->date, sizeof(p->date), "%s", v);
         else if (!strcmp(k, "updated")) snprintf(p->updated, sizeof(p->updated), "%s", v);

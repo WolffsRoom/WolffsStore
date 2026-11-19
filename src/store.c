@@ -2,6 +2,7 @@
 #include "catalog.h"
 #include "fsutil.h"
 #include "json.h"
+#include "polls.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,7 +14,17 @@ static int cat_of(const char *c) {
     if (!strcmp(c, "ports")) return CAT_PORTS;
     if (!strcmp(c, "ferramentas")) return CAT_TOOLS;
     if (!strcmp(c, "traducoes")) return CAT_TRANS;
+    if (!strcmp(c, "journal") || !strcmp(c, "reviews")) return CAT_REVIEWS;
     return CAT_REVIEWS;
+}
+static int subcat_of(const char *c) {
+    if (!strcmp(c, "apps")) return SUB_APP;
+    if (!strcmp(c, "ferramentas")) return SUB_TOOL;
+    if (!strcmp(c, "modificacoes")) return SUB_MOD;
+    if (!strcmp(c, "plugins")) return SUB_PLUGIN;
+    if (!strcmp(c, "news")) return SUB_NEWS;
+    if (!strcmp(c, "enquetes")) return SUB_POLL;
+    return SUB_REVIEW;
 }
 
 static void texts(const JsonValue *o, PostText *t) {
@@ -74,6 +85,7 @@ int store_parse(const char *text, Post *out, int max, AppRelease *app) {
             app->size = (long long)json_number(json_object_get(a, "tamanho"), 0);
         }
     }
+    poll_set_api(json_string(json_object_get(root,"enquetes_api"),""));
     const JsonValue *posts = json_object_get(root, "posts");
     int n = 0;
     for (int i = 0; i < json_array_count(posts) && n < max; i++) {
@@ -82,7 +94,29 @@ int store_parse(const char *text, Post *out, int max, AppRelease *app) {
         Post *p = &out[n++];
         memset(p, 0, sizeof(*p));
         snprintf(p->slug, sizeof(p->slug), "%s", json_string(json_object_get(o, "slug"), "post"));
-        p->cat = cat_of(json_string(json_object_get(o, "cat"), ""));
+        const char *category = json_string(json_object_get(o, "cat"), "");
+        p->cat = cat_of(category);
+        const char *subcategory = json_string(json_object_get(o, "subcategoria"), "");
+        p->subcat = subcategory[0] ? subcat_of(subcategory) :
+                    p->cat == CAT_TOOLS ? SUB_TOOL : SUB_REVIEW;
+        if (p->cat == CAT_REVIEWS && p->subcat == SUB_POLL) {
+            const JsonValue *poll=json_object_get(o,"enquete");
+            if (poll && json_type(poll)==JSON_OBJECT) {
+                snprintf(p->poll_id,sizeof(p->poll_id),"%s",json_string(json_object_get(poll,"id"),""));
+                utf8_to_latin1(json_string(json_object_get(poll,"question"),""),
+                               p->poll_question,sizeof(p->poll_question));
+                snprintf(p->poll_starts_at,sizeof(p->poll_starts_at),"%s",
+                         json_string(json_object_get(poll,"starts_at"),""));
+                snprintf(p->poll_ends_at,sizeof(p->poll_ends_at),"%s",
+                         json_string(json_object_get(poll,"ends_at"),""));
+                const JsonValue *opts=json_object_get(poll,"options");
+                for(int x=0;x<json_array_count(opts) && x<8;x++) {
+                    utf8_to_latin1(json_string(json_array_get(opts,x),""),
+                                   p->poll_options[x],sizeof(p->poll_options[x]));
+                    p->poll_count++;
+                }
+            }
+        }
         p->group = (int)json_number(json_object_get(o, "grupo"), 0);
         if (p->group < 0 || p->group >= GRP_COUNT) p->group = 0;
         snprintf(p->date, sizeof(p->date), "%s", json_string(json_object_get(o, "data"), ""));

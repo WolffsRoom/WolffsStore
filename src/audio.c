@@ -435,7 +435,13 @@ static void play(const Note *n, int count, int force) {
 #define PLAY(...) do { static const Note s_[] = { __VA_ARGS__ }; play(s_, sizeof(s_) / sizeof(s_[0]), 0); } while (0)
 
 void sfx(const char *k) {
-    if (!strcmp(k, "hover")) PLAY(N(1760, 1760, 0, .018f, W_P12, .35f));
+    /* New UI cues use the original 8-bit pulse/triangle palette. */
+    if (!strcmp(k, "download")) PLAY(N(330, 440, 0, .065f, W_TRI, .8f), N(659, 659, .045f, .055f, W_P12, .42f), N(988, 1175, .12f, .09f, W_P25, .56f));
+    else if (!strcmp(k, "cancel")) PLAY(N(659, 392, 0, .075f, W_P25, .55f), N(330, 220, .06f, .13f, W_TRI, .65f), N(0, 0, .03f, .04f, W_NOISE, .17f));
+    else if (!strcmp(k, "complete")) PLAY(N(523, 523, 0, .08f, W_P25, .57f), N(659, 659, .075f, .08f, W_P25, .60f), N(784, 784, .15f, .08f, W_P25, .6f), N(1047, 1047, .23f, .16f, W_TRI, .9f));
+    else if (!strcmp(k, "notice")) PLAY(N(392, 392, 0, .075f, W_TRI, .7f), N(587, 587, .085f, .11f, W_P12, .52f), N(494, 494, .19f, .095f, W_TRI, .5f));
+    else if (!strcmp(k, "updates")) PLAY(N(440, 440, 0, .065f, W_P12, .44f), N(523, 523, .07f, .07f, W_P12, .44f), N(659, 659, .14f, .12f, W_TRI, .7f));
+    else if (!strcmp(k, "hover")) PLAY(N(1760, 1760, 0, .018f, W_P12, .35f));
     else if (!strcmp(k, "open")) PLAY(N(988, 988, 0, .05f, W_P25, 1), N(1319, 1319, .05f, .12f, W_P25, 1));
     else if (!strcmp(k, "back")) PLAY(N(784, 523, 0, .08f, W_P50, .9f), N(392, 262, .07f, .1f, W_P50, .9f));
     else if (!strcmp(k, "tick")) PLAY(N(1568, 1568, 0, .03f, W_P12, .8f));

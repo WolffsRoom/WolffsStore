@@ -153,6 +153,15 @@ def main():
         folder = p['folder']
         put('post', slug)
         put('cat', p['cat'])
+        put('subcat', p.get('subcat') or '')
+        if p.get('poll'):
+            survey=p['poll']
+            put('poll_id', survey['id'])
+            put('poll_question', survey['question'])
+            put('poll_starts_at', survey['starts_at'])
+            put('poll_ends_at', survey['ends_at'])
+            for opt in survey['options']:
+                put('poll_option', opt)
         put('group', build.GROUPS.index(p['group']))
         put('date', p['date'].isoformat())
         if p.get('updated'):

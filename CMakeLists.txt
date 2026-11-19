@@ -14,8 +14,8 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2 -Wall -Wno-format-truncation")
 set(WS_TITLEID "WFFS00042")
 set(WS_UPDATER_TITLEID "WFFS00043")
 # LiveArea padrão: assets/livearea (icon0 128x128, bg0 840x500, startup 280x158, PNG indexado de 8 bits)
-set(WS_SFO_VERSION "01.06")
-set(WS_FILE_VERSION "1.0.6")
+set(WS_SFO_VERSION "01.07")
+set(WS_FILE_VERSION "1.0.7")
 set(WS_VPK_NAME "WolffsStore.vpk")
 set(WS_ARTIFACTS_DIR "${CMAKE_SOURCE_DIR}/artifacts/current")
 
@@ -52,6 +52,7 @@ add_executable(${PROJECT_NAME}
   src/sync.c
   src/jobs.c
   src/net.c
+  src/polls.c
   src/install.c
   src/touch_plugin.c
   src/fsutil.c
