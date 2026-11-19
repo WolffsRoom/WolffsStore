@@ -30,7 +30,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "1.0.3"
+#define WS_VERSION "1.0.4"
 #endif
 
 /* ================================================================ textos */
@@ -438,6 +438,9 @@ static void dl_status(const Post *p, int idx, DlStatus *s) {
             }
         }
         if (s->installed && r) snprintf(s->inst_ver, sizeof(s->inst_ver), "%s", r->version);
+    } else if (d->type == DL_TAI_PLUGIN) {
+        s->installed=fs_exists("ur0:tai/DDTouchUI.suprx");
+        if(s->installed && r)snprintf(s->inst_ver,sizeof(s->inst_ver),"%s",r->version);
     } else if (d->type == DL_APP_FILES) {
         /* O jogo base instalado não equivale à tradução aplicada. */
         if (r && d->ntids > 0 && fs_is_dir(r->path)) {
@@ -515,7 +518,8 @@ static void open_translation_confirm(int pi, int di) {
 static void open_plugin_advice(int pi, int di) {
     if (pi < 0 || pi >= g_nposts || di < 0 || di >= g_posts[pi].ndls) return;
     const Download *d = &g_posts[pi].dls[di];
-    if (d->type != DL_VPK || !d->advisory_plugin || !d->advisory_plugin[0]) return;
+    if(d->type != DL_TAI_PLUGIN &&
+       (d->type != DL_VPK || !d->advisory_plugin || !d->advisory_plugin[0]))return;
     plugin_advice_post = pi;
     plugin_advice_dl = di;
     sfx("open");
@@ -612,7 +616,7 @@ static void card(int pi, float x, float y, float h, double pop) {
     }
     if (p->ndls) {
         /* etiqueta no canto da capa: atualização disponível ou o tipo do download */
-        const char *chip = p->dls[0].type == DL_TRANS ? TXT(S_CHIP_TRANS) : p->dls[0].type == DL_PLUGIN ? "Plugin" : "VPK";
+        const char *chip = p->dls[0].type == DL_TRANS ? TXT(S_CHIP_TRANS) : (p->dls[0].type == DL_PLUGIN || p->dls[0].type == DL_TAI_PLUGIN) ? "Plugin" : "VPK";
         for (int i = 0; i < p->ndls; i++) {
             DlStatus s;
             dl_status(p, i, &s);
@@ -1174,6 +1178,8 @@ static void build_post(int pi) {
             yy += 10;
             const char *label = st.update ? TXT(S_DL_UPDATE)
                               : d->type == DL_VPK ? (st.installed ? TXT(S_DL_REINSTALL) : TXT(S_DL_INSTALL))
+                              : d->type == DL_TAI_PLUGIN
+                              ? (st.installed ? TXT(S_DL_REINSTALL) : TXT(S_DL_INSTALL))
                               : d->type == DL_TRANS || d->type == DL_APP_FILES
                               ? (st.installed ? TXT(S_DL_TRANS_RE) : TXT(S_DL_TRANS))
                               : d->type == DL_DATA ? TXT(S_DL_DATA)
@@ -1216,8 +1222,16 @@ static void build_post(int pi) {
                 yy += para(TXT(S_APP_LIVEAREA), rx + in + 28, yy, iw - 28, C_TEXT, 0, 5, 0) + 10;
             } else if (d->type == DL_DATA) {
                 yy += para(TXT(S_DATA_TO), rx + in, yy, iw, C_MUTED, 0, 3, 0) + 10;
+            } else if (d->type == DL_TAI_PLUGIN) {
+                const char *notice=lang==LANG_PT
+                    ? "Backup do taiHEN; instala em ur0:tai. Reinicie o jogo."
+                    : "Backs up taiHEN; installs to ur0:tai. Restart the game.";
+                yy += para(notice, rx + in, yy, iw, C_TEXT, 0, 4, 0) + 10;
             } else if (d->type == DL_PLUGIN || d->type == DL_FILE) {
-                yy += para(TXT(S_PLUGIN_NOTE), rx + in, yy, iw, C_TEXT, 0, 4, 0) + 10;
+                const char *notice=d->type==DL_PLUGIN
+                    ? (lang==LANG_PT ? "Arquivo em ux0:Downloads/Plugins." : "Saved to ux0:Downloads/Plugins.")
+                    : TXT(S_PLUGIN_NOTE);
+                yy += para(notice, rx + in, yy, iw, C_TEXT, 0, 4, 0) + 10;
                 if (d->instr[0]) {
                     int b = button(TXT(S_INSTR), rx + in, yy, iw, 0, A_URL, 0, d->instr, -1);
                     if (b >= 0) yy += items[b].h + 14;
@@ -2752,6 +2766,8 @@ static void activate(int it) {
                 if (g_posts[i].dls[e->dl].type == DL_TRANS ||
                     g_posts[i].dls[e->dl].type == DL_APP_FILES) {
                     open_translation_confirm(i, e->dl);
+                } else if (g_posts[i].dls[e->dl].type == DL_TAI_PLUGIN) {
+                    open_plugin_advice(i, e->dl);
                 } else if (g_posts[i].dls[e->dl].type == DL_VPK &&
                            g_posts[i].dls[e->dl].advisory_plugin &&
                            g_posts[i].dls[e->dl].advisory_plugin[0]) {
@@ -2794,6 +2810,10 @@ static void activate(int it) {
         if (p->dls[x->arg].type == DL_TRANS ||
             p->dls[x->arg].type == DL_APP_FILES) {
             open_translation_confirm(view_post, x->arg);
+            break;
+        }
+        if(p->dls[x->arg].type == DL_TAI_PLUGIN) {
+            open_plugin_advice(view_post,x->arg);
             break;
         }
         if (p->dls[x->arg].type == DL_VPK &&
@@ -3454,6 +3474,7 @@ static void tick_store(void) {
             if (j->state == J_DONE) {
                 /* guarda o que foi instalado e em qual versão */
                 int kind = j->kind == JK_TRANS ? DL_TRANS : j->kind == JK_APP_FILES ? DL_APP_FILES
+                         : j->kind == JK_TAI_PLUGIN ? DL_TAI_PLUGIN
                          : j->kind == JK_PLUGIN ? DL_PLUGIN : j->kind == JK_FILE ? DL_FILE
                          : j->kind == JK_DATA ? DL_DATA : DL_VPK;
                 char path[192];
@@ -3461,7 +3482,10 @@ static void tick_store(void) {
                 else snprintf(path, sizeof(path), "%s", j->msg);
                 reg_set(j->slug, j->dl, kind, j->version, j->name, path);
                 sfx("ready");
-                if (j->kind == JK_VPK) snprintf(t, sizeof(t), "%s %s", j->name, TXT(S_T_INSTALLED));
+                if (j->kind == JK_TAI_PLUGIN)
+                    snprintf(t,sizeof(t),"%s: %s",j->name,
+                      lang==LANG_PT ? "instalado, reinicie o jogo" : "installed, restart the game");
+                else if (j->kind == JK_VPK) snprintf(t, sizeof(t), "%s %s", j->name, TXT(S_T_INSTALLED));
                 else if (j->kind == JK_TRANS) snprintf(t, sizeof(t), "%s: %s (%s)", j->name, TXT(S_T_TRANS), j->msg);
                 else if (j->kind == JK_DATA) snprintf(t, sizeof(t), "%s: %s", j->name, TXT(S_DATA_TO));
                 else if (j->kind == JK_APP_FILES)
