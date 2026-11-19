@@ -3484,7 +3484,7 @@ static void tick_store(void) {
                 sfx("ready");
                 if (j->kind == JK_TAI_PLUGIN)
                     snprintf(t,sizeof(t),"%s: %s",j->name,
-                      lang==LANG_PT ? "instalado, reinicie o jogo" : "installed, restart the game");
+                      lang==LANG_PT ? "instalado, reinicie o Vita" : "installed, reboot the Vita");
                 else if (j->kind == JK_VPK) snprintf(t, sizeof(t), "%s %s", j->name, TXT(S_T_INSTALLED));
                 else if (j->kind == JK_TRANS) snprintf(t, sizeof(t), "%s: %s (%s)", j->name, TXT(S_T_TRANS), j->msg);
                 else if (j->kind == JK_DATA) snprintf(t, sizeof(t), "%s: %s", j->name, TXT(S_DATA_TO));
@@ -3734,8 +3734,8 @@ static void draw_plugin_advice(void) {
                                 : "Darkest Dungeon must be installed.",x+28,y+115,C_GOLD);
         body_draw(lang==LANG_PT ? "Backup de config.txt e plugin anterior."
                                 : "Backup of config.txt and previous plugin.",x+28,y+164,C_WHITE);
-        body_draw(lang==LANG_PT ? "Instala ur0:tai e ux0:data. Reinicie o jogo."
-                                : "Installs to ur0:tai and ux0:data. Restart game.",x+28,y+217,C_MUTED);
+        body_draw(lang==LANG_PT ? "Instala ur0:tai e ux0:data. Reinicie o Vita."
+                                : "Installs to ur0:tai and ux0:data. Reboot PS Vita.",x+28,y+217,C_MUTED);
     }else{
         char line[160];
         snprintf(line,sizeof(line),"%s%s",TXT(S_CAP_RECOMMEND),d->advisory_plugin);
