@@ -348,3 +348,11 @@ reveal, cursor, typing SFX and the introductory TV transition remain.
 - Os registros de instalação da versão 1.0.6 foram preservados, incluindo a correção do botão Atualizar/Reinstalar.
 
 A categoria e o identificador de enquete são publicados pelo catálogo; a interface do Vita só oferece envio quando um endereço seguro de serviço estiver configurado. Validação em Vita físico de votos e exibição do resultado final continua pendente.
+# Wolff's Store v1.0.12
+
+- Posts da categoria Journal, incluindo News, Reviews e Polls, não aparecem nas três novidades nem no carrossel de lançamentos.
+- JOURNAL ganha um destaque amarelo com pulsação suave quando há notícias não lidas, que desaparece após visitar a categoria; o estado de leitura é salvo no Vita.
+- Post de Pokémon Emerald 3D Voxel v0.5.8 revisado em PT-BR e inglês, com o aviso de desenvolvimento.
+- O site também exclui Journal dos lançamentos, destaca notícias novas e padroniza o botão Voltar das notícias e demais artigos.
+
+Testes Python da Store passaram: 84, com 1 ignorado. Compilação VitaSDK concluída. Animação e estado de leitura aguardam teste em um PS Vita físico.

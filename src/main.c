@@ -32,7 +32,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "1.0.11"
+#define WS_VERSION "1.0.12"
 #endif
 
 /* ================================================================ textos */
@@ -186,6 +186,25 @@ static double title_t0 = 0, first_sync_t0 = 0;
 static double app_clock_t0 = 0; /* monotonic origin for post-sync typewriter */
 static double home_t0 = -100; /* animação de volta ao início */
 static int feat = 0;
+/* Track the latest news post by ID, not just date: two posts may share a day. */
+static char journal_seen_slug[48] = "";
+static const char *journal_latest_slug(void) {
+    for (int i = 0; i < g_nposts; i++)
+        if (g_posts[i].cat == CAT_REVIEWS && g_posts[i].subcat == SUB_NEWS)
+            return g_posts[i].slug;
+    return "";
+}
+static int journal_has_unread_news(void) {
+    const char *latest = journal_latest_slug();
+    return latest[0] && strcmp(latest, journal_seen_slug) != 0;
+}
+static void journal_mark_seen(void) {
+    const char *latest = journal_latest_slug();
+    if (!latest[0]) return;
+    snprintf(journal_seen_slug, sizeof(journal_seen_slug), "%s", latest);
+    fs_write(WS_DATA "/journal_seen_slug.txt", journal_seen_slug,
+             (int)strlen(journal_seen_slug));
+}
 
 static vita2d_texture *cover_tex[MAX_POSTS];
 static vita2d_texture *mos_tex[8];
@@ -921,7 +940,7 @@ static void build_home(void) {
     int older_ids[DECK_LIMIT];
     deck_n = 0;
     for (int i = 0; i < g_nposts; i++) {
-        if (g_posts[i].poll_id[0]) continue;
+        if (g_posts[i].poll_id[0] || g_posts[i].cat == CAT_REVIEWS) continue;
         if (latest_n < 3) latest_ids[latest_n++] = i;
         else if (deck_n < DECK_LIMIT) older_ids[deck_n++] = i;
         if (latest_n == 3 && deck_n == DECK_LIMIT) break;
@@ -1025,14 +1044,18 @@ static void build_home(void) {
         int it = item(bx, y, bw, 56, A_PEEK, c, NULL);
         if (it >= 0) items[it].pop = nav_pop(c);
         int sel = peek == c;
+        int journal_alert = c == CAT_REVIEWS && journal_has_unread_news();
         Op *o = rect(bx, y, bw, 56, sel ? C_WHITE : C_BTN);
         o->item = it;
         o->pop = nav_pop(c);
         o = frame(bx, y, bw, 56, sel ? C_WHITE : C_BTNBRD, C_WHITE, it);
         o->pop = nav_pop(c);
         int f0 = nops;
-        heading(TXT(S_CAT0 + c), bx + 4, y + 20, bw - 8, 2, sel ? C_DARK : C_WHITE, 0, 1, 1, 24);
+        heading(TXT(S_CAT0 + c), bx + 4, y + 20, bw - 8, 2,
+                sel ? C_DARK : journal_alert ? C_GOLD : C_WHITE, 0, 1, 1, 24);
         for (int i = f0; i < nops; i++) {
+            if (journal_alert && !sel && ops[i].type == OP_TITLE)
+                ops[i].bold = 3; /* special subtle gold pulse */
             ops[i].item = it;
             ops[i].pop = nav_pop(c);
         }
@@ -2475,6 +2498,11 @@ static void draw_page(void) {
         }
         int f = focused(o->item);
         unsigned c = col_alpha(f ? o->cf : o->c, al);
+        if (o->type == OP_TITLE && o->bold == 3 && !f) {
+            /* Low-frequency, subtle alpha pulse; no whole-screen flashing. */
+            float pulse = .72f + .28f * (.5f + .5f * sinf((float)now_s * 2.1f));
+            c = col_alpha(C_GOLD, al * pulse);
+        }
         switch (o->type) {
         case OP_RECT: vita2d_draw_rectangle(x, y, o->w, o->h, c); break;
         case OP_FRAME: frame_rect(x, y, o->w, o->h, o->bold == 2 ? 2 : 4, c); break;
@@ -3386,6 +3414,7 @@ static void activate(int it) {
         break;
     }
     case A_PEEK:
+        if (x->arg == CAT_REVIEWS) journal_mark_seen();
         if (peek == x->arg) {
             peek = -1;
             sfx("back");
@@ -3411,6 +3440,7 @@ static void activate(int it) {
         }
         break;
     case A_ALL:
+        if (x->arg == CAT_REVIEWS) journal_mark_seen();
         sfx("open");
         go(V_CAT, x->arg);
         break;
@@ -4359,6 +4389,13 @@ int main(void) {
     /* Defer helper removal only until it has finished exiting, not until a
      * SECOND launch of Store. The updater writes the marker after promotion. */
     fs_mkdir_p(WS_DATA);
+    {
+        char *seen = fs_read(WS_DATA "/journal_seen_slug.txt", NULL);
+        if (seen) {
+            snprintf(journal_seen_slug, sizeof(journal_seen_slug), "%.47s", seen);
+            free(seen);
+        }
+    }
     {
         int last_len = 0;
         char *last = fs_read(WS_DATA "/last_started_version.txt", &last_len);
