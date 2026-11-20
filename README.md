@@ -307,6 +307,14 @@ reveal, cursor, typing SFX and the introductory TV transition remain.
 - The game VPK and SFO remain untouched.
 
 
+### v1.0.10 — Últimas três novidades, Outros lançamentos e TouchOnVita
+
+- Home: três cards tradicionais com as últimas novidades; os posts anteriores são exibidos no carrossel Outros lançamentos, sem duplicações.
+- Carrossel: exibição inicial 4 · 3 · 1 · 2 · 5, contador cronológico 01/12 → 02/12, setas pixel-art quadradas e seção completamente oculta durante a abertura inicial.
+- Filtros Ver somente centralizados e com botões de largura uniforme, usando os rótulos curtos Andamento, Terceiros e Mods (com equivalentes em inglês).
+- Correção do TouchOnVita: instalação/backup/rollback no arquivo de configuração taiHEN ativo (ux0:tai/config.txt quando presente, ou ur0:tai/config.txt). O plugin continua instalado em ur0:tai.
+- A correção foi validada por testes automatizados e simulações; ainda precisa de teste em um PS Vita físico.
+
 ### v1.0.9 — Cartas, filtros e limpeza do Updater
 
 - Carrossel de cartas sobrepostas na Home (4 3 1 2 5), até 12 novidades navegáveis.

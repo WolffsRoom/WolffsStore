@@ -32,7 +32,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "1.0.9"
+#define WS_VERSION "1.0.10"
 #endif
 
 /* ================================================================ textos */
@@ -4331,13 +4331,13 @@ static void draw_update_notes(void) {
     body_draw(line, x + (w - body_width(line)) / 2, y + 79, col_alpha(C_GOLD, p));
     vita2d_draw_rectangle(x + 32, y + 111, w - 64, 4, col_alpha(C_LINE, p));
     static const char *pt[] = {
-        "Novo slider de cartas na Home.",
-        "Filtros por seção em Ports, Apps/Mods e Journal.",
-        "Remoção do Updater antes de abrir a Home."};
+        "3 cards recentes; os demais no slider.",
+        "Filtros centralizados: Andamento, Terceiros, Mods.",
+        "TouchOnVita usa o config taiHEN ativo."};
     static const char *en[] = {
-        "New stacked-cards slider on the Home screen.",
-        "Category filters for Ports, Apps/Mods and Journal.",
-        "Updater cleanup moved to app startup."};
+        "Latest 3 cards; other releases in a slider.",
+        "Centered filters: Progress, Third-party, Mods.",
+        "TouchOnVita updates the active taiHEN config."};
     for (int i = 0; i < 3; i++) {
         utf8_to_latin1(lang == LANG_PT ? pt[i] : en[i], details[i], sizeof(details[i]));
         body_draw(details[i], x + 40, y + 138 + i * 52, col_alpha(C_WHITE, p));
