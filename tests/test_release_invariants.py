@@ -14,9 +14,9 @@ class ReleaseInvariants(unittest.TestCase):
         cls.video = (ROOT / "src/video.c").read_text(encoding="utf-8")
         cls.updater = (ROOT / "updater/main.c").read_text(encoding="utf-8")
 
-    def test_release_is_v108(self):
-        self.assertIn('set(WS_SFO_VERSION "01.08")', self.cmake)
-        self.assertIn('set(WS_FILE_VERSION "1.0.8")', self.cmake)
+    def test_release_is_v109(self):
+        self.assertIn('set(WS_SFO_VERSION "01.09")', self.cmake)
+        self.assertIn('set(WS_FILE_VERSION "1.0.9")', self.cmake)
 
     def test_featured_update_suffix_follows_app_title(self):
         hero=self.main[self.main.index("static void build_home("):
@@ -38,9 +38,9 @@ class ReleaseInvariants(unittest.TestCase):
     def test_title_id_migration_keeps_old_bubble_safe(self):
         self.assertIn('set(WS_TITLEID "WFFS00042")', self.cmake)
         self.assertIn('set(WS_UPDATER_TITLEID "WFFS00043")', self.cmake)
-        self.assertIn('set(WS_FILE_VERSION "1.0.8")', self.cmake)
-        self.assertIn('set(WS_SFO_VERSION "01.08")', self.cmake)
-        self.assertIn('#define WS_VERSION "1.0.8"', self.main)
+        self.assertIn('set(WS_FILE_VERSION "1.0.9")', self.cmake)
+        self.assertIn('set(WS_SFO_VERSION "01.09")', self.cmake)
+        self.assertIn('#define WS_VERSION "1.0.9"', self.main)
         self.assertIn('#define MAIN_TITLE "WFFS00042"', self.updater)
         self.assertNotIn('set(WS_TITLEID "WOLF00001")',self.cmake)
         self.assertNotIn('#define MAIN_TITLE "WOLF00001"',self.updater)
@@ -240,27 +240,44 @@ class ReleaseInvariants(unittest.TestCase):
             self.assertIn(name,launch)
         self.assertIn('updater: installed bubble missing custom LiveArea files',launch)
 
-    def test_cleanup_only_after_45s_stable_home_and_in_worker(self):
+    def test_boot_cleanup_before_normal_store_loop(self):
         tick=self.main[self.main.index("static void tick_store("):
                        self.main.index("/* ================================================================ main */")]
-        self.assertIn("started && intro_done",tick)
-        self.assertIn("view == V_HOME && viewer < 0 && !settings_open",tick)
-        self.assertIn("!vid_open && !ime_open && upd_job < 0 && jobs_active() == 0",tick)
-        self.assertIn("now_s - cleanup_stable_since >= 45.0",tick)
-        self.assertIn("start_updater_cleanup_once();",tick)
-        self.assertNotIn('inst_delete("WFFS00043")',tick)
-        self.assertNotIn('inst_delete("WOLF00002")',tick)
-        worker=self.main[self.main.index("static int updater_cleanup_owned("):
-                         self.main.index("static void tick_store(")]
-        self.assertIn('sfo_get(sfo, "TITLE_ID"',worker)
-        self.assertIn('sfo_get(sfo, "TITLE"',worker)
-        self.assertIn('strcmp(installed_title, "Wolff\'s Store Updater")',worker)
-        self.assertIn("if (!updater_cleanup_owned(ids[i]))",worker)
-        self.assertIn("int r=inst_delete(ids[i]);",worker)
-        self.assertIn('fs_rm_rf(WS_DATA "/updater_cleanup.pending")',worker)
-        self.assertIn('sceKernelCreateThread(',worker)
-        self.assertIn('return sceKernelExitDeleteThread(0);',worker)
-        self.assertIn('updater_cleanup.pending',self.updater)
+        self.assertNotIn("cleanup_stable_since",self.main)
+        self.assertNotIn("start_updater_cleanup_once",self.main)
+        self.assertNotIn("updater_cleanup_thread",self.main)
+        self.assertNotIn("inst_delete(",tick)
+        self.assertNotIn("updater_cleanup_at_startup();",tick)
+        cleanup=self.main[self.main.index("static int updater_cleanup_owned("):
+                          self.main.index("static void tick_store(")]
+        self.assertIn('sfo_get(sfo, "TITLE_ID"',cleanup)
+        self.assertIn('sfo_get(sfo, "TITLE"',cleanup)
+        self.assertIn("strcmp(installed_title, \"Wolff's Store Updater\")", cleanup)
+        self.assertIn("if (!updater_cleanup_owned(ids[i]))",cleanup)
+        self.assertIn("int r = inst_delete(ids[i]);",cleanup)
+        self.assertIn('fs_write(WS_DATA "/updater_cleanup.pending", "1", 1)',cleanup)
+        self.assertIn('fs_rm_rf(WS_DATA "/updater_cleanup.pending")',cleanup)
+        self.assertNotIn("sceKernelCreateThread(",cleanup)
+        self.assertIn("updater_cleanup.pending",self.updater)
+        main=self.main[self.main.index("int main(void) {"):]
+        self.assertLess(main.index("updater_cleanup_at_startup();"),
+                        main.index("jobs_init();"))
+        self.assertLess(main.index("updater_cleanup_at_startup();"),
+                        main.index("start_sync(0);"))
+        self.assertLess(main.index("updater_cleanup_at_startup();"),
+                        main.index("for (;;) {"))
+
+    def test_promoter_waits_until_delete_is_complete(self):
+        install=(ROOT/"src/install.c").read_text(encoding="utf-8")
+        deletion=install[install.index("int inst_delete("):
+                         install.index("int inst_install_vpk(")]
+        self.assertIn("scePromoterUtilityDeletePkg(titleid)",deletion)
+        self.assertIn("scePromoterUtilityGetState(&state)",deletion)
+        self.assertIn("sceKernelDelayThread(100 * 1000)",deletion)
+        self.assertIn("if (!settled)",deletion)
+        self.assertIn("scePromoterUtilityExit();",deletion)
+        self.assertLess(deletion.index("scePromoterUtilityGetState(&state)"),
+                        deletion.index("scePromoterUtilityExit();"))
 
     def test_vita_avplayer_handle_is_not_a_signed_success_code(self):
         # Real Vita log produced 0x81962860, a legitimate user-RAM handle.

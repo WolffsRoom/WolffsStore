@@ -32,7 +32,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "1.0.8"
+#define WS_VERSION "1.0.9"
 #endif
 
 /* ================================================================ textos */
@@ -87,7 +87,7 @@ static const char *UI_UTF8[2][S_COUNT] = {
         "Installed", "Installed", "Open project", "Queue",
         "Source", "Recommended clock", "Download data", "Extracted to ux0:data/", "Syncing...", "Music", "Effects", "Audio",
         "Loading video", "Couldn't play the video.", "X pause \xb7 Left/Right 10 s \xb7 O close", "WOOF!", "Watch here",
-        "The video plays right here in the app.", "Check out the latest three updates...", "Native trophies", "Open", "Sync", "Downloads", "Audio", "Settings", "Search",
+        "The video plays right here in the app.", "Check out the latest updates...", "Native trophies", "Open", "Sync", "Downloads", "Audio", "Settings", "Search",
         "Published on", "Last update",
         "After installation: refresh LiveArea with FMVita or File Manager.",
         "INSTALL TRANSLATION", "This translation requires the rePatch plugin!",
@@ -126,7 +126,7 @@ static const char *UI_UTF8[2][S_COUNT] = {
         "Instalado", "Instalados", "Abrir projeto", "Fila",
         "Source", "Clock recomendado", "Baixar dados", "Extraído em ux0:data/", "Sincron...", "Música", "Efeitos", "Áudio",
         "Carregando vídeo", "Não deu para tocar o vídeo.", "X pausa \xb7 Esq./Dir. 10 s \xb7 O fecha", "AU AU!", "Assistir aqui",
-        "O vídeo toca aqui mesmo no app.", "Confira as últimas três novidades...", "Troféus nativos", "Abrir", "Sincronizar", "Downloads", "Áudio", "Configurações", "Pesquisar",
+        "O vídeo toca aqui mesmo no app.", "Confira as últimas novidades...", "Troféus nativos", "Abrir", "Sincronizar", "Downloads", "Áudio", "Configurações", "Pesquisar",
         "Publicado em", "Atualizado em",
         "Após instalar, atualize a LiveArea pelo FMVita ou File Manager.",
         "INSTALAR TRADUÇÃO", "Essa tradução exige o plugin rePatch instalado!",
@@ -147,6 +147,15 @@ static int lang = LANG_EN;
 enum { V_HOME, V_CAT, V_POST, V_DLS, V_SEARCH };
 #define BADGE 52 /* botões do topo */
 static int view = V_HOME, view_cat = 0, view_post = -1, from_view = V_HOME, peek = -1;
+/* -1 means All; filters belong to each category and survive post navigation. */
+static int cat_filter[CAT_COUNT] = {-1, -1, -1, -1};
+
+/* Visual chronology starts as 4 / 3 / 1 / 2 / 5, front card in slot 2.
+ * Array indices refer to the CURRENT synced catalog: no duplicate textures. */
+#define DECK_LIMIT 12
+static int deck_order[DECK_LIMIT], deck_n = 0, deck_pos = 2, deck_last_count = 0;
+static double deck_moved_t0 = -100;
+static int deck_direction = 0;
 static int dls_from = V_HOME, dls_from_arg = 0;
 static float hint_h = 36; /* barra de dicas (+ faixa de status quando aparece) */
 static int brightness = 100;  /* % (escurece a imagem do app; 40..100) */
@@ -200,10 +209,10 @@ static double clock_s(void) { return sceKernelGetProcessTimeWide() / 1000000.0; 
 /* ================================================================ lista de desenho */
 
 enum { OP_RECT, OP_FRAME, OP_TITLE, OP_BODY, OP_TEX, OP_HALO, OP_BAR, OP_STAGE, OP_LOGO, OP_PLAY, OP_TRI,
-       OP_BADGE, OP_DLJOB, OP_JOBROW, OP_WARN, OP_HLABEL, OP_ICON, OP_TROPHY };
+       OP_BADGE, OP_DLJOB, OP_JOBROW, OP_WARN, OP_HLABEL, OP_ICON, OP_TROPHY, OP_DECK_CARD };
 enum { A_NONE, A_POST, A_PEEK, A_ALL, A_HOME, A_BACK, A_URL, A_SHOT, A_TOP, A_START,
        A_SYNC, A_DLS, A_LANG, A_SOUND, A_DL, A_CANCEL, A_CLEAR, A_SETTINGS, A_SEARCH, A_SEARCHBOX, A_REGUPD, A_VIDEO, A_LAUNCH,
-       A_POLL_CHOOSE, A_POLL_SEND };
+       A_POLL_CHOOSE, A_POLL_SEND, A_CAT_FILTER, A_DECK_CARD, A_DECK_ARROW };
 
 typedef struct {
     int type, item, scale, bold;
@@ -884,18 +893,73 @@ static void build_home(void) {
         button("GitHub", items[b1].x + items[b1].w + 16, iy, 0, 0,
                A_URL, 0, keep(url), ip + 0.32);
     }
-    /* as três novidades mais recentes (o catálogo já vem do mais novo para o mais antigo) */
+    /* As 12 novidades mais recentes, no estilo cartas 4 / 3 / 1 / 2 / 5. */
     y = sy + sh + 44;
-    {
-        int ids[3], n = 0;
-        for (int i = 0; i < g_nposts && n < 3; i++)
-            if (!g_posts[i].poll_id[0]) ids[n++] = i;
-        if (n) {
-            int f0 = nops;
-            y += heading(TXT(S_LATEST3), 24, y, 912, 2, C_SOFT, 0, 1, 1, 24) + 24;
-            for (int i = f0; i < nops; i++) ops[i].pop = nav_pop(0);
-            y += grid(ids, n, y, nav_pop(0) + .05, .08) + 44;
+    deck_n = 0;
+    int fresh[DECK_LIMIT];
+    for (int i = 0; i < g_nposts && deck_n < DECK_LIMIT; i++)
+        if (!g_posts[i].poll_id[0]) fresh[deck_n++] = i;
+    if (deck_n >= 5) {
+        deck_order[0] = fresh[3];
+        deck_order[1] = fresh[2];
+        deck_order[2] = fresh[0];
+        deck_order[3] = fresh[1];
+        for (int i = 4; i < deck_n; i++) deck_order[i] = fresh[i];
+    } else {
+        for (int i = 0; i < deck_n; i++) deck_order[i] = fresh[i];
+    }
+    if (deck_n != deck_last_count || deck_pos >= deck_n) {
+        deck_pos = deck_n >= 5 ? 2 : 0;
+        deck_last_count = deck_n;
+    }
+    if (deck_n) {
+        int f0 = nops;
+        y += heading(TXT(S_LATEST3), 24, y, 912, 2, C_SOFT, 0, 1, 1, 24) + 22;
+        for (int i = f0; i < nops; i++) ops[i].pop = nav_pop(0);
+        const int visual[5] = {-2, 2, -1, 1, 0}; /* draw back cards first */
+        const int small4[4] = {-2, 1, -1, 0};
+        const int small3[3] = {-1, 1, 0};
+        const int small2[2] = {1, 0};
+        for (int v = 0; v < (deck_n >= 5 ? 5 : deck_n); v++) {
+            int slot = deck_n >= 5 ? visual[v] :
+                       deck_n == 4 ? small4[v] :
+                       deck_n == 3 ? small3[v] :
+                       deck_n == 2 ? small2[v] : 0;
+            int di = (deck_pos + slot + deck_n) % deck_n;
+            int pi = deck_order[di];
+            float bx, by, bw, bh;
+            switch (slot) {
+            case -2: bx = 62; by = y + 56; bw = 188; bh = 222; break;
+            case  2: bx = 710; by = y + 56; bw = 188; bh = 222; break;
+            case -1: bx = 208; by = y + 35; bw = 248; bh = 264; break;
+            case  1: bx = 504; by = y + 35; bw = 248; bh = 264; break;
+            default: bx = 332; by = y + 10; bw = 296; bh = 306; break;
+            }
+            int it = item(bx, by, bw, bh, A_DECK_CARD, di, NULL);
+            if (it >= 0) items[it].pop = nav_pop(0) + .08;
+            Op *o = op(OP_DECK_CARD, bx, by, bw, bh);
+            o->scale = pi;             /* index in latest synced catalog */
+            o->bold = slot + 2;        /* 0..4; 2 is center */
+            o->item = it;
+            o->pop = nav_pop(0) + .08;
         }
+        y += 338;
+        /* Navigation controls are native touch targets and work with D-pad. */
+        button("<<", 340, y, 80, 0, A_DECK_ARROW, -1, NULL, nav_pop(0) + .1);
+        char counter[24];
+        snprintf(counter, sizeof(counter), "%02d / %02d", deck_pos >= 2 && deck_n >= 5
+                 ? (deck_pos == 2 ? 1 : deck_pos == 3 ? 2 : deck_pos == 1 ? 3 : deck_pos == 0 ? 4 : deck_pos + 1)
+                 : deck_pos + 1, deck_n);
+        title(keep(counter), 432, y + 14, 2, C_SOFT, 0);
+        button(">>", 540, y, 80, 0, A_DECK_ARROW, 1, NULL, nav_pop(0) + .1);
+        y += 48 + 32;
+        int caption_first = nops;
+        y += para(lang == LANG_PT
+                 ? "Explore outros trabalhos finalizados ou em desenvolvimento..."
+                 : "Explore other completed and in-development projects...",
+                 24, y, 912, C_SOFT, 1, 2, 0) + 24;
+        for (int i = caption_first; i < nops; i++)
+            ops[i].pop = home_pop(T_NAV + .30, .90);
     }
 
     /* categorias */
@@ -968,6 +1032,38 @@ static float page_bar(float y, int act, const char *c1, const char *c2) {
     return y + h;
 }
 
+/* Preserve the original post groups, but display Finalizados first. */
+static const int cat_group_order[4] = {GRP_DONE, GRP_DOING, GRP_NEXT, GRP_OTHERS};
+static const int cat_apps_order[4] = {SUB_APP, SUB_TOOL, SUB_MOD, SUB_PLUGIN};
+static const int cat_journal_order[3] = {SUB_NEWS, SUB_REVIEW, SUB_POLL};
+
+static int cat_section_count(int c) {
+    return c == CAT_REVIEWS ? 3 : 4;
+}
+static int cat_section_key(int c, int slot) {
+    if (slot < 0 || slot >= cat_section_count(c)) return -1;
+    if (c == CAT_TOOLS) return cat_apps_order[slot];
+    if (c == CAT_REVIEWS) return cat_journal_order[slot];
+    return cat_group_order[slot];
+}
+static int cat_post_in_section(int c, int section, const Post *p) {
+    int key = cat_section_key(c, section);
+    return key >= 0 && p->cat == c &&
+           ((c == CAT_TOOLS || c == CAT_REVIEWS) ? p->subcat == key : p->group == key);
+}
+static const char *cat_section_label(int c, int section) {
+    static const char *en[] = {"Apps", "Tools", "Mods", "Plugins", "News", "Reviews", "Polls"};
+    static const char *pt[] = {"Apps", "Ferramentas", "Modificações", "Plugins", "Notícias", "Reviews", "Enquetes"};
+    int key = cat_section_key(c, section);
+    if (key < 0) return "";
+    if (c == CAT_TOOLS || c == CAT_REVIEWS) {
+        char tmp[96];
+        utf8_to_latin1(lang == LANG_PT ? pt[key] : en[key], tmp, sizeof(tmp));
+        return keep(tmp);
+    }
+    return TXT(S_GRP0 + key);
+}
+
 static void build_cat(int c) {
     layout_begin();
     float y = page_bar(header() + 24, A_HOME, TXT(S_CAT0 + c), NULL) + 32;
@@ -982,33 +1078,38 @@ static void build_cat(int c) {
     para(cnt, 24, y + 4, 912, C_MUTED, 2, 1, 0);
     y += 56;
     rect(24, y, 912, 4, C_LINE);
-    y += 4 + 44;
-    /* Ports: completed, in development, upcoming, other teams.
-     * Apps/Mods and Journal: explicit themed subcategories.
-     * Original group metadata is preserved for compatible older clients. */
-    static const int ports_groups[4] = {GRP_DONE, GRP_DOING, GRP_NEXT, GRP_OTHERS};
-    static const int apps_subcats[4] = {SUB_APP, SUB_TOOL, SUB_MOD, SUB_PLUGIN};
-    static const int journal_subcats[3] = {SUB_NEWS, SUB_REVIEW, SUB_POLL};
-    const int is_subcats = c == CAT_TOOLS || c == CAT_REVIEWS;
-    const int count = c == CAT_TOOLS ? 4 : c == CAT_REVIEWS ? 3 : 4;
-    for (int section = 0; section < count; section++) {
-        int category_key = is_subcats
-            ? (c == CAT_TOOLS ? apps_subcats[section] : journal_subcats[section])
-            : (c == CAT_PORTS ? ports_groups[section] : section);
+    y += 4 + 26;
+    y += heading(lang == LANG_PT ? "VER SOMENTE:" : "SHOW ONLY:",
+                 24, y, 912, 2, C_SOFT, 0, 1, 1, 24) + 18;
+    const int count = cat_section_count(c);
+    const float fw = (912.f - 2 * 16) / 3.f;
+    for (int slot = -1; slot < count; ++slot) {
+        int number = 0;
+        for (int i = 0; i < g_nposts; i++)
+            if (slot < 0 ? g_posts[i].cat == c : cat_post_in_section(c, slot, &g_posts[i]))
+                number++;
+        char label[112];
+        snprintf(label, sizeof(label), "%s (%d)",
+                 slot < 0 ? (lang == LANG_PT ? "Todos" : "All") : cat_section_label(c, slot),
+                 number);
+        int position = slot + 1;
+        float fx = 24 + (position % 3) * (fw + 16);
+        float fy = y + (position / 3) * 96.f;
+        button(label, fx, fy, fw, cat_filter[c] == slot,
+               A_CAT_FILTER, slot, NULL, view_t0 + .08 + .035 * position);
+    }
+    y += ((count + 3) / 3) * 96.f + 12;
+    rect(24, y, 912, 4, C_LINE);
+    y += 32;
+    for (int section = 0; section < count; ++section) {
+        if (cat_filter[c] >= 0 && cat_filter[c] != section) continue;
         int ids[MAX_POSTS], n = 0;
         for (int i = 0; i < g_nposts; i++)
-            if (g_posts[i].cat == c &&
-                (is_subcats ? g_posts[i].subcat == category_key :
-                              g_posts[i].group == category_key)) ids[n++] = i;
-        static const char *en[] = {"Apps", "Tools", "Mods", "Plugins", "News", "Reviews", "Polls"};
-        static const char *pt[] = {"Apps", "Ferramentas", "Modificações", "Plugins", "Notícias", "Reviews", "Enquetes"};
-        char name[64] = "";
-        if (is_subcats) utf8_to_latin1(lang == LANG_PT ? pt[category_key] : en[category_key], name, sizeof(name));
-        else snprintf(name, sizeof(name), "%s", TXT(S_GRP0 + category_key));
-        char gh[96];
-        snprintf(gh, sizeof(gh), "%s (%d)", name, n);
+            if (cat_post_in_section(c, section, &g_posts[i])) ids[n++] = i;
+        char gh[112];
+        snprintf(gh, sizeof(gh), "%s (%d)", cat_section_label(c, section), n);
         y += heading(gh, 24, y, 912, 2, C_SOFT, 0, 1, 1, 24) + 28;
-        if (n) y += grid(ids, n, y, view_t0 + .12 + section * .1, .06);
+        if (n) y += grid(ids, n, y, view_t0 + .12 + section * .08, .06);
         else y += para(TXT(S_NOTHING), 24, y, 912, C_MUTED, 1, 1, 0);
         y += 44;
     }
@@ -1016,8 +1117,12 @@ static void build_cat(int c) {
         float w = title_width(keep_upper(TXT(S_REPOS)), 2) + 48;
         if (w > 912) w = 912;
         button(TXT(S_REPOS), SCR_W / 2 - w / 2, y, w, 0, A_URL, 0, "https://wolffsroom.github.io/WolffsStore/", -1);
-        y += 48;
+        y += 48 + 24;
     }
+    float bw = title_width(keep_upper(TXT(S_BACK_HOME)), 2) + 64;
+    if (bw > 912) bw = 912;
+    button(TXT(S_BACK_HOME), (SCR_W - bw) / 2, y, bw, 1, A_HOME, 0, NULL, -1);
+    y += 48;
     page_h = footer(y);
 }
 
@@ -2222,6 +2327,55 @@ static void draw_jobrow(const Op *o, float x, float y, float al) {
     }
 }
 
+/* Native five-card stack. No browser, no duplicate bitmaps and no glow on
+ * the side cards: the center draws last and remains visually in front. */
+static void draw_deck_card(const Op *o, float x, float y, float alpha, int f) {
+    if (o->scale < 0 || o->scale >= g_nposts) return;
+    int slot = o->bold - 2;
+    const float shade = slot == 0 ? 1.f : (abs(slot) == 1 ? .78f : .36f);
+    float a = alpha * shade;
+    /* Short horizontal slide after a D-pad or touch selection. */
+    float moving = (float)(now_s - deck_moved_t0);
+    if (moving >= 0.f && moving < .24f)
+        x += deck_direction * 20.f * (1.f - moving / .24f);
+    if (f) y -= slot == 0 ? 10.f : (abs(slot) == 1 ? 8.f : 5.f);
+    Post *p = &g_posts[o->scale];
+    const PostText *t = &p->t[lang];
+    float w = o->w, h = o->h;
+    unsigned frame_color = slot == 0 ? C_WHITE :
+                           abs(slot) == 1 ? C_BTNBRD : C_BORDER;
+    /* Slight shadow only, no focus halo or scaling for side cards. */
+    vita2d_draw_rectangle(x + 6, y + 8, w, h, col_alpha(C_SH2, alpha * .68f));
+    vita2d_draw_rectangle(x, y, w, h, col_alpha(C_PANEL, a));
+    float ch = (w - 8) * 9.f / 16.f;
+    if (cover_tex[o->scale]) {
+        tex_draw(cover_tex[o->scale], x + 4, y + 4, w - 8, ch,
+                 col_alpha(C_WHITE, a));
+    } else {
+        vita2d_draw_rectangle(x + 4, y + 4, w - 8, ch, col_alpha(C_DARK, a));
+    }
+    vita2d_draw_rectangle(x + 4, y + 4 + ch, w - 8, 4,
+                           col_alpha(C_BTNBRD, a));
+    frame_rect(x, y, w, h, 4, col_alpha(frame_color, a));
+    float ty = y + 12 + ch, tw = w - 24;
+    char *lines[4];
+    char buffer[480];
+    int tag_lines = wrap_body(t->tag, (int)tw, lines, 1, buffer, sizeof(buffer));
+    if (tag_lines) body_draw(lines[0], x + 12, ty, col_alpha(C_MUTED, a));
+    ty += 22;
+    int count = wrap_title(t->title, 2, (int)tw, lines, 2, buffer, sizeof(buffer));
+    for (int i = 0; i < count; i++)
+        title_draw(lines[i], x + 12, ty + i * 24, 2, col_alpha(C_WHITE, a));
+    /* Status at the bottom, clipped to a single readable line. */
+    count = wrap_body(t->status, (int)tw, lines, 1, buffer, sizeof(buffer));
+    if (count && y + h - 28 > ty + 10)
+        body_draw(lines[0], x + 12, y + h - 26, col_alpha(C_SOFT, a));
+    if (slot == 0 && f) {
+        /* Protagonist only; sides only lift by 5–8 px. */
+        frame_rect(x - 3, y - 3, w + 6, h + 6, 3, col_alpha(C_WHITE, alpha));
+    }
+}
+
 static int focused(int it) { return it >= 0 && it == focus; }
 static int last_focus = -2;
 static double focus_t0 = -10;
@@ -2285,6 +2439,7 @@ static void draw_page(void) {
             break;
         }
         case OP_STAGE: draw_stage(o, oy); break;
+        case OP_DECK_CARD: draw_deck_card(o, x, y, al, f); break;
         case OP_LOGO: draw_logo(x, y); break;
         case OP_PLAY: draw_play(x, y); break;
         case OP_BADGE: draw_badge(o->scale, x, y, f, al); break;
@@ -2486,7 +2641,12 @@ static void go(int v, int arg) {
     if (view != V_DLS && view != V_SEARCH) from_view = view;
     view = v;
     view_t0 = now_s;
-    if (v == V_CAT) view_cat = arg;
+    if (v == V_CAT) {
+        if (arg >= 0 && arg < CAT_COUNT &&
+            (from_view == V_HOME || (from_view == V_CAT && view_cat != arg)))
+            cat_filter[arg] = -1;
+        view_cat = arg;
+    }
     if (v == V_POST) {
         view_post = arg;
         load_shots(arg);
@@ -2506,11 +2666,8 @@ static void go(int v, int arg) {
             if (items[i].act == A_CANCEL) focus = i;
         if (focus < 0) focus = find_item(A_BACK, 0);
     } else if (v == V_CAT) {
-        for (int i = 0; i < nitems; i++)
-            if (items[i].act == A_POST) {
-                focus = i;
-                break;
-            }
+        focus = find_item(A_CAT_FILTER, cat_filter[view_cat]);
+        if (focus < 0) focus = find_item(A_CAT_FILTER, -1);
         if (focus < 0) focus = find_item(A_HOME, 0);
     } else {
         focus = find_item(A_POST, feat);
@@ -3114,6 +3271,40 @@ static void activate(int it) {
             rebuild();
         } else sfx("notice");
         break;
+    case A_DECK_CARD: {
+        if (view != V_HOME || deck_n == 0 || x->arg < 0 || x->arg >= deck_n) break;
+        int selected = x->arg;
+        if (selected == deck_pos) {
+            sfx("open");
+            go(V_POST, deck_order[selected]);
+        } else {
+            int step = selected - deck_pos;
+            if (step > deck_n / 2) step -= deck_n;
+            if (step < -deck_n / 2) step += deck_n;
+            deck_direction = step < 0 ? -1 : 1;
+            deck_pos = selected;
+            deck_moved_t0 = now_s;
+            sfx("tick");
+            rebuild();
+            focus = find_item(A_DECK_CARD, deck_pos);
+            cam_follow();
+            cam_clamp();
+        }
+        break;
+    }
+    case A_DECK_ARROW: {
+        if (view != V_HOME || deck_n < 2) break;
+        int direction = x->arg < 0 ? -1 : 1;
+        deck_direction = direction;
+        deck_pos = (deck_pos + direction + deck_n) % deck_n;
+        deck_moved_t0 = now_s;
+        sfx("tick");
+        rebuild();
+        focus = find_item(A_DECK_CARD, deck_pos);
+        cam_follow();
+        cam_clamp();
+        break;
+    }
     case A_PEEK:
         if (peek == x->arg) {
             peek = -1;
@@ -3143,6 +3334,19 @@ static void activate(int it) {
         sfx("open");
         go(V_CAT, x->arg);
         break;
+    case A_CAT_FILTER: {
+        if (view != V_CAT || view_cat < 0 || view_cat >= CAT_COUNT) break;
+        int selected = x->arg;
+        if (selected < -1 || selected >= cat_section_count(view_cat)) break;
+        cat_filter[view_cat] = selected;
+        sfx("tick");
+        rebuild();
+        focus = find_item(A_CAT_FILTER, selected);
+        if (focus < 0) focus = find_item(A_CAT_FILTER, -1);
+        cam_follow();
+        cam_clamp();
+        break;
+    }
     case A_HOME:
         go(V_HOME, 0);
         break;
@@ -3216,6 +3420,19 @@ static int visible(const Item *it) { return it->y + it->h > cam && it->y < cam +
 
 /* dir: 0 cima, 1 baixo, 2 esquerda, 3 direita */
 static void move(int dir) {
+    if (view == V_HOME && focus >= 0 && focus < nitems &&
+        (items[focus].act == A_DECK_CARD || items[focus].act == A_DECK_ARROW) &&
+        (dir == 2 || dir == 3) && deck_n >= 2) {
+        deck_direction = dir == 2 ? -1 : 1;
+        deck_pos = (deck_pos + deck_direction + deck_n) % deck_n;
+        deck_moved_t0 = now_s;
+        sfx("tick");
+        rebuild();
+        focus = find_item(A_DECK_CARD, deck_pos);
+        cam_follow();
+        cam_clamp();
+        return;
+    }
     if (focus < 0 || !visible(&items[focus])) {
         /* o foco saiu da tela (rolagem manual): pega o item visível mais próximo do centro */
         int best = -1;
@@ -3610,11 +3827,13 @@ static void apply_sync(void) {
 
 static unsigned jobs_seen_version;
 
-/* Deleting a registered app may briefly refresh SceShell. Keep the first
- * Store session usable by delaying cleanup until Home is fully stable.
- * Verify both TITLE_ID and TITLE from installed param.sfo; never delete a
- * different homebrew occupying a previously used helper ID. */
-static SceUID updater_cleanup_thread = -1;
+/* Engram Vita removes its helper on the FIRST launch of the updated main
+ * app, before entering the regular input/render loop. Deleting a registered
+ * title after 45 seconds in Home can force SceShell to refresh its title
+ * database while the Store is running, unexpectedly returning to LiveArea.
+ *
+ * Cleanup only positively identified helper TITLE_ID + TITLE values and
+ * leave the durable marker intact if removal/verification fails. */
 static int updater_cleanup_owned(const char *id) {
     char sfo[140], installed_id[32] = "", installed_title[100] = "";
     snprintf(sfo, sizeof(sfo), "ux0:app/%s/sce_sys/param.sfo", id);
@@ -3624,47 +3843,42 @@ static int updater_cleanup_owned(const char *id) {
            sfo_get(sfo, "TITLE", installed_title, sizeof(installed_title)) == 0 &&
            strcmp(installed_title, "Wolff's Store Updater") == 0;
 }
-static int updater_cleanup_run(SceSize arglen, void *args) {
-    (void)arglen; (void)args;
-    int pending=0;
-    const char *ids[]={"WFFS00043", "WOLF00002"};
-    const int requested[]={updater_cleanup_pending, legacy_updater_cleanup_pending};
-    for (int i=0;i<2;i++) {
+
+/* Called synchronously at startup before first_sync, start_sync, Home/input
+ * and audio playback. Never call it from tick_store or an app-active worker.
+ * The updater itself writes updater_cleanup.pending AFTER installing Store. */
+static void updater_cleanup_at_startup(void) {
+    if (!updater_cleanup_pending && !legacy_updater_cleanup_pending) return;
+    const char *ids[] = {"WFFS00043", "WOLF00002"};
+    const int requested[] = {updater_cleanup_pending, legacy_updater_cleanup_pending};
+    int retry = 0;
+    ws_log("updater: Engram-style cleanup at Store startup");
+    for (int i = 0; i < 2; ++i) {
         if (!requested[i]) continue;
         char sfo[140];
-        snprintf(sfo, sizeof(sfo),"ux0:app/%s/sce_sys/param.sfo",ids[i]);
-        if (!fs_exists(sfo)) continue;
+        snprintf(sfo, sizeof(sfo), "ux0:app/%s/sce_sys/param.sfo", ids[i]);
+        if (!fs_exists(sfo)) continue; /* Already uninstalled, perhaps by VitaShell. */
         if (!updater_cleanup_owned(ids[i])) {
-            ws_log("updater: refusing cleanup of unverified title %s",ids[i]);
-            pending=1;
+            ws_log("updater: skip unverified helper %s (TITLE_ID/TITLE mismatch)", ids[i]);
+            retry = 1;
             continue;
         }
-        ws_log("updater: Home stable, removing verified helper %s",ids[i]);
-        int r=inst_delete(ids[i]);
-        ws_log("updater: delayed DeletePkg(%s) -> 0x%08X",ids[i],r);
-        if (r < 0 || fs_exists(sfo)) pending=1;
+        ws_log("updater: removing verified helper at boot: %s", ids[i]);
+        int r = inst_delete(ids[i]); /* Waits for PromoterUtility to settle. */
+        ws_log("updater: startup DeletePkg(%s) -> 0x%08X", ids[i], r);
+        if (r < 0 || fs_exists(sfo)) {
+            ws_log("updater: %s still installed or deletion failed; retry next boot", ids[i]);
+            retry = 1;
+        }
     }
-    if (!pending) {
+    if (retry) {
+        fs_write(WS_DATA "/updater_cleanup.pending", "1", 1);
+        ws_log("updater: preserving pending marker; no in-session cleanup retry");
+    } else {
         fs_rm_rf(WS_DATA "/updater_cleanup.pending");
-        updater_cleanup_pending=legacy_updater_cleanup_pending=0;
-        ws_log("updater: delayed cleanup completed, marker removed");
-    } else ws_log("updater: some helpers remain; marker retained for later retry");
-    return sceKernelExitDeleteThread(0);
-}
-static void start_updater_cleanup_once(void) {
-    if (updater_cleanup_thread >= 0) return;
-    updater_cleanup_thread = sceKernelCreateThread(
-        "ws_updater_cleanup", updater_cleanup_run, 0x10000100, 0x8000, 0, 0, NULL);
-    if (updater_cleanup_thread < 0) {
-        ws_log("updater: unable to create cleanup worker 0x%08X",updater_cleanup_thread);
-        return;
+        ws_log("updater: cleanup confirmed before Home; marker removed");
     }
-    int r=sceKernelStartThread(updater_cleanup_thread,0,NULL);
-    if (r < 0) {
-        ws_log("updater: unable to start cleanup worker 0x%08X",r);
-        sceKernelDeleteThread(updater_cleanup_thread);
-        updater_cleanup_thread=-1;
-    } else ws_log("updater: deferred cleanup started after stable Home");
+    updater_cleanup_pending = legacy_updater_cleanup_pending = 0;
 }
 
 static void tick_store(void) {
@@ -3679,28 +3893,6 @@ static void tick_store(void) {
            !strcmp(g_posts[view_post].poll_id,poll_snapshot.id)) rebuild();
     }
     int intro_done = started && now_s - intro_t0 >= T_DONE;
-    /* Remove only our updater, only after the Home has been continuously
-     * stable. This avoids SceShell refresh during the fragile first frames
-     * after the updater -> new Store handoff. The deletion happens once,
-     * on a worker so it cannot freeze the main input/render loop. */
-    static double cleanup_stable_since = -1;
-    static int cleanup_attempted_this_session = 0;
-    int stable_home = !first_sync && started && intro_done &&
-        view == V_HOME && viewer < 0 && !settings_open &&
-        !vid_open && !ime_open && upd_job < 0 && jobs_active() == 0;
-    if (updater_cleanup_pending || legacy_updater_cleanup_pending) {
-        if (stable_home) {
-            if (cleanup_stable_since < 0) {
-                cleanup_stable_since = now_s;
-                ws_log("updater: Home stable, starting guarded 45-second grace period");
-            }
-            if (!cleanup_attempted_this_session &&
-                now_s - cleanup_stable_since >= 45.0) {
-                cleanup_attempted_this_session = 1;
-                start_updater_cleanup_once();
-            }
-        } else if (!cleanup_attempted_this_session) cleanup_stable_since = -1;
-    }
     int st = sync_state();
     if (first_sync && st == SYNC_READY) {
         /* apply_sync() may synchronously decode many covers and rebuild
@@ -4056,13 +4248,13 @@ static void draw_update_notes(void) {
     body_draw(line, x + (w - body_width(line)) / 2, y + 79, col_alpha(C_GOLD, p));
     vita2d_draw_rectangle(x + 32, y + 111, w - 64, 4, col_alpha(C_LINE, p));
     static const char *pt[] = {
-        "Removida a linha amarela em Configurações.",
-        "Godot 4 Vita agora possui um post único.",
-        "Preservadas as animações, sons e novas categorias."};
+        "Novo slider de cartas na Home.",
+        "Filtros por seção em Ports, Apps/Mods e Journal.",
+        "Remoção do Updater antes de abrir a Home."};
     static const char *en[] = {
-        "Removed the yellow line in Settings.",
-        "Godot 4 Vita now has a single article.",
-        "Animations, sounds and sections remain intact."};
+        "New stacked-cards slider on the Home screen.",
+        "Category filters for Ports, Apps/Mods and Journal.",
+        "Updater cleanup moved to app startup."};
     for (int i = 0; i < 3; i++) {
         utf8_to_latin1(lang == LANG_PT ? pt[i] : en[i], details[i], sizeof(details[i]));
         body_draw(details[i], x + 40, y + 138 + i * 52, col_alpha(C_WHITE, p));
@@ -4128,7 +4320,7 @@ int main(void) {
         fs_exists("ux0:app/WFFS00043/sce_sys/param.sfo") &&
         (upgraded_this_boot || fs_exists(WS_DATA "/updater_cleanup.pending"));
     if (updater_cleanup_pending)
-        ws_log("updater: deferred cleanup scheduled AFTER Home is ready");
+        ws_log("updater: cleanup scheduled at startup, before Home");
     /* A v0.99 bridge installs WOLF00002, but this app uses WFFS00043.
      * Only remove a legacy bubble whose installed SFO explicitly proves
      * it is OUR updater. Never delete the old WOLF00001 main app. */
@@ -4141,8 +4333,12 @@ int main(void) {
                     "TITLE", title, sizeof(title)) == 0 &&
             strcmp(title, "Wolff's Store Updater") == 0;
         if (legacy_updater_cleanup_pending)
-            ws_log("updater: verified legacy helper cleanup scheduled");
+            ws_log("updater: verified legacy helper cleanup scheduled at startup");
     }
+    /* Match Engram: remove any finished helper BEFORE the normal app loop,
+     * never 45 seconds after the user begins browsing Store. */
+    updater_cleanup_at_startup();
+
     /* sobras de uma atualização do próprio app */
     fs_rm_rf(WS_PKG_SELF);
     fs_rm_rf(WS_PKG_UPD);

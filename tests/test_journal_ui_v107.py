@@ -19,7 +19,7 @@ class JournalV107Tests(unittest.TestCase):
   self.assertIn('json_object_get(o, "subcategoria")',self.store)
   for word in ['"Apps/Mods"','"Journal"','"Enquetes"']:
    self.assertIn(word,self.main)
-  self.assertIn("static const int ports_groups[4] = {GRP_DONE, GRP_DOING",self.main)
+  self.assertIn("static const int cat_group_order[4] = {GRP_DONE, GRP_DOING",self.main)
   self.assertIn("static void build_news(",self.main)
  def test_sfx_and_animation(self):
   for tag in ["download","cancel","complete","notice","updates"]:

@@ -9,6 +9,7 @@
 #include "vendor/sha1.h"
 
 #include <psp2/io/fcntl.h>
+#include <psp2/kernel/threadmgr.h>
 #include <psp2/promoterutil.h>
 #include <psp2/sysmodule.h>
 #include <archive.h>
@@ -409,6 +410,32 @@ int inst_delete(const char *titleid) {
     if (r >= 0) {
         r = scePromoterUtilityDeletePkg(titleid);
         ws_log("cleanup updater: DeletePkg(%s) -> 0x%08X", titleid, r);
+        if (r >= 0) {
+            /* Engram Vita's package_remove() waits for the Promoter Utility
+             * to finish. Returning immediately leaves SceShell re-registering
+             * bubbles while the Store is already receiving input. */
+            int settled = 0;
+            for (int i = 0; i < 600; ++i) {
+                int state = 0;
+                int state_r = scePromoterUtilityGetState(&state);
+                if (state_r < 0) {
+                    ws_log("cleanup updater: GetState(%s) -> 0x%08X", titleid, state_r);
+                    /* As in Engram, a failed GetState call is not treated as
+                     * proof of failure: the caller verifies the package path. */
+                    settled = 1;
+                    break;
+                }
+                if (state == 0) {
+                    settled = 1;
+                    break;
+                }
+                sceKernelDelayThread(100 * 1000);
+            }
+            if (!settled) {
+                ws_log("cleanup updater: promoter still busy after 60s (%s)", titleid);
+                r = -1; /* Leave the marker for a cold-start retry. */
+            }
+        }
         scePromoterUtilityExit();
     }
     sceSysmoduleUnloadModuleInternal(SCE_SYSMODULE_INTERNAL_PROMOTER_UTIL);

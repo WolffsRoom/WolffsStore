@@ -307,6 +307,13 @@ reveal, cursor, typing SFX and the introductory TV transition remain.
 - The game VPK and SFO remain untouched.
 
 
+### v1.0.9 — Cartas, filtros e limpeza do Updater
+
+- Carrossel de cartas sobrepostas na Home (4 3 1 2 5), até 12 novidades navegáveis.
+- Filtros Todos e por seção em Ports, Apps/Mods, Traduções e Journal.
+- Remoção do helper de atualização antes do loop normal de interface, com verificação do título e espera pelo serviço de instalação. *Aguardando confirmação em PS Vita físico*.
+- Preservação de todos os posts, downloads, identidade visual e recursos anteriores.
+
 ### v1.0.8 — Ajustes visuais e catálogo
 
 - Removida a linha amarela inferior do item selecionado em Configurações; o realce branco animado permanece.
