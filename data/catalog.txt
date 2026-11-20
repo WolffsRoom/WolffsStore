@@ -1,10 +1,46 @@
+post	pokemon-emerald-voxel-ptbr-058
+cat	journal
+subcat	news
+group	0
+date	2026-11-20
+feat	1
+title.pt	Em andamento a atualização do Pokémon Emerald 3D Voxel em PTBR (Versão v0.5.8)
+tag.pt	News · Pokémon Emerald · PS Vita · PT-BR
+status.pt	Em andamento · v0.5.8 ainda não disponível
+desc.pt	A edição em português brasileiro de Pokémon Emerald 3D Voxel para PS Vita está sendo atualizada para a v0.5.8.
+feature_text.pt	A atualização PT-BR da v0.5.8 está em desenvolvimento. Confira uma captura do jogo.
+about.pt	A atualização do Pokémon Emerald 3D Voxel em português brasileiro (PT-BR) para o PlayStation Vita está em andamento, com base na versão v0.5.8. A imagem desta notícia mostra o visual voxel 3D do jogo durante o desenvolvimento da atualização.
+sec.pt	Estado atual
+para.pt	Esta publicação é um aviso de desenvolvimento, não um anúncio de lançamento. A edição PT-BR da v0.5.8 ainda está sendo preparada e não há um novo VPK disponibilizado nesta notícia.
+para.pt	As informações de download já publicadas para versões anteriores permanecem na página do projeto.
+info.pt	Projeto|Pokémon Emerald 3D Voxel
+info.pt	Plataforma|PlayStation Vita
+info.pt	Idioma|Português brasileiro
+info.pt	Versão em preparação|v0.5.8
+info.pt	Situação|Em andamento
+title.en	Pokémon Emerald 3D Voxel PT-BR v0.5.8 update in progress
+tag.en	News · Pokémon Emerald · PS Vita · PT-BR
+status.en	In progress · v0.5.8 not yet available
+desc.en	The Brazilian Portuguese edition of Pokémon Emerald 3D Voxel for PS Vita is being updated to v0.5.8.
+feature_text.en	PT-BR v0.5.8 is in development. Here's an in-game screenshot.
+about.en	The Brazilian Portuguese (PT-BR) update for Pokémon Emerald 3D Voxel on PlayStation Vita is currently in development, targeting v0.5.8. The screenshot shown in this post highlights the game's 3D voxel visual style during this update's development.
+sec.en	Current status
+para.en	This is a development progress announcement, not a release. The PT-BR v0.5.8 update is not yet available for download, and this article does not provide a new VPK.
+para.en	Previously published downloads remain listed on the existing project page.
+info.en	Project|Pokémon Emerald 3D Voxel
+info.en	Platform|PlayStation Vita
+info.en	Language|Brazilian Portuguese
+info.en	Target version|v0.5.8
+info.en	Status|In progress
+cover	1
+shots	1
+end	
 post	pizza
 cat	ports
 subcat	
 group	1
 date	2026-11-14
 updated	2026-11-18
-feat	1
 pixel	1
 video_arquivo	https://wolffsroom.github.io/WolffsRoomSite/posts/pizza/trailer-vita-v2.mp4
 progress	95

@@ -14,9 +14,9 @@ class ReleaseInvariants(unittest.TestCase):
         cls.video = (ROOT / "src/video.c").read_text(encoding="utf-8")
         cls.updater = (ROOT / "updater/main.c").read_text(encoding="utf-8")
 
-    def test_release_is_v110(self):
-        self.assertIn('set(WS_SFO_VERSION "01.10")', self.cmake)
-        self.assertIn('set(WS_FILE_VERSION "1.0.10")', self.cmake)
+    def test_release_is_v111(self):
+        self.assertIn('set(WS_SFO_VERSION "01.11")', self.cmake)
+        self.assertIn('set(WS_FILE_VERSION "1.0.11")', self.cmake)
 
     def test_featured_update_suffix_follows_app_title(self):
         hero=self.main[self.main.index("static void build_home("):
@@ -38,17 +38,18 @@ class ReleaseInvariants(unittest.TestCase):
     def test_title_id_migration_keeps_old_bubble_safe(self):
         self.assertIn('set(WS_TITLEID "WFFS00042")', self.cmake)
         self.assertIn('set(WS_UPDATER_TITLEID "WFFS00043")', self.cmake)
-        self.assertIn('set(WS_FILE_VERSION "1.0.10")', self.cmake)
-        self.assertIn('set(WS_SFO_VERSION "01.10")', self.cmake)
-        self.assertIn('#define WS_VERSION "1.0.10"', self.main)
+        self.assertIn('set(WS_FILE_VERSION "1.0.11")', self.cmake)
+        self.assertIn('set(WS_SFO_VERSION "01.11")', self.cmake)
+        self.assertIn('#define WS_VERSION "1.0.11"', self.main)
         self.assertIn('#define MAIN_TITLE "WFFS00042"', self.updater)
         self.assertNotIn('set(WS_TITLEID "WOLF00001")',self.cmake)
         self.assertNotIn('#define MAIN_TITLE "WOLF00001"',self.updater)
         self.assertNotIn('inst_delete("WOLF00002")', self.main)
         self.assertNotIn('"psgm:play?titleid=WOLF00002"', self.main)
-        self.assertIn('inst_delete("WFFS00043")', self.main)
+        self.assertNotIn('inst_delete(', self.main)
+        self.assertIn('updater_cleanup_owned("WFFS00043")', self.main)
         self.assertNotIn('inst_delete("WOLF00001")', self.main)
-        self.assertIn('strcmp(title, "Wolff\'s Store Updater") == 0', self.main)
+        self.assertIn('strcmp(installed_title, "Wolff\'s Store Updater") == 0', self.main)
         readme=(ROOT/"README.md").read_text(encoding="utf-8")
         self.assertIn("só exclui WOLF00001",readme)
         self.assertIn("APP_VER 00.xx",readme)
@@ -78,14 +79,14 @@ class ReleaseInvariants(unittest.TestCase):
         post=self.updater[self.updater.index("int main(void) {"):]
         self.assertLess(post.index("if (r < 0) {"),
                         post.index("migrate_legacy_store_after_install();"))
-        self.assertLess(post.index("migrate_legacy_store_after_install();"),
-                        post.index('updater_cleanup.pending'))
+        self.assertIn("migrate_legacy_store_after_install();",post)
+        self.assertNotIn("updater_cleanup.pending",self.updater)
         self.assertNotIn('inst_delete("WOLF00001")',self.main)
         self.assertIn('f = fopen(LEGACY_MIGRATION_MARKER, "wb")',self.updater)
 
     def test_legacy_updater_ownership_detection_is_retained_without_delete(self):
-        self.assertIn('sfo_get("ux0:app/WOLF00002/sce_sys/param.sfo"',self.main)
-        self.assertIn('strcmp(title, "Wolff\'s Store Updater") == 0',self.main)
+        self.assertNotIn('inst_delete("WOLF00002")',self.main)
+        self.assertIn('strcmp(installed_title, "Wolff\'s Store Updater") == 0',self.main)
         tick=self.main[self.main.index("static void tick_store("):
                        self.main.index("/* ================================================================ main */")]
         self.assertNotIn('inst_delete("WOLF00002")',tick)
@@ -230,42 +231,41 @@ class ReleaseInvariants(unittest.TestCase):
         self.assertNotIn("sceAppMgrLaunchAppByName(",updater_launch)
         self.assertNotIn("sceAppMgrLaunchAppByUri(0xFFFFF",updater_launch)
 
-    def test_updater_livearea_is_freshly_installed(self):
+    def test_existing_updater_is_reused_in_place_without_delete(self):
         launch = self.main[self.main.index("static void launch_updater("):
                            self.main.index("static void maybe_self_update(")]
-        self.assertLess(launch.index('inst_delete("WFFS00043")'),
+        self.assertIn('!updater_cleanup_owned("WFFS00043")',launch)
+        self.assertLess(launch.index('!updater_cleanup_owned("WFFS00043")'),
                         launch.index("inst_promote(WS_PKG_UPD)"))
+        self.assertIn("inst_promote(WS_PKG_UPD)",launch)
+        self.assertIn("updater: promoting reusable WFFS00043 in place",launch)
+        self.assertNotIn("inst_delete(",launch)
         for name in ("icon0.png","bg0.png","startup.png","template.xml"):
             self.assertIn('fs_exists("ux0:app/WFFS00043/sce_sys/',launch)
             self.assertIn(name,launch)
         self.assertIn('updater: installed bubble missing custom LiveArea files',launch)
 
-    def test_boot_cleanup_before_normal_store_loop(self):
-        tick=self.main[self.main.index("static void tick_store("):
-                       self.main.index("/* ================================================================ main */")]
-        self.assertNotIn("cleanup_stable_since",self.main)
-        self.assertNotIn("start_updater_cleanup_once",self.main)
-        self.assertNotIn("updater_cleanup_thread",self.main)
-        self.assertNotIn("inst_delete(",tick)
-        self.assertNotIn("updater_cleanup_at_startup();",tick)
-        cleanup=self.main[self.main.index("static int updater_cleanup_owned("):
-                          self.main.index("static void tick_store(")]
-        self.assertIn('sfo_get(sfo, "TITLE_ID"',cleanup)
-        self.assertIn('sfo_get(sfo, "TITLE"',cleanup)
-        self.assertIn("strcmp(installed_title, \"Wolff's Store Updater\")", cleanup)
-        self.assertIn("if (!updater_cleanup_owned(ids[i]))",cleanup)
-        self.assertIn("int r = inst_delete(ids[i]);",cleanup)
-        self.assertIn('fs_write(WS_DATA "/updater_cleanup.pending", "1", 1)',cleanup)
-        self.assertIn('fs_rm_rf(WS_DATA "/updater_cleanup.pending")',cleanup)
-        self.assertNotIn("sceKernelCreateThread(",cleanup)
-        self.assertIn("updater_cleanup.pending",self.updater)
+    def test_foreground_store_never_removes_installed_updater(self):
+        self.assertNotIn("inst_delete(",self.main)
+        self.assertNotIn("scePromoterUtilityDeletePkg(",self.main)
+        self.assertNotIn('updater_cleanup.pending",\n                            SCE_O_WRONLY',self.updater)
+        self.assertNotIn("updater_cleanup.pending",self.updater)
+        self.assertIn("static int updater_cleanup_owned(",self.main)
+        ownership = self.main[self.main.index("static int updater_cleanup_owned(const char *id) {"):
+                              self.main.index("static void updater_retire_marker_at_startup(")]
+        self.assertIn('sfo_get(sfo, "TITLE_ID"',ownership)
+        self.assertIn('sfo_get(sfo, "TITLE"',ownership)
+        self.assertIn('strcmp(installed_title, "Wolff\'s Store Updater")',ownership)
+        retired = self.main[self.main.index("static void updater_retire_marker_at_startup(void) {"):
+                            self.main.index("static void tick_store(void) {")]
+        self.assertIn('fs_rm_rf(marker)',retired)
+        self.assertNotIn('inst_delete(',retired)
+        self.assertNotIn('scePromoterUtilityDeletePkg(',retired)
         main=self.main[self.main.index("int main(void) {"):]
-        self.assertLess(main.index("updater_cleanup_at_startup();"),
+        self.assertLess(main.index("updater_retire_marker_at_startup();"),
                         main.index("jobs_init();"))
-        self.assertLess(main.index("updater_cleanup_at_startup();"),
+        self.assertLess(main.index("updater_retire_marker_at_startup();"),
                         main.index("start_sync(0);"))
-        self.assertLess(main.index("updater_cleanup_at_startup();"),
-                        main.index("for (;;) {"))
 
     def test_promoter_waits_until_delete_is_complete(self):
         install=(ROOT/"src/install.c").read_text(encoding="utf-8")

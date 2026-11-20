@@ -299,17 +299,9 @@ int main(void) {
      * Store never uninstalls the legacy app from its own first session. */
     migrate_legacy_store_after_install();
 
-    /* This marker is consumed only AFTER the new Store has started.
-     * Never uninstall WFFS00043 from inside its own updater process. */
-    sceIoMkdir("ux0:data/WolffsStore", 0777);
-    {
-        SceUID fd = sceIoOpen("ux0:data/WolffsStore/updater_cleanup.pending",
-                            SCE_O_WRONLY | SCE_O_CREAT | SCE_O_TRUNC, 0777);
-        if (fd >= 0) {
-            sceIoWrite(fd, "1", 1);
-            sceIoClose(fd);
-        }
-    }
+    /* Keep this reusable updater installed, instead of asking Store to
+     * delete it during its foreground session. The next upgrade overwrites
+     * the helper in place without a destructive SceShell LiveArea refresh. */
     /* Wait for SceShell registration. For psgm:play URIs the VitaSDK
      * explicitly documents 0x20000 to launch the app. 0xFFFFF opens
      * LiveArea, which caused the observed return instead of reopening. */

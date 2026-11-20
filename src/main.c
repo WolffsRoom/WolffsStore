@@ -32,7 +32,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "1.0.10"
+#define WS_VERSION "1.0.11"
 #endif
 
 /* ================================================================ textos */
@@ -176,8 +176,6 @@ static AppRelease app_rel;
 static int upd_job = -1, upd_skipped = 0; /* atualização do próprio app */
 static int update_notes_pending = 0, update_notes_visible = 0;
 static double update_notes_t0 = -100;
-static int updater_cleanup_pending = 0;
-static int legacy_updater_cleanup_pending = 0;
 static double letter_hop[16] = {-100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100};
 static double bark_t0 = -100, sync_done_t = -100;
 static int snd_menu = 0, snd_row = 0, vid_open = 0, vid_music = 0;
@@ -955,7 +953,10 @@ static void build_home(void) {
         const double others_pop = home_pop(T_DONE + .12, .72);
         deck_access_t0 = others_pop;
         int heading_first = nops;
-        y += heading(lang == LANG_PT ? "Outros lançamentos" : "Other releases",
+        char release_heading[48];
+        utf8_to_latin1(lang == LANG_PT ? "Lançamentos" : "Releases",
+                       release_heading, sizeof(release_heading));
+        y += heading(keep(release_heading),
                      24, y, 912, 2, C_SOFT, 0, 1, 1, 24) + 22;
         for (int i = heading_first; i < nops; i++) ops[i].pop = others_pop;
 
@@ -3808,8 +3809,11 @@ static int copy_new_updater_file(const char *relative, const char *dst) {
     return r == 0;
 }
 
+static int updater_cleanup_owned(const char *id);
+
 static void launch_updater(void) {
-    /* instala o updater (WFFS00043) a partir do que veio no VPK e passa a vez para ele */
+    /* Prepare the updater from the downloaded VPK; keep its registered
+     * LiveArea title installed to avoid a forced SceShell transition. */
     fs_rm_rf(WS_PKG_UPD);
     fs_mkdir_p(WS_PKG_UPD "/sce_sys");
     fs_mkdir_p(WS_PKG_UPD "/sce_sys/livearea/contents");
@@ -3824,20 +3828,23 @@ static void launch_updater(void) {
              copy_new_updater_file("sce_sys/livearea/contents/startup.png", WS_PKG_UPD "/sce_sys/livearea/contents/startup.png") &&
              copy_new_updater_file("sce_sys/livearea/contents/template.xml", WS_PKG_UPD "/sce_sys/livearea/contents/template.xml");
     if (ok) ok = inst_make_head_bin(WS_PKG_UPD) == 0;
-    /* Delete the OLD helper while Store is foreground, BEFORE the new helper
-     * starts. This refreshes icon0 and the LiveArea on every upgrade. */
-    if (ok && fs_exists("ux0:app/WFFS00043/sce_sys/param.sfo")) {
-        int remove_old = inst_delete("WFFS00043");
-        ws_log("updater: remove previous LiveArea/bubble -> 0x%08X", remove_old);
-        if (remove_old < 0) {
-            toast("Nao foi possivel substituir o Auto Updater antigo.");
-            upd_job = -1;
-            upd_skipped = 1;
-            return;
-        }
-        sceKernelDelayThread(350 * 1000); /* let SceShell invalidate old bubble */
+    /* Deleting an installed title while Store is foreground makes SceShell
+     * refresh the LiveArea/app database; on real PS Vita this has been
+     * observed to eject Store to LiveArea even when DeletePkg succeeds.
+     * Re-promote the owned WFFS00043 package as an in-place update instead.
+     * The harmless helper bubble remains installed for the next upgrade. */
+    if (ok && fs_exists("ux0:app/WFFS00043/sce_sys/param.sfo") &&
+        !updater_cleanup_owned("WFFS00043")) {
+        ws_log("updater: installed WFFS00043 is not our helper; refuse overwrite");
+        toast("Updater existente nao verificado. Nenhum app foi removido.");
+        upd_job = -1;
+        upd_skipped = 1;
+        return;
     }
-    if (ok) ok = inst_promote(WS_PKG_UPD) == 0;
+    if (ok) {
+        ws_log("updater: promoting reusable WFFS00043 in place (no DeletePkg)");
+        ok = inst_promote(WS_PKG_UPD) == 0;
+    }
     if (ok) {
         /* Refuse handoff to a helper whose LiveArea was not installed. */
         ok = fs_exists("ux0:app/WFFS00043/sce_sys/icon0.png") &&
@@ -3910,13 +3917,8 @@ static void apply_sync(void) {
 
 static unsigned jobs_seen_version;
 
-/* Engram Vita removes its helper on the FIRST launch of the updated main
- * app, before entering the regular input/render loop. Deleting a registered
- * title after 45 seconds in Home can force SceShell to refresh its title
- * database while the Store is running, unexpectedly returning to LiveArea.
- *
- * Cleanup only positively identified helper TITLE_ID + TITLE values and
- * leave the durable marker intact if removal/verification fails. */
+/* Before reusing an existing updater bubble, verify both its TITLE_ID
+ * and TITLE; never overwrite an unrelated title during in-place promotion. */
 static int updater_cleanup_owned(const char *id) {
     char sfo[140], installed_id[32] = "", installed_title[100] = "";
     snprintf(sfo, sizeof(sfo), "ux0:app/%s/sce_sys/param.sfo", id);
@@ -3927,41 +3929,17 @@ static int updater_cleanup_owned(const char *id) {
            strcmp(installed_title, "Wolff's Store Updater") == 0;
 }
 
-/* Called synchronously at startup before first_sync, start_sync, Home/input
- * and audio playback. Never call it from tick_store or an app-active worker.
- * The updater itself writes updater_cleanup.pending AFTER installing Store. */
-static void updater_cleanup_at_startup(void) {
-    if (!updater_cleanup_pending && !legacy_updater_cleanup_pending) return;
-    const char *ids[] = {"WFFS00043", "WOLF00002"};
-    const int requested[] = {updater_cleanup_pending, legacy_updater_cleanup_pending};
-    int retry = 0;
-    ws_log("updater: Engram-style cleanup at Store startup");
-    for (int i = 0; i < 2; ++i) {
-        if (!requested[i]) continue;
-        char sfo[140];
-        snprintf(sfo, sizeof(sfo), "ux0:app/%s/sce_sys/param.sfo", ids[i]);
-        if (!fs_exists(sfo)) continue; /* Already uninstalled, perhaps by VitaShell. */
-        if (!updater_cleanup_owned(ids[i])) {
-            ws_log("updater: skip unverified helper %s (TITLE_ID/TITLE mismatch)", ids[i]);
-            retry = 1;
-            continue;
-        }
-        ws_log("updater: removing verified helper at boot: %s", ids[i]);
-        int r = inst_delete(ids[i]); /* Waits for PromoterUtility to settle. */
-        ws_log("updater: startup DeletePkg(%s) -> 0x%08X", ids[i], r);
-        if (r < 0 || fs_exists(sfo)) {
-            ws_log("updater: %s still installed or deletion failed; retry next boot", ids[i]);
-            retry = 1;
-        }
-    }
-    if (retry) {
-        fs_write(WS_DATA "/updater_cleanup.pending", "1", 1);
-        ws_log("updater: preserving pending marker; no in-session cleanup retry");
-    } else {
-        fs_rm_rf(WS_DATA "/updater_cleanup.pending");
-        ws_log("updater: cleanup confirmed before Home; marker removed");
-    }
-    updater_cleanup_pending = legacy_updater_cleanup_pending = 0;
+/* Older updater binaries (including v1.0.10) leave this marker behind.
+ * A package delete during any Store session - including its initialization -
+ * can force SceShell to drop Store back into LiveArea. Clearing ONLY the
+ * obsolete marker is safe; keep WFFS00043 installed for reuse. */
+static void updater_retire_marker_at_startup(void) {
+    const char *marker = WS_DATA "/updater_cleanup.pending";
+    if (!fs_exists(marker)) return;
+    ws_log("updater: old cleanup marker found; preserving helper to avoid LiveArea exit");
+    fs_rm_rf(marker);
+    if (fs_exists(marker))
+        ws_log("updater: could not clear old marker; skipping destructive cleanup");
 }
 
 static void tick_store(void) {
@@ -4331,13 +4309,13 @@ static void draw_update_notes(void) {
     body_draw(line, x + (w - body_width(line)) / 2, y + 79, col_alpha(C_GOLD, p));
     vita2d_draw_rectangle(x + 32, y + 111, w - 64, 4, col_alpha(C_LINE, p));
     static const char *pt[] = {
-        "3 cards recentes; os demais no slider.",
-        "Filtros centralizados: Andamento, Terceiros, Mods.",
-        "TouchOnVita usa o config taiHEN ativo."};
+        "Updater reutilizado sem apagar a bolha.",
+        "Corrigido o título Lançamentos no Vita.",
+        "Novidade Pokémon Emerald v0.5.8 no site."};
     static const char *en[] = {
-        "Latest 3 cards; other releases in a slider.",
-        "Centered filters: Progress, Third-party, Mods.",
-        "TouchOnVita updates the active taiHEN config."};
+        "Updater reused without deleting its bubble.",
+        "Fixed the Releases title on PS Vita.",
+        "Pokémon Emerald v0.5.8 news on the site."};
     for (int i = 0; i < 3; i++) {
         utf8_to_latin1(lang == LANG_PT ? pt[i] : en[i], details[i], sizeof(details[i]));
         body_draw(details[i], x + 40, y + 138 + i * 52, col_alpha(C_WHITE, p));
@@ -4381,14 +4359,10 @@ int main(void) {
     /* Defer helper removal only until it has finished exiting, not until a
      * SECOND launch of Store. The updater writes the marker after promotion. */
     fs_mkdir_p(WS_DATA);
-    int upgraded_this_boot = 1;
     {
         int last_len = 0;
         char *last = fs_read(WS_DATA "/last_started_version.txt", &last_len);
-        if (last) {
-            upgraded_this_boot = strcmp(last, WS_VERSION) != 0;
-            free(last);
-        }
+        free(last);
         fs_write(WS_DATA "/last_started_version.txt", WS_VERSION, (int)strlen(WS_VERSION));
         char *seen = fs_read(WS_DATA "/release_notes_seen.txt", NULL);
         if (last_len <= 0 && !seen) {
@@ -4399,28 +4373,9 @@ int main(void) {
         }
         free(seen);
     }
-    updater_cleanup_pending =
-        fs_exists("ux0:app/WFFS00043/sce_sys/param.sfo") &&
-        (upgraded_this_boot || fs_exists(WS_DATA "/updater_cleanup.pending"));
-    if (updater_cleanup_pending)
-        ws_log("updater: cleanup scheduled at startup, before Home");
-    /* A v0.99 bridge installs WOLF00002, but this app uses WFFS00043.
-     * Only remove a legacy bubble whose installed SFO explicitly proves
-     * it is OUR updater. Never delete the old WOLF00001 main app. */
-    {
-        char title[128] = "";
-        legacy_updater_cleanup_pending =
-            fs_exists(WS_DATA "/updater_cleanup.pending") &&
-            fs_exists("ux0:app/WOLF00002/sce_sys/param.sfo") &&
-            sfo_get("ux0:app/WOLF00002/sce_sys/param.sfo",
-                    "TITLE", title, sizeof(title)) == 0 &&
-            strcmp(title, "Wolff's Store Updater") == 0;
-        if (legacy_updater_cleanup_pending)
-            ws_log("updater: verified legacy helper cleanup scheduled at startup");
-    }
-    /* Match Engram: remove any finished helper BEFORE the normal app loop,
-     * never 45 seconds after the user begins browsing Store. */
-    updater_cleanup_at_startup();
+    /* Existing v1.0.10 updater may have left a delete-on-boot marker.
+     * Do not remove its LiveArea title from the foreground Store process. */
+    updater_retire_marker_at_startup();
 
     /* sobras de uma atualização do próprio app */
     fs_rm_rf(WS_PKG_SELF);

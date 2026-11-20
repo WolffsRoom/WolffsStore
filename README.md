@@ -307,6 +307,15 @@ reveal, cursor, typing SFX and the introductory TV transition remain.
 - The game VPK and SFO remain untouched.
 
 
+### v1.0.11 — Updater reutilizável e título Lançamentos
+
+- Correção do retorno à LiveArea: o aplicativo não chama mais scePromoterUtilityDeletePkg para remover o Auto Updater enquanto a Store está em execução — nem no início da Home. Esse registro desencadeava atualização do banco da LiveArea e podia interromper a Store.
+- Updater reutilizável: o auxiliar com ID WFFS00043 permanece instalado e é atualizado por promoção in-place na atualização seguinte, após validar TITLE_ID e TITLE. É um compromisso de segurança: a bolha auxiliar poderá continuar visível, mas não será apagada automaticamente.
+- Um marcador updater_cleanup.pending deixado por versões anteriores é descartado sem excluir o app. A versão nova do Auto Updater não cria mais esse marcador.
+- Título nativo alterado para “Lançamentos” (Releases em inglês), convertido de UTF-8 para Latin-1 antes da renderização pixel-art, corrigindo os caracteres no Vita.
+- Catálogo interno regenerado com a News Pokémon Emerald 3D Voxel PT-BR v0.5.8, marcada como Em andamento e sem download da versão ainda não lançada.
+- Atualização validada por testes automatizados e compilação VitaSDK; comportamento real do shell e promoção in-place ainda requer validação no Vita físico.
+
 ### v1.0.10 — Últimas três novidades, Outros lançamentos e TouchOnVita
 
 - Home: três cards tradicionais com as últimas novidades; os posts anteriores são exibidos no carrossel Outros lançamentos, sem duplicações.

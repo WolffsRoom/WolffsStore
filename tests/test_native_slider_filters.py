@@ -19,7 +19,9 @@ class NativeCarouselAndFiltersTests(unittest.TestCase):
                "deck_rank[i] = i + 1"):
    self.assertIn(line,s)
   self.assertIn('grid(latest_ids, latest_n, y, nav_pop(0) + .05, .08)',s)
-  self.assertIn('lang == LANG_PT ? "Outros lançamentos" : "Other releases"',s)
+  self.assertIn('lang == LANG_PT ? "Lançamentos" : "Releases"',s)
+  self.assertIn("utf8_to_latin1(lang == LANG_PT",s)
+  self.assertIn("heading(keep(release_heading)",s)
   self.assertIn("const int visual[5] = {-2, 2, -1, 1, 0}",s)
   self.assertIn("if (deck_pos == 0 && deck_n >= 5)",s)
   for line in ("if (slot == -2) di = 3","else if (slot == -1) di = 2",
@@ -117,10 +119,11 @@ class NativeCarouselAndFiltersTests(unittest.TestCase):
   self.assertNotIn("nav_pop(0)",section)
   self.assertIn("#define T_DONE  4.30",s)
 
- def test_updater_cleanup_still_runs_before_home(self):
+ def test_updater_marker_retired_without_removing_helper_before_home(self):
   s=self.source
-  self.assertIn("updater_cleanup_at_startup();",s)
-  self.assertLess(s.index("updater_cleanup_at_startup();"),s.index("build_home();",s.index("int main(void) {")))
+  self.assertIn("updater_retire_marker_at_startup();",s)
+  self.assertLess(s.index("updater_retire_marker_at_startup();"),s.index("build_home();",s.index("int main(void) {")))
+  self.assertNotIn("inst_delete(",s)
 
 if __name__=="__main__":
  unittest.main()
