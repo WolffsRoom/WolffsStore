@@ -1,0 +1,15 @@
+name: PR Validation (taiHEN and Source Tests)
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  host-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Python source regression tests
+        run: python3 -m unittest discover -s tests -p 'test_*.py' -q
+      - name: Functional test of taiHEN installation and rollback
+        run: python3 tests/run_touch_plugin_host.py
