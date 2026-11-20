@@ -153,7 +153,9 @@ static int cat_filter[CAT_COUNT] = {-1, -1, -1, -1};
 /* Visual chronology starts as 4 / 3 / 1 / 2 / 5, front card in slot 2.
  * Array indices refer to the CURRENT synced catalog: no duplicate textures. */
 #define DECK_LIMIT 12
-static int deck_order[DECK_LIMIT], deck_n = 0, deck_pos = 2, deck_last_count = 0;
+static int deck_order[DECK_LIMIT], deck_rank[DECK_LIMIT];
+static int deck_n = 0, deck_pos = 2, deck_last_count = 0;
+static double deck_access_t0 = 1e9; /* prevent clicks and D-pad before intro */
 static double deck_moved_t0 = -100;
 static int deck_direction = 0;
 static int dls_from = V_HOME, dls_from_arg = 0;
@@ -410,6 +412,27 @@ static int button(const char *label, float x, float y, float w, int filled, int 
     }
     Op *hl = halo(x, y, w, h, 0, 0, 1, it);
     hl->pop = pop;
+    return it;
+}
+
+/* Site-style square control for the other releases deck. A native pixel
+ * triangle avoids the double "<</>>" glyph and text-width inconsistencies. */
+static int deck_arrow(float x, float y, int direction, double pop) {
+    const float w = 48.f, h = 48.f;
+    int it = item(x, y, w, h, A_DECK_ARROW, direction, NULL);
+    if (it >= 0) items[it].pop = pop;
+    Op *bg = rect(x, y, w, h, C_DARK);
+    bg->item = it;
+    bg->pop = pop;
+    Op *fr = frame(x, y, w, h, C_BTNBRD, C_WHITE, it);
+    fr->pop = pop;
+    Op *arrow = op(OP_TRI, x + 16, y + 15, 16, 16);
+    arrow->scale = direction > 0 ? 1 : 0;
+    arrow->c = arrow->cf = C_WHITE;
+    arrow->item = it;
+    arrow->pop = pop;
+    Op *glow = halo(x, y, w, h, 0, 0, 1, it);
+    glow->pop = pop;
     return it;
 }
 
@@ -893,40 +916,68 @@ static void build_home(void) {
         button("GitHub", items[b1].x + items[b1].w + 16, iy, 0, 0,
                A_URL, 0, keep(url), ip + 0.32);
     }
-    /* As 12 novidades mais recentes, no estilo cartas 4 / 3 / 1 / 2 / 5. */
+    /* Last three updates use the traditional large cards. The deck below
+     * displays ONLY older entries (4th onward), with no repeated posts. */
     y = sy + sh + 44;
+    int latest_ids[3], latest_n = 0;
+    int older_ids[DECK_LIMIT];
     deck_n = 0;
-    int fresh[DECK_LIMIT];
-    for (int i = 0; i < g_nposts && deck_n < DECK_LIMIT; i++)
-        if (!g_posts[i].poll_id[0]) fresh[deck_n++] = i;
-    if (deck_n >= 5) {
-        deck_order[0] = fresh[3];
-        deck_order[1] = fresh[2];
-        deck_order[2] = fresh[0];
-        deck_order[3] = fresh[1];
-        for (int i = 4; i < deck_n; i++) deck_order[i] = fresh[i];
-    } else {
-        for (int i = 0; i < deck_n; i++) deck_order[i] = fresh[i];
+    for (int i = 0; i < g_nposts; i++) {
+        if (g_posts[i].poll_id[0]) continue;
+        if (latest_n < 3) latest_ids[latest_n++] = i;
+        else if (deck_n < DECK_LIMIT) older_ids[deck_n++] = i;
+        if (latest_n == 3 && deck_n == DECK_LIMIT) break;
+    }
+    if (latest_n) {
+        int heading_first = nops;
+        y += heading(TXT(S_LATEST3), 24, y, 912, 2, C_SOFT, 0, 1, 1, 24) + 24;
+        for (int i = heading_first; i < nops; i++) ops[i].pop = nav_pop(0);
+        y += grid(latest_ids, latest_n, y, nav_pop(0) + .05, .08) + 44;
+    }
+
+    /* Stored chronologically, so arrows advance 01 -> 02 -> 03.
+     * Only the first five-card layout uses the special visual fan
+     * 4 / 3 / 1 / 2 / 5; this does not shuffle the navigation order. */
+    for (int i = 0; i < deck_n; ++i) {
+        deck_order[i] = older_ids[i];
+        deck_rank[i] = i + 1;
     }
     if (deck_n != deck_last_count || deck_pos >= deck_n) {
-        deck_pos = deck_n >= 5 ? 2 : 0;
+        deck_pos = 0;
         deck_last_count = deck_n;
     }
+    deck_access_t0 = 1e9;
     if (deck_n) {
-        int f0 = nops;
-        y += heading(TXT(S_LATEST3), 24, y, 912, 2, C_SOFT, 0, 1, 1, 24) + 22;
-        for (int i = f0; i < nops; i++) ops[i].pop = nav_pop(0);
-        const int visual[5] = {-2, 2, -1, 1, 0}; /* draw back cards first */
+        /* The whole section begins only AFTER the first Home intro (T_DONE).
+         * Do not let the deck/arrow/counter render or become touchable while
+         * the logo/typewriter/CRT animation is running. Returning Home uses
+         * the shorter existing re-entry timeline instead of replaying intro. */
+        const double others_pop = home_pop(T_DONE + .12, .72);
+        deck_access_t0 = others_pop;
+        int heading_first = nops;
+        y += heading(lang == LANG_PT ? "Outros lançamentos" : "Other releases",
+                     24, y, 912, 2, C_SOFT, 0, 1, 1, 24) + 22;
+        for (int i = heading_first; i < nops; i++) ops[i].pop = others_pop;
+
+        const int visual[5] = {-2, 2, -1, 1, 0}; /* paint center LAST */
         const int small4[4] = {-2, 1, -1, 0};
         const int small3[3] = {-1, 1, 0};
         const int small2[2] = {1, 0};
-        for (int v = 0; v < (deck_n >= 5 ? 5 : deck_n); v++) {
-            int slot = deck_n >= 5 ? visual[v] :
-                       deck_n == 4 ? small4[v] :
-                       deck_n == 3 ? small3[v] :
-                       deck_n == 2 ? small2[v] : 0;
+        for (int v = 0; v < (deck_n >= 5 ? 5 : deck_n); ++v) {
+            const int slot = deck_n >= 5 ? visual[v] :
+                             deck_n == 4 ? small4[v] :
+                             deck_n == 3 ? small3[v] :
+                             deck_n == 2 ? small2[v] : 0;
             int di = (deck_pos + slot + deck_n) % deck_n;
-            int pi = deck_order[di];
+            if (deck_pos == 0 && deck_n >= 5) {
+                /* At first view, positions are 4,3,1,2,5. */
+                if (slot == -2) di = 3;
+                else if (slot == -1) di = 2;
+                else if (slot == 0) di = 0;
+                else if (slot == 1) di = 1;
+                else if (slot == 2) di = 4;
+            }
+            const int pi = deck_order[di];
             float bx, by, bw, bh;
             switch (slot) {
             case -2: bx = 62; by = y + 56; bw = 188; bh = 222; break;
@@ -936,22 +987,26 @@ static void build_home(void) {
             default: bx = 332; by = y + 10; bw = 296; bh = 306; break;
             }
             int it = item(bx, by, bw, bh, A_DECK_CARD, di, NULL);
-            if (it >= 0) items[it].pop = nav_pop(0) + .08;
+            if (it >= 0) items[it].pop = others_pop + .04;
             Op *o = op(OP_DECK_CARD, bx, by, bw, bh);
-            o->scale = pi;             /* index in latest synced catalog */
-            o->bold = slot + 2;        /* 0..4; 2 is center */
+            o->scale = pi;
+            o->bold = slot + 2;
             o->item = it;
-            o->pop = nav_pop(0) + .08;
+            o->pop = others_pop + .04;
         }
         y += 338;
-        /* Navigation controls are native touch targets and work with D-pad. */
-        button("<<", 340, y, 80, 0, A_DECK_ARROW, -1, NULL, nav_pop(0) + .1);
+        /* Square pixel-arrow buttons: same 4px borders, 48px height and
+         * grayscale focus state as the site. */
+        deck_arrow(340, y, -1, others_pop + .08);
         char counter[24];
-        snprintf(counter, sizeof(counter), "%02d / %02d", deck_pos >= 2 && deck_n >= 5
-                 ? (deck_pos == 2 ? 1 : deck_pos == 3 ? 2 : deck_pos == 1 ? 3 : deck_pos == 0 ? 4 : deck_pos + 1)
-                 : deck_pos + 1, deck_n);
-        title(keep(counter), 432, y + 14, 2, C_SOFT, 0);
-        button(">>", 540, y, 80, 0, A_DECK_ARROW, 1, NULL, nav_pop(0) + .1);
+        snprintf(counter, sizeof(counter), "%02d / %02d",
+                 deck_rank[deck_pos], deck_n);
+        int counter_first = nops;
+        title(keep(counter), (SCR_W - title_width(counter, 2)) / 2,
+              y + 16, 2, C_SOFT, 0);
+        for (int i = counter_first; i < nops; i++)
+            ops[i].pop = others_pop + .08;
+        deck_arrow(572, y, 1, others_pop + .08);
         y += 48 + 32;
         int caption_first = nops;
         y += para(lang == LANG_PT
@@ -959,7 +1014,7 @@ static void build_home(void) {
                  : "Explore other completed and in-development projects...",
                  24, y, 912, C_SOFT, 1, 2, 0) + 24;
         for (int i = caption_first; i < nops; i++)
-            ops[i].pop = home_pop(T_NAV + .30, .90);
+            ops[i].pop = others_pop + .12;
     }
 
     /* categorias */
@@ -1064,6 +1119,18 @@ static const char *cat_section_label(int c, int section) {
     return TXT(S_GRP0 + key);
 }
 
+/* Compact labels ONLY on the "Ver somente" controls. Category headings
+ * preserve their full names, while the clickable filter tiles stay equal. */
+static const char *cat_filter_label(int c, int section) {
+    int key = cat_section_key(c, section);
+    if (c == CAT_TOOLS && key == SUB_MOD) return "Mods";
+    if (c != CAT_TOOLS && c != CAT_REVIEWS) {
+        if (key == GRP_DOING) return lang == LANG_PT ? "Andamento" : "Progress";
+        if (key == GRP_OTHERS) return lang == LANG_PT ? "Terceiros" : "Third-party";
+    }
+    return cat_section_label(c, section);
+}
+
 static void build_cat(int c) {
     layout_begin();
     float y = page_bar(header() + 24, A_HOME, TXT(S_CAT0 + c), NULL) + 32;
@@ -1082,23 +1149,31 @@ static void build_cat(int c) {
     y += heading(lang == LANG_PT ? "VER SOMENTE:" : "SHOW ONLY:",
                  24, y, 912, 2, C_SOFT, 0, 1, 1, 24) + 18;
     const int count = cat_section_count(c);
-    const float fw = (912.f - 2 * 16) / 3.f;
+    /* Two uniform 344x48 tiles per row. The final odd tile (normally All
+     * plus four sections = five buttons) is centered, not left-aligned. */
+    const int columns = 2;
+    const int total_buttons = count + 1;
+    const float fw = 344.f, gap_x = 16.f, gap_y = 70.f;
     for (int slot = -1; slot < count; ++slot) {
         int number = 0;
-        for (int i = 0; i < g_nposts; i++)
+        for (int i = 0; i < g_nposts; ++i)
             if (slot < 0 ? g_posts[i].cat == c : cat_post_in_section(c, slot, &g_posts[i]))
-                number++;
+                ++number;
         char label[112];
         snprintf(label, sizeof(label), "%s (%d)",
-                 slot < 0 ? (lang == LANG_PT ? "Todos" : "All") : cat_section_label(c, slot),
+                 slot < 0 ? (lang == LANG_PT ? "Todos" : "All") : cat_filter_label(c, slot),
                  number);
-        int position = slot + 1;
-        float fx = 24 + (position % 3) * (fw + 16);
-        float fy = y + (position / 3) * 96.f;
+        int position = slot + 1, row = position / columns;
+        int row_remaining = total_buttons - row * columns;
+        int row_count = row_remaining < columns ? row_remaining : columns;
+        float row_w = row_count * fw + (row_count - 1) * gap_x;
+        float row_left = (SCR_W - row_w) / 2.f;
+        float fx = row_left + (position % columns) * (fw + gap_x);
+        float fy = y + row * gap_y;
         button(label, fx, fy, fw, cat_filter[c] == slot,
                A_CAT_FILTER, slot, NULL, view_t0 + .08 + .035 * position);
     }
-    y += ((count + 3) / 3) * 96.f + 12;
+    y += ((total_buttons + columns - 1) / columns) * gap_y + 12.f;
     rect(24, y, 912, 4, C_LINE);
     y += 32;
     for (int section = 0; section < count; ++section) {
@@ -2461,8 +2536,11 @@ static void draw_page(void) {
             vita2d_draw_rectangle(x + 2 * k, y + 1 * k, k, 3 * k, col_alpha(RGBA8(0xFF, 0xF6, 0xC8, 0xFF), al));
             break;
         }
-        case OP_TRI: /* seta para a esquerda (botão voltar) */
-            for (int i = 0; i < 4; i++) vita2d_draw_rectangle(x + i * 4, y + 6 - i * 2, 4, 4 + i * 4, c);
+        case OP_TRI: /* back arrow or mirrored right arrow in carousel */
+            for (int i = 0; i < 4; i++) {
+                int dx = o->scale == 1 ? (3 - i) * 4 : i * 4;
+                vita2d_draw_rectangle(x + dx, y + 6 - i * 2, 4, 4 + i * 4, c);
+            }
             break;
         default: break;
         }
@@ -3272,7 +3350,8 @@ static void activate(int it) {
         } else sfx("notice");
         break;
     case A_DECK_CARD: {
-        if (view != V_HOME || deck_n == 0 || x->arg < 0 || x->arg >= deck_n) break;
+        if (view != V_HOME || now_s < deck_access_t0 ||
+            deck_n == 0 || x->arg < 0 || x->arg >= deck_n) break;
         int selected = x->arg;
         if (selected == deck_pos) {
             sfx("open");
@@ -3293,7 +3372,7 @@ static void activate(int it) {
         break;
     }
     case A_DECK_ARROW: {
-        if (view != V_HOME || deck_n < 2) break;
+        if (view != V_HOME || now_s < deck_access_t0 || deck_n < 2) break;
         int direction = x->arg < 0 ? -1 : 1;
         deck_direction = direction;
         deck_pos = (deck_pos + direction + deck_n) % deck_n;
@@ -3420,7 +3499,11 @@ static int visible(const Item *it) { return it->y + it->h > cam && it->y < cam +
 
 /* dir: 0 cima, 1 baixo, 2 esquerda, 3 direita */
 static void move(int dir) {
-    if (view == V_HOME && focus >= 0 && focus < nitems &&
+    if (view == V_HOME && now_s < deck_access_t0 &&
+        focus >= 0 && focus < nitems &&
+        (items[focus].act == A_DECK_CARD || items[focus].act == A_DECK_ARROW))
+        return; /* Cards are not interactive while they are invisible. */
+    if (view == V_HOME && now_s >= deck_access_t0 && focus >= 0 && focus < nitems &&
         (items[focus].act == A_DECK_CARD || items[focus].act == A_DECK_ARROW) &&
         (dir == 2 || dir == 3) && deck_n >= 2) {
         deck_direction = dir == 2 ? -1 : 1;
