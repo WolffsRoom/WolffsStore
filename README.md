@@ -307,6 +307,12 @@ reveal, cursor, typing SFX and the introductory TV transition remain.
 - The game VPK and SFO remain untouched.
 
 
+### v1.0.8 — Ajustes visuais e catálogo
+
+- Removida a linha amarela inferior do item selecionado em Configurações; o realce branco animado permanece.
+- O catálogo da Wolff's Room agora reúne Godot 4 Vita e a release v0.3 num único post, mantendo o Showcase v0.3 e os links antigos redirecionados no site.
+- Mantidos os recursos, sons, categorias, enquetes experimentais e correção Update/Reinstall da v1.0.7. Votação permanece desativada sem backend seguro.
+
 ### v1.0.7 — Interface, categorias e Journal
 
 - Categorias no Vita: Ports (Finalizados, Em desenvolvimento, Próximos, Outras equipes), Apps/Mods (Apps, Ferramentas, Modificações, Plugins), Traduções e Journal (News, Reviews, Enquetes).

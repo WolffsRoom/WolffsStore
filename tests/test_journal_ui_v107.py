@@ -30,6 +30,8 @@ class JournalV107Tests(unittest.TestCase):
   self.assertIn('sfx("notice")',self.main)
   self.assertIn("now_s * 105.f",self.main)
   self.assertIn("float stagger",self.main)
+  self.assertNotIn("vita2d_draw_rectangle(rx, ry + rh - 11, rw, 4, col_alpha(C_GOLD, k))",self.main)
+  self.assertIn("vita2d_draw_rectangle(rx, ry, rw, rh - 7, col_alpha(C_WHITE, k * glow))",self.main)
   self.assertIn("sinf(f * .07f)",self.updater)
   sync=self.main[self.main.index("static void draw_first_sync(void)"):
                  self.main.index("static void draw_title",self.main.index("static void draw_first_sync(void)"))] if "static void draw_title" in self.main[self.main.index("static void draw_first_sync(void)")+1:] else self.main[self.main.index("static void draw_first_sync(void)"):]

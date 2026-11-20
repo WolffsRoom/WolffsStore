@@ -561,81 +561,6 @@ link.en	Releases|https://github.com/WolffsRoom/FMVita/releases
 cover	1
 shots	3
 end	
-post	godot-v03
-cat	ferramentas
-subcat	ferramentas
-group	0
-date	2026-11-13
-updated	2026-11-19
-title.pt	Godot 4 Vita - Release v0.3
-tag.pt	Engine · C++
-status.pt	v0.3 lançada
-desc.pt	Nova versão da Godot 4 para PS Vita, agora com editor para Windows, Linux e macOS.
-feature_text.pt	Nova versão da Godot 4 para PS Vita, agora com editor para Windows, Linux e macOS.
-about.pt	A v0.3 da Godot 4 Vita foca em memória, leitura de arquivos e no renderizador GXM nativo, e traz exportação para PS Vita também no Linux e no macOS.
-sec.pt	Aviso
-para.pt	A Godot 4 Vita é um programa de computador. O editor desta versão está disponível para Windows, Linux e macOS: você cria e exporta o jogo no PC e instala o VPK gerado no Vita. No Vita, o arquivo para testar é o Showcase v0.3 (VPK), uma demonstração com streaming do PCK, áudio e cenas 2D/3D.
-para.pt	A versão de macOS ainda não foi testada em um Mac de verdade, e a de Linux foi gerada no Ubuntu 22.04.
-sec.pt	Novidades
-item.pt	Editores portáteis para Windows x64, Linux x86_64 e macOS universal (Intel e Apple Silicon), com a plataforma PS Vita embutida
-item.pt	Pré-leitura do game.pck no quarto núcleo da CPU (com CapUnlocker), ligada por padrão
-item.pt	Menos memória usada: texturas vão para a GPU ao carregar e a malha 3D foi para a CDRAM (cerca de 24 MiB livres em cenas 3D)
-item.pt	Áudio no modo godot3 por padrão, com thread de mixagem própria
-item.pt	Pasta de dados separada com game.pck e logs em ux0:data/<pasta>/logs/
-item.pt	Correções no 3D em GXM (Sprite3D, AnimatedSprite3D, Label3D) e canvas 2D mais leve
-item.pt	Compilador de shaders no console, experimental e desligado por padrão
-item.pt	SelfTest VPK que roda todos os testes no aparelho em cerca de 6 minutos
-sec.pt	Instalação
-item.pt	Baixe o editor do seu sistema na página da release, extraia a pasta inteira e mantenha a pasta vita/ ao lado do executável
-item.pt	Em Project > Export, adicione o preset PS Vita e exporte o .vpk
-item.pt	Instale o VPK com o VitaShell e copie a pasta de dados gerada para ux0:data/
-item.pt	Projetos da v0.2 precisam ser exportados de novo com o editor da v0.3
-sec.pt	Limitações conhecidas
-item.pt	3D em GXM ainda é experimental
-item.pt	Shaders e materiais de CanvasItem ainda não são renderizados
-item.pt	Troféus são empacotados, mas ainda não desbloqueiam
-info.pt	Versão|v0.3
-info.pt	Editor|Windows, Linux e macOS
-info.pt	Base|Godot 4.8-dev7
-info.pt	Showcase|VPK para PS Vita
-info.pt	Requisitos|HENkaku/Ens? e kubridge
-link.pt	Baixar Showcase (VPK)|https://github.com/WolffsRoom/godot4-psvita/releases/download/v0.3/Godot4Vita-v0.3-Showcase.vpk
-title.en	Godot 4 Vita - Release v0.3
-tag.en	Engine · C++
-status.en	v0.3 released
-desc.en	New Godot 4 for PS Vita release, now with editors for Windows, Linux and macOS.
-feature_text.en	New Godot 4 for PS Vita release, now with editors for Windows, Linux and macOS.
-about.en	Godot 4 Vita v0.3 focuses on memory, file reading and the native GXM renderer, and adds PS Vita export on Linux and macOS too.
-sec.en	Notice
-para.en	Godot 4 Vita is a computer program. This version's editor is available for Windows, Linux and macOS: you build and export the game on your PC and install the generated VPK on the Vita. To try it on the Vita, get the Showcase v0.3 (VPK), a demo with PCK streaming, audio and 2D/3D scenes.
-para.en	The macOS build hasn't been tested on a real Mac yet, and the Linux build was made on Ubuntu 22.04.
-sec.en	What's new
-item.en	Portable editors for Windows x64, Linux x86_64 and universal macOS (Intel and Apple Silicon), with the PS Vita platform built in
-item.en	game.pck read-ahead on the fourth CPU core (with CapUnlocker), on by default
-item.en	Lower memory use: textures go to the GPU on load and the 3D mesh moved to CDRAM (about 24 MiB freed in 3D scenes)
-item.en	godot3 audio mode by default, with its own mixer thread
-item.en	Separate data folder with game.pck and logs in ux0:data/<folder>/logs/
-item.en	GXM 3D fixes (Sprite3D, AnimatedSprite3D, Label3D) and a lighter 2D canvas
-item.en	On-console shader compiler, experimental and off by default
-item.en	SelfTest VPK that runs every device test in about 6 minutes
-sec.en	Installation
-item.en	Download the editor for your OS from the release page, extract the whole folder and keep vita/ next to the executable
-item.en	In Project > Export, add the PS Vita preset and export the .vpk
-item.en	Install the VPK with VitaShell and copy the generated data folder to ux0:data/
-item.en	v0.2 projects must be re-exported with the v0.3 editor
-sec.en	Known limitations
-item.en	GXM 3D is still experimental
-item.en	CanvasItem shaders and materials aren't rendered yet
-item.en	Trophies are packaged but don't unlock yet
-info.en	Version|v0.3
-info.en	Editor|Windows, Linux and macOS
-info.en	Base|Godot 4.8-dev7
-info.en	Showcase|PS Vita VPK
-info.en	Requirements|HENkaku/Ens? and kubridge
-link.en	Download Showcase (VPK)|https://github.com/WolffsRoom/godot4-psvita/releases/download/v0.3/Godot4Vita-v0.3-Showcase.vpk
-cover	1
-shots	0
-end	
 post	void
 cat	ports
 subcat	
@@ -854,49 +779,91 @@ cat	ferramentas
 subcat	ferramentas
 group	0
 date	2026-06-05
-updated	2026-11-19
-title.pt	Godot 4 PSVita
+updated	2026-11-13
+title.pt	Godot 4 Vita - Release v0.3
 tag.pt	Engine · C++
-status.pt	2D em GXM nativo · 3D experimental
-desc.pt	Godot Engine 4.x portada para o PS Vita, com exportação direto do editor.
-feature_text.pt	Godot Engine 4.x portada para o PS Vita, com exportação direto do editor.
-about.pt	Runtime customizado do Godot 4.8-dev7 com renderização GXM nativa, mais um editor para Windows que exporta VPKs de PS Vita diretamente. Não é um release oficial do Godot.
-sec.pt	As três partes
-item.pt	Runtime - Godot compilado para ARM como libgodot.so, com camada de sistema do Vita, renderers GXM, áudio, entrada e arquivos
-item.pt	Loader - eboot.bin que carrega e inicia a libgodot.so, mostra a animação de carregamento e gerencia CapUnlocker, logs e caminhos de dados
-item.pt	Editor Windows - PS Vita como plataforma de exportação embutida
-sec.pt	Destaques
-item.pt	Godot4Vita.exe portátil: exporta sem addon, Python, WSL ou VitaSDK
-item.pt	Transforma projetos compatíveis em VPK instalável, com LiveArea e pasta de dados separada
-item.pt	Seleção de template de LiveArea com prévia
+status.pt	v0.3 lançada
+desc.pt	Nova versão da Godot 4 para PS Vita, agora com editor para Windows, Linux e macOS.
+feature_text.pt	Nova versão da Godot 4 para PS Vita, agora com editor para Windows, Linux e macOS.
+about.pt	A v0.3 da Godot 4 Vita foca em memória, leitura de arquivos e no renderizador GXM nativo, e traz exportação para PS Vita também no Linux e no macOS.
+sec.pt	O projeto Godot 4 Vita
+para.pt	Este port reúne três componentes que permitem criar jogos no PC e executá-los no PS Vita:
+para.pt	O editor começou com uma versão portátil para Windows (Godot4Vita.exe), sem necessidade de addon, Python, WSL ou VitaSDK para exportar projetos compatíveis. A v0.3 ampliou essa disponibilidade para Linux e macOS, mantendo a criação de VPKs pelo editor.
+item.pt	Runtime - Godot compilado para ARM como libgodot.so, com sistema do Vita, renderizadores GXM, áudio, controles e gerenciamento de arquivos
+item.pt	Loader - eboot.bin que inicia o runtime e gerencia a animação de carregamento, CapUnlocker, logs e caminhos de dados
+item.pt	Editor para PC - exportação PS Vita integrada, incluindo LiveArea e pasta de dados separada
+sec.pt	Aviso
+para.pt	A Godot 4 Vita é um programa de computador. O editor desta versão está disponível para Windows, Linux e macOS: você cria e exporta o jogo no PC e instala o VPK gerado no Vita. No Vita, o arquivo para testar é o Showcase v0.3 (VPK), uma demonstração com streaming do PCK, áudio e cenas 2D/3D.
+para.pt	A versão de macOS ainda não foi testada em um Mac de verdade, e a de Linux foi gerada no Ubuntu 22.04.
+sec.pt	Novidades
+item.pt	Editores portáteis para Windows x64, Linux x86_64 e macOS universal (Intel e Apple Silicon), com a plataforma PS Vita embutida
+item.pt	Pré-leitura do game.pck no quarto núcleo da CPU (com CapUnlocker), ligada por padrão
+item.pt	Menos memória usada: texturas vão para a GPU ao carregar e a malha 3D foi para a CDRAM (cerca de 24 MiB livres em cenas 3D)
+item.pt	Áudio no modo godot3 por padrão, com thread de mixagem própria
+item.pt	Pasta de dados separada com game.pck e logs em ux0:data/<pasta>/logs/
+item.pt	Correções no 3D em GXM (Sprite3D, AnimatedSprite3D, Label3D) e canvas 2D mais leve
+item.pt	Compilador de shaders no console, experimental e desligado por padrão
+item.pt	SelfTest VPK que roda todos os testes no aparelho em cerca de 6 minutos
+sec.pt	Instalação
+item.pt	Baixe o editor do seu sistema na página da release, extraia a pasta inteira e mantenha a pasta vita/ ao lado do executável
+item.pt	Em Project > Export, adicione o preset PS Vita e exporte o .vpk
+item.pt	Instale o VPK com o VitaShell e copie a pasta de dados gerada para ux0:data/
+item.pt	Projetos da v0.2 precisam ser exportados de novo com o editor da v0.3
+sec.pt	Limitações conhecidas
+item.pt	3D em GXM ainda é experimental
+item.pt	Shaders e materiais de CanvasItem ainda não são renderizados
+item.pt	Troféus são empacotados, mas ainda não desbloqueiam
+info.pt	Versão|v0.3
+info.pt	Editor|Windows, Linux e macOS
 info.pt	Base|Godot 4.8-dev7
-info.pt	2D|GXM nativo
-info.pt	3D|Experimental
-info.pt	Troféus|Em desenvolvimento
-link.pt	Ver no GitHub|https://github.com/WolffsRoom/godot4-psvita
-link.pt	Releases|https://github.com/WolffsRoom/godot4-psvita/releases
-title.en	Godot 4 PSVita
+info.pt	Showcase|VPK para PS Vita
+info.pt	Requisitos|HENkaku/Ens? e kubridge
+link.pt	Repositório do projeto|https://github.com/WolffsRoom/godot4-psvita
+link.pt	Todas as releases|https://github.com/WolffsRoom/godot4-psvita/releases
+link.pt	Baixar Showcase (VPK)|https://github.com/WolffsRoom/godot4-psvita/releases/download/v0.3/Godot4Vita-v0.3-Showcase.vpk
+title.en	Godot 4 Vita - Release v0.3
 tag.en	Engine · C++
-status.en	Native GXM 2D · experimental 3D
-desc.en	Godot Engine 4.x ported to PS Vita, exporting straight from the editor.
-feature_text.en	Godot Engine 4.x ported to PS Vita, exporting straight from the editor.
-about.en	A custom Godot 4.8-dev7 runtime with native GXM rendering, plus a Windows editor that exports PS Vita VPKs directly. This is not an official Godot release.
-sec.en	The three parts
-item.en	Runtime - Godot built for ARM as libgodot.so, with a Vita system layer, GXM renderers, audio, input and files
-item.en	Loader - eboot.bin that loads and starts libgodot.so, shows the boot animation and handles CapUnlocker, logs and data paths
-item.en	Windows editor - PS Vita as a built-in export platform
-sec.en	Highlights
-item.en	Portable Godot4Vita.exe: exports with no addon, Python, WSL or VitaSDK
-item.en	Turns compatible projects into installable VPKs, with LiveArea and a separate data folder
-item.en	LiveArea template picker with preview
+status.en	v0.3 released
+desc.en	New Godot 4 for PS Vita release, now with editors for Windows, Linux and macOS.
+feature_text.en	New Godot 4 for PS Vita release, now with editors for Windows, Linux and macOS.
+about.en	Godot 4 Vita v0.3 focuses on memory, file reading and the native GXM renderer, and adds PS Vita export on Linux and macOS too.
+sec.en	About Godot 4 Vita
+para.en	The project comprises three components to create games on a computer and run them on PS Vita:
+para.en	The original portable Windows editor (Godot4Vita.exe) exported compatible projects without an addon, Python, WSL or VitaSDK. The v0.3 release expanded the editor to Linux and macOS.
+item.en	Runtime - Godot compiled for ARM as libgodot.so, with Vita platform integration, native GXM rendering, audio, input and file access
+item.en	Loader - eboot.bin, responsible for launching the runtime, displaying the startup animation, and handling CapUnlocker, logs and data paths
+item.en	Desktop editor - native PS Vita export platform, producing VPKs with LiveArea assets and a separate data directory
+sec.en	Notice
+para.en	Godot 4 Vita is a computer program. This version's editor is available for Windows, Linux and macOS: you build and export the game on your PC and install the generated VPK on the Vita. To try it on the Vita, get the Showcase v0.3 (VPK), a demo with PCK streaming, audio and 2D/3D scenes.
+para.en	The macOS build hasn't been tested on a real Mac yet, and the Linux build was made on Ubuntu 22.04.
+sec.en	What's new
+item.en	Portable editors for Windows x64, Linux x86_64 and universal macOS (Intel and Apple Silicon), with the PS Vita platform built in
+item.en	game.pck read-ahead on the fourth CPU core (with CapUnlocker), on by default
+item.en	Lower memory use: textures go to the GPU on load and the 3D mesh moved to CDRAM (about 24 MiB freed in 3D scenes)
+item.en	godot3 audio mode by default, with its own mixer thread
+item.en	Separate data folder with game.pck and logs in ux0:data/<folder>/logs/
+item.en	GXM 3D fixes (Sprite3D, AnimatedSprite3D, Label3D) and a lighter 2D canvas
+item.en	On-console shader compiler, experimental and off by default
+item.en	SelfTest VPK that runs every device test in about 6 minutes
+sec.en	Installation
+item.en	Download the editor for your OS from the release page, extract the whole folder and keep vita/ next to the executable
+item.en	In Project > Export, add the PS Vita preset and export the .vpk
+item.en	Install the VPK with VitaShell and copy the generated data folder to ux0:data/
+item.en	v0.2 projects must be re-exported with the v0.3 editor
+sec.en	Known limitations
+item.en	GXM 3D is still experimental
+item.en	CanvasItem shaders and materials aren't rendered yet
+item.en	Trophies are packaged but don't unlock yet
+info.en	Version|v0.3
+info.en	Editor|Windows, Linux and macOS
 info.en	Base|Godot 4.8-dev7
-info.en	2D|Native GXM
-info.en	3D|Experimental
-info.en	Trophies|In development
-link.en	View on GitHub|https://github.com/WolffsRoom/godot4-psvita
-link.en	Releases|https://github.com/WolffsRoom/godot4-psvita/releases
+info.en	Showcase|PS Vita VPK
+info.en	Requirements|HENkaku/Ens? and kubridge
+link.en	Project repository|https://github.com/WolffsRoom/godot4-psvita
+link.en	All releases|https://github.com/WolffsRoom/godot4-psvita/releases
+link.en	Download Showcase (VPK)|https://github.com/WolffsRoom/godot4-psvita/releases/download/v0.3/Godot4Vita-v0.3-Showcase.vpk
 cover	1
-shots	0
+shots	1
 end	
 post	idol
 cat	ports

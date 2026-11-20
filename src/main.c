@@ -32,7 +32,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "1.0.7"
+#define WS_VERSION "1.0.8"
 #endif
 
 /* ================================================================ textos */
@@ -2761,7 +2761,6 @@ static void draw_settings(void) {
         if (focus_row) {
             float glow = .85f + .15f * sinf((float)now_s * 4.f);
             vita2d_draw_rectangle(rx, ry, rw, rh - 7, col_alpha(C_WHITE, k * glow));
-            vita2d_draw_rectangle(rx, ry + rh - 11, rw, 4, col_alpha(C_GOLD, k));
         }
         unsigned tc = col_alpha(focus_row ? C_DARK : C_WHITE, k);
         int option = settings_option(r);
@@ -4057,13 +4056,13 @@ static void draw_update_notes(void) {
     body_draw(line, x + (w - body_width(line)) / 2, y + 79, col_alpha(C_GOLD, p));
     vita2d_draw_rectangle(x + 32, y + 111, w - 64, 4, col_alpha(C_LINE, p));
     static const char *pt[] = {
-        "Novas seções: Apps/Mods, Journal e subcategorias.",
-        "Animações e sons renovados na interface.",
-        "Instalações e atualizações com estados mais claros."};
+        "Removida a linha amarela em Configurações.",
+        "Godot 4 Vita agora possui um post único.",
+        "Preservadas as animações, sons e novas categorias."};
     static const char *en[] = {
-        "New Apps/Mods and Journal sections and subcategories.",
-        "Refreshed interface animations and sounds.",
-        "Clearer download and installation states."};
+        "Removed the yellow line in Settings.",
+        "Godot 4 Vita now has a single article.",
+        "Animations, sounds and sections remain intact."};
     for (int i = 0; i < 3; i++) {
         utf8_to_latin1(lang == LANG_PT ? pt[i] : en[i], details[i], sizeof(details[i]));
         body_draw(details[i], x + 40, y + 138 + i * 52, col_alpha(C_WHITE, p));
