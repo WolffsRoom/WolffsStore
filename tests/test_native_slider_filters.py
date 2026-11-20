@@ -13,10 +13,19 @@ class NativeCarouselAndFiltersTests(unittest.TestCase):
  def test_five_card_visual_order_and_twelve_browseable_news(self):
   s=self.source
   self.assertIn("#define DECK_LIMIT 12",s)
-  for line in ("deck_order[0] = fresh[3]","deck_order[1] = fresh[2]",
-               "deck_order[2] = fresh[0]","deck_order[3] = fresh[1]"):
+  for line in ("if (latest_n < 3) latest_ids[latest_n++] = i",
+               "else if (deck_n < DECK_LIMIT) older_ids[deck_n++] = i",
+               "deck_order[i] = older_ids[i]",
+               "deck_rank[i] = i + 1"):
    self.assertIn(line,s)
+  self.assertIn('grid(latest_ids, latest_n, y, nav_pop(0) + .05, .08)',s)
+  self.assertIn('lang == LANG_PT ? "Outros lançamentos" : "Other releases"',s)
   self.assertIn("const int visual[5] = {-2, 2, -1, 1, 0}",s)
+  self.assertIn("if (deck_pos == 0 && deck_n >= 5)",s)
+  for line in ("if (slot == -2) di = 3","else if (slot == -1) di = 2",
+               "else if (slot == 0) di = 0","else if (slot == 1) di = 1",
+               "else if (slot == 2) di = 4"):
+   self.assertIn(line,s)
   order=[4,3,1,2,5]+list(range(6,13))
   center=2
   self.assertEqual([order[(center+k)%len(order)] for k in (-2,-1,0,1,2)],
@@ -31,8 +40,10 @@ class NativeCarouselAndFiltersTests(unittest.TestCase):
   self.assertIn("OP_DECK_CARD",s)
   self.assertIn("draw_deck_card(o, x, y, al, f)",s)
   self.assertIn("int it = item(bx, by, bw, bh, A_DECK_CARD, di, NULL)",s)
-  self.assertIn('button("<<", 340, y, 80, 0, A_DECK_ARROW, -1',s)
-  self.assertIn('button(">>", 540, y, 80, 0, A_DECK_ARROW, 1',s)
+  self.assertIn("deck_arrow(340, y, -1, nav_pop(0) + .1)",s)
+  self.assertIn("deck_arrow(572, y, 1, nav_pop(0) + .1)",s)
+  self.assertIn("static int deck_arrow(float x, float y, int direction, double pop)",s)
+  self.assertIn("Op *arrow = op(OP_TRI, x + 16, y + 15, 16, 16)",s)
   self.assertIn("case A_DECK_CARD:",s)
   self.assertIn("case A_DECK_ARROW:",s)
   self.assertIn("items[focus].act == A_DECK_CARD || items[focus].act == A_DECK_ARROW",s)
@@ -71,6 +82,12 @@ class NativeCarouselAndFiltersTests(unittest.TestCase):
   self.assertIn("focus = find_item(A_CAT_FILTER, selected)",s)
   self.assertIn("button(TXT(S_BACK_HOME)",s)
   self.assertIn("if (v == V_CAT) {",s)
+  self.assertIn('return lang == LANG_PT ? "Andamento" : "Progress"',s)
+  self.assertIn('return lang == LANG_PT ? "Terceiros" : "Third-party"',s)
+  self.assertIn('c == CAT_TOOLS && key == SUB_MOD) return "Mods"',s)
+  self.assertIn("const float fw = 344.f, gap_x = 16.f, gap_y = 70.f;",s)
+  self.assertIn("float row_left = (SCR_W - row_w) / 2.f;",s)
+  self.assertIn("float fx = row_left + (position % columns) * (fw + gap_x);",s)
 
  def test_translated_heading_and_caption_are_gated_until_intro(self):
   s=self.source
