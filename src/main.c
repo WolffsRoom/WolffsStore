@@ -155,6 +155,7 @@ static int cat_filter[CAT_COUNT] = {-1, -1, -1, -1};
 #define DECK_LIMIT 12
 static int deck_order[DECK_LIMIT], deck_rank[DECK_LIMIT];
 static int deck_n = 0, deck_pos = 2, deck_last_count = 0;
+static double deck_access_t0 = 1e9; /* prevent clicks and D-pad before intro */
 static double deck_moved_t0 = -100;
 static int deck_direction = 0;
 static int dls_from = V_HOME, dls_from_arg = 0;
@@ -945,11 +946,18 @@ static void build_home(void) {
         deck_pos = 0;
         deck_last_count = deck_n;
     }
+    deck_access_t0 = 1e9;
     if (deck_n) {
+        /* The whole section begins only AFTER the first Home intro (T_DONE).
+         * Do not let the deck/arrow/counter render or become touchable while
+         * the logo/typewriter/CRT animation is running. Returning Home uses
+         * the shorter existing re-entry timeline instead of replaying intro. */
+        const double others_pop = home_pop(T_DONE + .12, .72);
+        deck_access_t0 = others_pop;
         int heading_first = nops;
         y += heading(lang == LANG_PT ? "Outros lançamentos" : "Other releases",
                      24, y, 912, 2, C_SOFT, 0, 1, 1, 24) + 22;
-        for (int i = heading_first; i < nops; i++) ops[i].pop = nav_pop(0);
+        for (int i = heading_first; i < nops; i++) ops[i].pop = others_pop;
 
         const int visual[5] = {-2, 2, -1, 1, 0}; /* paint center LAST */
         const int small4[4] = {-2, 1, -1, 0};
@@ -979,23 +987,26 @@ static void build_home(void) {
             default: bx = 332; by = y + 10; bw = 296; bh = 306; break;
             }
             int it = item(bx, by, bw, bh, A_DECK_CARD, di, NULL);
-            if (it >= 0) items[it].pop = nav_pop(0) + .08;
+            if (it >= 0) items[it].pop = others_pop + .04;
             Op *o = op(OP_DECK_CARD, bx, by, bw, bh);
             o->scale = pi;
             o->bold = slot + 2;
             o->item = it;
-            o->pop = nav_pop(0) + .08;
+            o->pop = others_pop + .04;
         }
         y += 338;
         /* Square pixel-arrow buttons: same 4px borders, 48px height and
          * grayscale focus state as the site. */
-        deck_arrow(340, y, -1, nav_pop(0) + .1);
+        deck_arrow(340, y, -1, others_pop + .08);
         char counter[24];
         snprintf(counter, sizeof(counter), "%02d / %02d",
                  deck_rank[deck_pos], deck_n);
+        int counter_first = nops;
         title(keep(counter), (SCR_W - title_width(counter, 2)) / 2,
               y + 16, 2, C_SOFT, 0);
-        deck_arrow(572, y, 1, nav_pop(0) + .1);
+        for (int i = counter_first; i < nops; i++)
+            ops[i].pop = others_pop + .08;
+        deck_arrow(572, y, 1, others_pop + .08);
         y += 48 + 32;
         int caption_first = nops;
         y += para(lang == LANG_PT
@@ -1003,7 +1014,7 @@ static void build_home(void) {
                  : "Explore other completed and in-development projects...",
                  24, y, 912, C_SOFT, 1, 2, 0) + 24;
         for (int i = caption_first; i < nops; i++)
-            ops[i].pop = home_pop(T_NAV + .30, .90);
+            ops[i].pop = others_pop + .12;
     }
 
     /* categorias */
@@ -3339,7 +3350,8 @@ static void activate(int it) {
         } else sfx("notice");
         break;
     case A_DECK_CARD: {
-        if (view != V_HOME || deck_n == 0 || x->arg < 0 || x->arg >= deck_n) break;
+        if (view != V_HOME || now_s < deck_access_t0 ||
+            deck_n == 0 || x->arg < 0 || x->arg >= deck_n) break;
         int selected = x->arg;
         if (selected == deck_pos) {
             sfx("open");
@@ -3360,7 +3372,7 @@ static void activate(int it) {
         break;
     }
     case A_DECK_ARROW: {
-        if (view != V_HOME || deck_n < 2) break;
+        if (view != V_HOME || now_s < deck_access_t0 || deck_n < 2) break;
         int direction = x->arg < 0 ? -1 : 1;
         deck_direction = direction;
         deck_pos = (deck_pos + direction + deck_n) % deck_n;
@@ -3487,7 +3499,11 @@ static int visible(const Item *it) { return it->y + it->h > cam && it->y < cam +
 
 /* dir: 0 cima, 1 baixo, 2 esquerda, 3 direita */
 static void move(int dir) {
-    if (view == V_HOME && focus >= 0 && focus < nitems &&
+    if (view == V_HOME && now_s < deck_access_t0 &&
+        focus >= 0 && focus < nitems &&
+        (items[focus].act == A_DECK_CARD || items[focus].act == A_DECK_ARROW))
+        return; /* Cards are not interactive while they are invisible. */
+    if (view == V_HOME && now_s >= deck_access_t0 && focus >= 0 && focus < nitems &&
         (items[focus].act == A_DECK_CARD || items[focus].act == A_DECK_ARROW) &&
         (dir == 2 || dir == 3) && deck_n >= 2) {
         deck_direction = dir == 2 ? -1 : 1;

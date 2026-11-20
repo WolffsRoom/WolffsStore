@@ -40,8 +40,8 @@ class NativeCarouselAndFiltersTests(unittest.TestCase):
   self.assertIn("OP_DECK_CARD",s)
   self.assertIn("draw_deck_card(o, x, y, al, f)",s)
   self.assertIn("int it = item(bx, by, bw, bh, A_DECK_CARD, di, NULL)",s)
-  self.assertIn("deck_arrow(340, y, -1, nav_pop(0) + .1)",s)
-  self.assertIn("deck_arrow(572, y, 1, nav_pop(0) + .1)",s)
+  self.assertIn("deck_arrow(340, y, -1, others_pop + .08)",s)
+  self.assertIn("deck_arrow(572, y, 1, others_pop + .08)",s)
   self.assertIn("static int deck_arrow(float x, float y, int direction, double pop)",s)
   self.assertIn("Op *arrow = op(OP_TRI, x + 16, y + 15, 16, 16)",s)
   self.assertIn("case A_DECK_CARD:",s)
@@ -97,7 +97,25 @@ class NativeCarouselAndFiltersTests(unittest.TestCase):
    self.assertIn(text,s)
   self.assertNotIn("Check out the latest three updates...",s)
   self.assertNotIn("Confira as últimas três novidades...",s)
-  self.assertIn("home_pop(T_NAV + .30, .90)",s)
+  self.assertIn("home_pop(T_DONE + .12, .72)",s)
+
+ def test_other_releases_only_after_initial_intro(self):
+  s=self.source
+  section=s[s.index("    if (deck_n) {", s.index("static void build_home(void)")):
+            s.index("    /* categorias */",s.index("static void build_home(void)"))]
+  self.assertIn("const double others_pop = home_pop(T_DONE + .12, .72);",section)
+  self.assertIn("ops[i].pop = others_pop;",section)
+  self.assertIn("items[it].pop = others_pop + .04;",section)
+  self.assertIn("o->pop = others_pop + .04;",section)
+  self.assertIn("deck_arrow(340, y, -1, others_pop + .08);",section)
+  self.assertIn("deck_arrow(572, y, 1, others_pop + .08);",section)
+  self.assertIn("ops[i].pop = others_pop + .08;",section)
+  self.assertIn("ops[i].pop = others_pop + .12;",section)
+  self.assertIn("deck_access_t0 = others_pop;",section)
+  self.assertIn("now_s < deck_access_t0",s)
+  self.assertIn("now_s >= deck_access_t0",s)
+  self.assertNotIn("nav_pop(0)",section)
+  self.assertIn("#define T_DONE  4.30",s)
 
  def test_updater_cleanup_still_runs_before_home(self):
   s=self.source
