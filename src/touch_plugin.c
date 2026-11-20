@@ -106,6 +106,12 @@ static void revert_file(const char *target,const char *backup,int had){
 
 int touch_plugin_install(const char *archive, NetProgress *pr){
     err[0]=0;
+    /* taiHEN prefers ux0:tai/config.txt if it exists, falling back to
+       ur0:tai/config.txt. Never silently edit an inactive configuration. */
+    const char *active_cfg=fs_exists("ux0:tai/config.txt")
+        ? "ux0:tai/config.txt" : DD_CONFIG;
+    char next_cfg[96];
+    snprintf(next_cfg,sizeof(next_cfg),"%s.next",active_cfg);
     if(!fs_exists("ux0:app/PCSE00919/sce_sys/param.sfo"))
         return bad("Darkest Dungeon PCSE00919 nao encontrado.");
     if(!approved_zip(archive))
@@ -137,7 +143,7 @@ int touch_plugin_install(const char *archive, NetProgress *pr){
         return bad("Configuracao inicial ausente.");
     }
     int oldsize=0;
-    char *oldcfg=fs_read(DD_CONFIG,&oldsize);
+    char *oldcfg=fs_read(active_cfg,&oldsize);
     if(!oldcfg || oldsize<1 || oldsize>65536){
         free(oldcfg);fs_rm_rf(DD_STAGE);
         return bad("config.txt indisponivel. Nada alterado.");
@@ -150,7 +156,7 @@ int touch_plugin_install(const char *archive, NetProgress *pr){
     }
 
     fs_mkdir_p(DD_BACKUP);
-    if(fs_copy(DD_CONFIG,DD_BACKUP "/config.txt.before")<0){
+    if(fs_copy(active_cfg,DD_BACKUP "/config.txt.before")<0){
         free(cfg);fs_rm_rf(DD_STAGE);
         return bad("Backup do taiHEN falhou.");
     }
@@ -188,15 +194,15 @@ int touch_plugin_install(const char *archive, NetProgress *pr){
     plugin_changed=1;
     if(sceIoRename(DD_PLUGIN ".next",DD_PLUGIN)<0)goto rollback;
 
-    if(fs_write(DD_CONFIG ".next",cfg,(int)strlen(cfg))<0)goto rollback;
+    if(fs_write(next_cfg,cfg,(int)strlen(cfg))<0)goto rollback;
     /* Some Vita configurations do not allow replacing an open destination
        by rename; safely fall back to copy, with a verified backup above. */
-    if(sceIoRename(DD_CONFIG ".next",DD_CONFIG)<0){
-        if(fs_copy(DD_CONFIG ".next",DD_CONFIG)<0)goto rollback;
-        sceIoRemove(DD_CONFIG ".next");
+    if(sceIoRename(next_cfg,active_cfg)<0){
+        if(fs_copy(next_cfg,active_cfg)<0)goto rollback;
+        sceIoRemove(next_cfg);
     }
     int result_size=0;
-    char *result=fs_read(DD_CONFIG,&result_size);
+    char *result=fs_read(active_cfg,&result_size);
     int correct=result && result_size==(int)strlen(cfg) &&
                 !memcmp(result,cfg,(size_t)result_size);
     free(result);
@@ -217,8 +223,8 @@ rollback:
         revert_file(DD_PLUGIN,backup,existed[0]);
     }
     if(!hadmode)sceIoRemove(DD_DATA "/mode.ini");
-    fs_copy(DD_BACKUP "/config.txt.before",DD_CONFIG);
-    sceIoRemove(DD_CONFIG ".next");
+    fs_copy(DD_BACKUP "/config.txt.before",active_cfg);
+    sceIoRemove(next_cfg);
     sceIoRemove(DD_PLUGIN ".next");
     free(cfg);
     fs_rm_rf(DD_STAGE);
