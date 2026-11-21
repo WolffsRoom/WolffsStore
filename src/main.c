@@ -32,7 +32,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "1.1.1"
+#define WS_VERSION "1.1.2"
 #endif
 
 /* ================================================================ textos */
@@ -4501,13 +4501,13 @@ static void draw_update_notes(void) {
     vita2d_draw_rectangle(x + 32, y + 111, w - 64, 4, col_alpha(C_LINE, p));
     /* Concise, user-visible update notes MUST change with every release. */
     static const char *pt[] = {
-        "Total de downloads por projeto no GitHub.",
-        "Exibido entre Downloads e Detalhes.",
-        "Contagem atualizada com o catálogo."};
+        "Novidades sem repetir o destaque principal.",
+        "Novos títulos nas seções da Home.",
+        "Texto do YouTube on Vita atualizado."};
     static const char *en[] = {
-        "Total GitHub downloads for each project.",
-        "Shown between Downloads and Details.",
-        "Counts refresh with the Store catalog."};
+        "Recent updates no longer repeat the featured post.",
+        "Updated headings on the Home screen.",
+        "YouTube on Vita description refreshed."};
     for (int i = 0; i < 3; i++) {
         utf8_to_latin1(lang == LANG_PT ? pt[i] : en[i], details[i], sizeof(details[i]));
         body_draw(details[i], x + 40, y + 138 + i * 52, col_alpha(C_WHITE, p));
