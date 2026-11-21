@@ -15,8 +15,8 @@ class ReleaseInvariants(unittest.TestCase):
         cls.updater = (ROOT / "updater/main.c").read_text(encoding="utf-8")
 
     def test_release_is_v111(self):
-        self.assertIn('set(WS_SFO_VERSION "01.13")', self.cmake)
-        self.assertIn('set(WS_FILE_VERSION "1.0.13")', self.cmake)
+        self.assertIn('set(WS_SFO_VERSION "01.14")', self.cmake)
+        self.assertIn('set(WS_FILE_VERSION "1.0.14")', self.cmake)
 
     def test_featured_update_suffix_follows_app_title(self):
         hero=self.main[self.main.index("static void build_home("):
@@ -38,9 +38,9 @@ class ReleaseInvariants(unittest.TestCase):
     def test_title_id_migration_keeps_old_bubble_safe(self):
         self.assertIn('set(WS_TITLEID "WFFS00042")', self.cmake)
         self.assertIn('set(WS_UPDATER_TITLEID "WFFS00043")', self.cmake)
-        self.assertIn('set(WS_FILE_VERSION "1.0.13")', self.cmake)
-        self.assertIn('set(WS_SFO_VERSION "01.13")', self.cmake)
-        self.assertIn('#define WS_VERSION "1.0.13"', self.main)
+        self.assertIn('set(WS_FILE_VERSION "1.0.14")', self.cmake)
+        self.assertIn('set(WS_SFO_VERSION "01.14")', self.cmake)
+        self.assertIn('#define WS_VERSION "1.0.14"', self.main)
         self.assertIn('#define MAIN_TITLE "WFFS00042"', self.updater)
         self.assertNotIn('set(WS_TITLEID "WOLF00001")',self.cmake)
         self.assertNotIn('#define MAIN_TITLE "WOLF00001"',self.updater)
@@ -464,7 +464,7 @@ class ReleaseInvariants(unittest.TestCase):
         self.assertIn("const char *display_name = g_posts[pi].t[lang].title",self.main)
         catalog=(ROOT/"data/catalog.txt").read_bytes().decode("latin-1")
         self.assertIn("pokemon-emerald",catalog)
-        self.assertIn("Pokémon Emerald Voxel 3DS - PT-BR v0.5.1",catalog)
+        self.assertIn("Pokémon Emerald Voxel 3DS - PT-BR v0.5.8",catalog)
         self.assertIn("feat\\t1".replace("\\\\","\\") if False else "feat\t1",catalog)
 
     def test_audio_daypart_and_fixed_ost_options(self):

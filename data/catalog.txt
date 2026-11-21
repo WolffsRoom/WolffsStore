@@ -1,9 +1,219 @@
+post	next-vita-project-poll
+cat	journal
+subcat	enquetes
+poll_id	next-vita-project-poll
+poll_question	Vote for the project you want to see next!
+poll_starts_at	2026-11-20T22:25:00
+poll_ends_at	2026-11-23T22:25:00
+poll_option	New Browser for Vita
+poll_option	Reddit Vita
+poll_option	Internet Archive Vita
+poll_option	GameFAQs Vita
+group	0
+date	2026-11-20
+feat	1
+title.pt	NEW POLL! - What should we bring to PS Vita next?
+tag.pt	Poll · Wolff's Room · PS Vita
+status.pt	Enquete aberta
+desc.pt	A comunidade decide qual projeto a Wolff's Room deve explorar a seguir no PS Vita.
+feature_text.pt	Four ideas. One choice. You decide.
+about.pt	NEW POLL! What should we bring to PS Vita next? São quatro ideias para futuros aplicativos e experiências no PS Vita. Qual você gostaria de ver primeiro? A votação acontece pelo aplicativo Wolff's Store no PlayStation Vita. As opções são propostas de projetos, não lançamentos confirmados.
+title.en	NEW POLL! - What should we bring to PS Vita next?
+tag.en	Poll · Wolff's Room · PS Vita
+status.en	Poll open
+desc.en	The community gets to choose which PS Vita project Wolff's Room should explore next.
+feature_text.en	Four ideas. One choice. You decide.
+about.en	NEW POLL! What should we bring to PS Vita next? Four ideas for possible future PS Vita apps and experiences. Which one would you like to see first? Voting takes place through the Wolff's Store app on PlayStation Vita. These are project ideas, not confirmed releases.
+cover	1
+shots	0
+end	
+post	youtube-on-vita
+cat	ferramentas
+subcat	apps
+group	0
+date	2026-11-17
+updated	2026-11-20
+title.pt	YouTube on Vita
+tag.pt	YouTube on TV · Cobalt · PS Vita
+status.pt	v0.58 · First Release
+desc.pt	O YouTube on TV original no PS Vita, com login, touch, áudio, vídeo até 720p e Add-ons nativos.
+feature_text.pt	Chegou o YouTube on Vita v0.58! Primeira versão pública, com downloads Full e Lite.
+about.pt	E aí, pessoal! Wolff aqui. O YouTube on Vita v0.58 chegou à sua primeira versão pública! O projeto traz a interface original do YouTube on TV para o PlayStation Vita, utilizando Cobalt e integração com os recursos nativos do console.
+sec.pt	O que oferece
+item.pt	YouTube de verdade: navegação, pesquisa, login e player da interface de TV.
+item.pt	Controles nativos: botões físicos, touchscreen e suporte ao microfone para recursos de voz compatíveis.
+item.pt	Reprodução de vídeo: H.264/AAC, até 720p e suporte a vídeos de até 60 FPS quando disponíveis e compatíveis.
+item.pt	Add-ons: capturas de tela, temporizador, tela preta ou escurecida, ajustes de desempenho e sons de navegação.
+item.pt	Downloads: vídeos em MP4 e músicas em MP3, com capas quadradas nos novos arquivos de áudio.
+item.pt	Sessão protegida: comunicação HTTPS e armazenamento local criptografado dos dados de sessão.
+sec.pt	Cobalt e desempenho
+para.pt	Sobre o FPS da interface: o Cobalt evita redesenhar telas paradas desnecessariamente. Por isso, contadores de FPS podem indicar valores baixos nos menus, mesmo sem lentidão perceptível. Esse comportamento também ajuda a economizar energia.
+para.pt	A reprodução também foi testada com o Vita configurado a 222 MHz de CPU / 111 MHz de GPU, com resultado satisfatório no conteúdo testado.
+sec.pt	Qual versão baixar?
+para.pt	As duas versões possuem ícones próprios na LiveArea e podem ser instaladas pelo VitaShell. Nenhum PC ou servidor auxiliar é necessário para usar o YouTube.
+item.pt	YouTube Full - recomendado: o YouTube.vpk utiliza RAM estendida para favorecer a reprodução de vídeos.
+item.pt	YouTube Lite - menos RAM: o YouTube-Lite.vpk utiliza o perfil de memória normal, mais adequado para manter outros aplicativos abertos em segundo plano.
+sec.pt	Limitações conhecidas
+para.pt	O AdBlock é parcial e não bloqueia todos os anúncios do YouTube. Alguns vídeos podem ter restrições de formato ou conteúdo. Travamentos ocasionais ao trocar vídeos em HD, especialmente durante downloads, continuam em investigação.
+para.pt	Para instruções de compilação, detalhes sobre o login e mais imagens, acesse o README do projeto.
+para.pt	Vita means life!
+info.pt	Version|v0.58 · First Release
+info.pt	Platform|PlayStation Vita / Vita3K
+info.pt	Engine|Cobalt / Starboard 15 / VitaGL
+info.pt	Video|H.264 / AAC · até 720p
+info.pt	Controls|Botões, toque e microfone nativo
+info.pt	Builds|Full (RAM estendida) / Lite (menor uso de RAM)
+info.pt	Title IDs|YTVCB0001 (Full) / YTVCB0002 (Lite)
+link.pt	YouTube Full - Download recomendado|https://github.com/WolffsRoom/YouTubeOnVita/releases/download/v0.58/YouTube.vpk
+link.pt	YouTube Lite - Menos RAM|https://github.com/WolffsRoom/YouTubeOnVita/releases/download/v0.58/YouTube-Lite.vpk
+link.pt	Release v0.58 no GitHub|https://github.com/WolffsRoom/YouTubeOnVita/releases/tag/v0.58
+title.en	YouTube on Vita
+tag.en	YouTube on TV · Cobalt · PS Vita
+status.en	v0.58 · First Release
+desc.en	The genuine YouTube on TV experience on PS Vita, with sign-in, touch controls, native Add-ons and video playback up to 720p.
+feature_text.en	YouTube on Vita v0.58 is here! The first public release, available in Full and Lite editions.
+about.en	Hey everyone! Wolff here. YouTube on Vita v0.58 is here as its first public release! This port brings the genuine YouTube on TV experience to PlayStation Vita using Cobalt and the console's native features.
+sec.en	Features
+item.en	Real YouTube interface: browsing, search, account sign-in and TV player controls.
+item.en	Native input: physical buttons, touchscreen and microphone integration for supported voice features.
+item.en	Video playback: H.264/AAC up to 720p, with support for up to 60 FPS when the video and device allow it.
+item.en	Add-ons: screenshots, sleep timer, black/dimmed screen, performance settings and navigation sounds.
+item.en	Downloads: MP4 video and MP3 audio, with square artwork on newly downloaded songs.
+item.en	Session protection: HTTPS connections and encrypted local session storage.
+sec.en	Cobalt and performance
+para.en	About interface FPS: Cobalt does not need to redraw an unchanged screen. An FPS counter may show low values in static menus even when navigation is responsive, helping save processing work and battery life.
+para.en	Playback has also been tested at 222 MHz CPU / 111 MHz GPU, with satisfactory results for the tested content.
+sec.en	Which version should I download?
+para.en	Install either VPK using VitaShell. The two editions have separate LiveArea bubbles. No PC or companion server is needed.
+item.en	YouTube Full - recommended: YouTube.vpk uses extended RAM for video playback.
+item.en	YouTube Lite - lower memory usage: YouTube-Lite.vpk uses normal RAM for better compatibility with suspended background apps.
+sec.en	Known limitations
+para.en	AdBlock is partial and cannot remove every YouTube ad. Some videos are restricted by their encoding or content. Occasional crashes while switching HD videos, especially during downloads, are still being investigated.
+para.en	For build instructions, Google sign-in details and more screenshots, see the project README.
+para.en	Vita means life!
+info.en	Version|v0.58 · First Release
+info.en	Platform|PlayStation Vita / Vita3K
+info.en	Engine|Cobalt / Starboard 15 / VitaGL
+info.en	Video|H.264 / AAC · up to 720p
+info.en	Controls|Buttons, touchscreen and built-in microphone
+info.en	Builds|Full (extended RAM) / Lite (lower RAM usage)
+info.en	Title IDs|YTVCB0001 (Full) / YTVCB0002 (Lite)
+link.en	YouTube Full - Recommended download|https://github.com/WolffsRoom/YouTubeOnVita/releases/download/v0.58/YouTube.vpk
+link.en	YouTube Lite - Lower RAM usage|https://github.com/WolffsRoom/YouTubeOnVita/releases/download/v0.58/YouTube-Lite.vpk
+link.en	GitHub Release v0.58|https://github.com/WolffsRoom/YouTubeOnVita/releases/tag/v0.58
+cover	1
+shots	12
+end	
+post	pokemon-emerald
+cat	ports
+subcat	
+group	3
+date	2026-11-16
+updated	2026-11-20
+title.pt	Pokémon Emerald Voxel 3DS - PT-BR v0.5.8
+tag.pt	Port nativo · PS Vita · PT-BR · v0.5.8
+status.pt	Disponível · v0.5.8
+desc.pt	Pokémon Emerald PT-BR v0.5.8 para PS Vita, com novas telas, melhorias no jogo, câmera ajustada e LiveArea personalizada.
+feature_text.pt	Nova v0.5.8 PT-BR, menus aprimorados, mundo voxel 3D e câmera livre com movimento alinhado à tela.
+about.pt	Pokémon Emerald recebeu um port nativo não oficial para PS Vita, desenvolvido por HctrRB a partir da descompilação pret/pokeemerald. Não é um emulador: o código C do jogo é compilado para o processador ARM do Vita, com uma camada de plataforma que substitui as funções do hardware do GBA. Com vitaGL e recursos do Emerald 3DS, o port transforma a experiência clássica com cenários e batalhas 3D, mantendo a aventura original.
+sec.pt	Novidades da v0.5.8 - Interface e estabilidade
+item.pt	Novos menus nativos: avanços no Estojo de Pokéblocos, Pokédex após capturas, Seleção de Pokémon, Bolsa e Resumo dos Pokémon armazenados no PC.
+item.pt	Battle Frontier e Battle Pyramid: mais telas, opções e fluxos adaptados à interface do Vita, incluindo a Bolsa da Pirâmide e as escolhas de equipe.
+item.pt	Easy Chat e PokéNav: suporte a mais situações da campanha, tutoriais, seleção de palavras, mapas e páginas do Frontier Pass.
+item.pt	Minijogos no formato original: Contest e outras cenas GBA continuam no formato 816x544, com faixas laterais pretas, em vez de uma interface 3D improvisada.
+item.pt	Correções da v0.5.8: ajustes em menus, itens e caixas de diálogo, incluindo uma correção para falha ao ler cartas na Bolsa.
+item.pt	Pokémon selvagens visíveis: preservados os aprimoramentos introduzidos nas versões anteriores para encontros e aparições no cenário.
+sec.pt	Recursos do port
+item.pt	Mundo voxel 3D gerado em tempo real a partir dos mapas, com sol, sombras, ciclo de dia e noite e clima
+item.pt	Batalhas 3D em cenários derivados da área em que o confronto começa
+item.pt	Interface de toque sobre o mundo 3D, substituindo menus e caixas originais do GBA, com diferentes temas, mantendo cenas GBA onde necessário
+item.pt	Pokémon seguidores no estilo HGSS, relógio acelerado, encontros por horário e melhorias opcionais de qualidade de vida
+sec.pt	Melhorias da Wolff's Room
+para.pt	*As opções de câmera e primeira pessoa seguem experimentais. As telas recém-integradas e a nova compilação PT-BR ainda precisam de testes completos em um PS Vita físico; use a câmera padrão se encontrar problemas gráficos.*
+item.pt	Revisão da tradução PT-BR, com 14.253 entradas dos textos do jogo e mais de mil termos na interface, incluindo novos menus da v0.5.8.
+item.pt	Interface adaptada em diferentes temas: letreiros para textos longos e descrições das cidades traduzidas.
+item.pt	Câmera livre pelo analógico direito, com movimentação alinhada à tela mesmo após girar a visão; modo de primeira pessoa e vegetação voltada à câmera continuam opcionais.
+item.pt	Splash screen do vitaGL removido da compilação personalizada.
+item.pt	Tela inicial traduzida (Versão Esmeralda e PRESSIONE START), LiveArea personalizada e manual em português.
+sec.pt	Instalação
+item.pt	Baixe o VPK v0.5.8 pelo Google Drive no botão Download
+item.pt	Instale pelo VitaShell em um PS Vita desbloqueado
+item.pt	Inicie o jogo pela LiveArea
+item.pt	Antes de atualizar uma instalação anterior, faça backup dos seus saves
+sec.pt	Créditos e referências
+item.pt	Port original: HctrRB
+item.pt	Versão PT-BR e personalização: Wolff's Room
+item.pt	Tradução de referência: Pokebat
+item.pt	Descompilação: pret/pokeemerald
+item.pt	Recursos 3D: Emerald 3DS
+item.pt	Fontes consultadas: Pokémon Classic e Font Meme - Pokémon
+item.pt	Referência dos assets da LiveArea: ícones de Pokémon Geração 3 para 3DS
+sec.pt	Observações
+item.pt	Port não oficial, sem vínculo com Nintendo, Game Freak ou The Pokémon Company.
+item.pt	A compilação VitaSDK v0.5.8 foi concluída com verificação de integridade do VPK, da LiveArea e do vitaGL NoSplash. Os novos menus e a movimentação com câmera livre ainda aguardam uma rodada completa de testes no PS Vita físico.
+item.pt	O desenvolvedor do port está preparando uma arquitetura multilíngue oficial; a integração PT-BR no upstream permanece em análise, independentemente deste VPK.
+info.pt	Versão|v0.5.8
+info.pt	Versão Wolff's Room|PT-BR · LiveArea · Manual · Câmera
+info.pt	Port original|HctrRB
+info.pt	Plataforma|PS Vita / PSTV
+info.pt	Tecnologia|Código nativo ARM · vitaGL
+link.pt	Download VPK (Google Drive)|https://drive.google.com/file/d/1Tt_DDvS6_LOhLS4HcNvHRahz3VvLs1_v/view?usp=sharing
+title.en	Pokémon Emerald Voxel 3DS - PT-BR v0.5.8
+tag.en	Native port · PS Vita · PT-BR · v0.5.8
+status.en	Available · v0.5.8
+desc.en	Pokémon Emerald v0.5.8 PT-BR on PS Vita with expanded menus, improved stability and screen-aligned free-look controls.
+feature_text.en	New v0.5.8 PT-BR edition with upgraded native menus, voxel 3D and intuitive free-look controls.
+about.en	Pokémon Emerald has an unofficial native PS Vita port developed by HctrRB, based on the pret/pokeemerald decompilation. It is not an emulator: the game's C code is compiled for Vita ARM, while a platform layer replaces GBA hardware functions. Using vitaGL and features from Emerald 3DS, the port offers a modern 3D presentation of the original adventure.
+sec.en	What's new in v0.5.8 - Native menus and fixes
+item.en	Expanded native interface: upgraded Pokéblock Case, post-catch Pokédex page, party choices, Bag, and boxed Pokémon summary.
+item.en	Battle Frontier and Battle Pyramid: more native menus for party selection, the Pyramid Bag and challenge workflows.
+item.en	Easy Chat and PokéNav: additional campaign interactions, tutorials, word selection, maps and Frontier Pass pages.
+item.en	GBA mini-games retained: Contest and other full-screen GBA scenes use the original 816x544 presentation with black side bars.
+item.en	v0.5.8 fixes: item, menu and dialogue fixes, including a crash fix when reading mail from the Bag.
+item.en	Visible wild Pokémon: existing procedural overworld encounter improvements remain available.
+sec.en	Original port features
+item.en	Live voxel 3D overworld built from maps, with sun, shadows, day/night, and weather
+item.en	3D battle stages drawn from the map where battles start
+item.en	Touch menus with several themes, while retaining the original GBA layout where needed
+item.en	HGSS-style follower Pokémon, accelerated clock, time-based encounters, and optional QoL features
+sec.en	Wolff's Room improvements
+para.en	*Camera and first-person options remain experimental. Newly integrated menus and this PT-BR build still require a complete physical Vita test; use the default camera if you notice visual issues.*
+item.en	Updated the Brazilian Portuguese localization, covering 14,253 game-text entries and over a thousand native UI dictionary strings, including the v0.5.8 additions.
+item.en	Adapted overflowing text with marquee animations and translated town descriptions for the different UI themes.
+item.en	Updated right-stick free-look with screen-aligned character movement when rotating the camera; optional first-person view and camera-facing foliage.
+item.en	Removed the vitaGL startup splash from the customized build.
+item.en	Updated the title-screen labels (Versão Esmeralda and PRESSIONE START), LiveArea artwork and Portuguese manual.
+sec.en	Installation
+item.en	Download the v0.5.8 VPK using the Google Drive download button
+item.en	Install it with VitaShell on a homebrew-enabled PS Vita
+item.en	Launch the game from LiveArea
+item.en	Back up existing saves before replacing an earlier version
+sec.en	Credits and references
+item.en	Original port: HctrRB
+item.en	PT-BR edition: Wolff's Room
+item.en	Translation reference: Pokebat
+item.en	Game decompilation: pret/pokeemerald
+item.en	3D features: Emerald 3DS
+item.en	Fonts referenced: Pokémon Classic and Pokémon Font Meme
+item.en	LiveArea art reference: Gen 3 Pokémon 3DS-style icons
+sec.en	Notes
+item.en	Unofficial port, not affiliated with Nintendo, Game Freak, or The Pokémon Company.
+item.en	The v0.5.8 VitaSDK build completed, including VPK/LiveArea and vitaGL NoSplash checks. Its expanded UI and camera-relative controls still need a full physical PS Vita test.
+item.en	The upstream maintainer is preparing a multilingual pipeline; this local PT-BR build is separate from the pending upstream localization PR.
+info.en	Version|v0.5.8
+info.en	Wolff's Room edition|PT-BR · LiveArea · Manual · Camera
+info.en	Original port|HctrRB
+info.en	Platform|PS Vita / PSTV
+info.en	Technology|Native ARM code · vitaGL
+link.en	Download VPK (Google Drive)|https://drive.google.com/file/d/1Tt_DDvS6_LOhLS4HcNvHRahz3VvLs1_v/view?usp=sharing
+cover	1
+shots	14
+end	
 post	pokemon-emerald-voxel-ptbr-058
 cat	journal
 subcat	news
 group	0
 date	2026-11-20
-feat	1
 title.pt	Em andamento a atualização do Pokémon Emerald 3D Voxel em PTBR (Versão v0.5.8)
 tag.pt	News · Pokémon Emerald · PS Vita · PT-BR
 status.pt	Em andamento · v0.5.8 ainda não disponível
@@ -189,183 +399,6 @@ info.en	Tested|Update 1.17 on real PS Vita
 info.en	Format|taiHEN plugin (.suprx)
 cover	1
 shots	4
-end	
-post	youtube-on-vita
-cat	ferramentas
-subcat	apps
-group	0
-date	2026-11-17
-updated	2026-11-18
-title.pt	Youtube - Unofficial client for PS Vita (alpha)
-tag.pt	Client não oficial · YouTube · PS Vita
-status.pt	Alpha v0.34 · Testes no Vita real
-desc.pt	Interface original do YouTube on TV no PS Vita, com login, toque e reprodução H.264/AAC em até 720p.
-feature_text.pt	YouTube no PS Vita real, com a experiência Starboard 15, controle por toque e vídeo até 720p.
-about.pt	Cliente experimental não oficial do YouTube para PlayStation Vita, utilizando a interface genuína YouTube on TV (Starboard 15). A versão alpha v0.34 já funciona no PS Vita real e no Vita3K, superando as limitações dos primeiros testes da v0.22.
-sec.pt	O que já funciona nos testes
-item.pt	A interface genuína do YouTube on TV roda no PS Vita real e no Vita3K.
-item.pt	Navegação fluida, renderizando em até 60 FPS no hardware.
-item.pt	D-pad e botões físicos, além de gestos na tela: tocar para selecionar, deslizar para rolar e tocar com dois dedos para voltar.
-item.pt	Reprodução por hardware de H.264/AAC de 240p a 720p, incluindo fluxos de 60 fps.
-item.pt	Login e configurações persistem entre sessões.
-item.pt	Controles do player: pausar/retomar e legendas.
-item.pt	Utiliza os quatro núcleos da CPU quando o plugin CapUnlocker está instalado.
-sec.pt	Status alpha e limitações
-para.pt	Esta é uma versão experimental, não estável. Problemas conhecidos: sombras de texto sobre vídeos e miniaturas podem aparecer como caixas escuras, a visualização de letras em videoclipes musicais não reproduz, e ainda podem ocorrer travamentos ocasionais (em investigação). Não há suporte a 1080p, pois o decodificador de vídeo disponibilizado a aplicativos no Vita tem limite de 720p. Controles de velocidade, VP9/AV1 e conteúdos protegidos também não são suportados.
-sec.pt	Instalação
-item.pt	Instale a alpha v0.34 somente pelo download integrado da Wolff's Store, disponibilizado para o PS Vita. O link do arquivo está no catálogo da loja.
-item.pt	CapUnlocker é recomendado, mas não obrigatório. Com ele instalado e ativado no taiHEN, o aplicativo pode utilizar todos os quatro núcleos da CPU. A loja exibe esse aviso antes da instalação.
-item.pt	Reinicie o console após configurar o plugin, se necessário.
-item.pt	Não é necessário um PC ou servidor auxiliar para acessar a interface do app.
-sec.pt	Observações
-para.pt	O login via QR Code, a persistência da sessão e o áudio durante a reprodução já foram validados em testes no Vita real. O projeto permanece em fase alpha e pode apresentar instabilidade.
-sec.pt	Créditos
-item.pt	Port para PS Vita: Wolff's Room
-item.pt	Interface: YouTube on TV / Starboard 15 (Cobalt)
-item.pt	Renderização: VitaGL; backend GXM direto planejado
-info.pt	Version|Alpha v0.34 (experimental)
-info.pt	Platform|Starboard 15 / VitaGL (renderizador GXM direto planejado)
-info.pt	Controls|Botões e gestos na tela sensível ao toque
-info.pt	Video|H.264 até 720p, até 60 fps
-info.pt	Status|Em testes no hardware real
-info.pt	Title ID|YTVCB0001
-info.pt	Plugin recomendado|CapUnlocker (4 núcleos de CPU; opcional)
-link.pt	Somente na Wolff's Store|https://wolffsroom.github.io/WolffsRoomSite/
-title.en	Youtube - Unofficial client for PS Vita (alpha)
-tag.en	Unofficial YouTube client · PS Vita
-status.en	Alpha v0.34 · Real hardware testing
-desc.en	Genuine YouTube on TV interface on PS Vita, with sign-in, touch controls and H.264/AAC playback up to 720p.
-feature_text.en	YouTube on real PS Vita hardware, powered by Starboard 15 with touch input and video up to 720p.
-about.en	An experimental, unofficial YouTube client for the PlayStation Vita, bringing the genuine YouTube on TV interface (Starboard 15) to both real hardware and Vita3K. Alpha v0.34 replaces the earlier v0.22 testing-only status.
-sec.en	What currently works in testing
-item.en	The genuine YouTube on TV interface runs on real PS Vita hardware and in Vita3K.
-item.en	Smooth navigation: the interface renders at up to 60 fps on hardware.
-item.en	D-pad and buttons, plus touchscreen gestures: tap to select, swipe to scroll, two-finger tap to go back.
-item.en	Hardware H.264/AAC playback from 240p to 720p, including 60 fps streams.
-item.en	Sign-in and settings are saved between sessions.
-item.en	Player controls: pause/resume and captions.
-item.en	Uses all four CPU cores when the CapUnlocker plugin is installed.
-sec.en	Alpha status and limitations
-para.en	This is experimental software, not a stable release. Known issues: text shadows over videos and thumbnails show as dark boxes, the lyrics view of music videos does not play, and an occasional crash can still happen (under investigation). 1080p is not available because the Vita's video decoder is limited to 720p for apps. Playback speed controls, VP9/AV1 and protected content are not supported.
-sec.en	Installation
-item.en	Download and install alpha v0.34 through Wolff's Store on PS Vita only. The file link is provided in the Store catalog, not as a separate web download button.
-item.en	CapUnlocker is recommended, not required. When enabled in taiHEN, it allows the app to use all four CPU cores. The Store displays a warning before installation.
-item.en	Restart your Vita after enabling the plugin when necessary.
-item.en	No companion PC or server is required to access the app's interface.
-sec.en	Notes
-para.en	QR sign-in, login persistence and playback audio have been verified in testing on a real PS Vita. This remains an alpha release and occasional crashes are still being investigated.
-sec.en	Credits
-item.en	PS Vita port: Wolff's Room
-item.en	Interface: YouTube on TV / Starboard 15 (Cobalt)
-item.en	Rendering: VitaGL (direct GXM backend planned)
-info.en	Version|Alpha v0.34 (experimental)
-info.en	Platform|Starboard 15 / VitaGL (a direct GXM renderer is planned)
-info.en	Controls|Buttons and touchscreen gestures
-info.en	Video|H.264 up to 720p, up to 60 fps
-info.en	Status|Testing on real hardware
-info.en	Title ID|YTVCB0001
-info.en	Recommended plugin|CapUnlocker (four CPU cores; optional)
-link.en	Wolff's Store (PS Vita)|https://wolffsroom.github.io/WolffsRoomSite/
-cover	1
-shots	7
-end	
-post	pokemon-emerald
-cat	ports
-subcat	
-group	3
-date	2026-11-16
-title.pt	Pokémon Emerald Voxel 3DS - PT-BR v0.5.1
-tag.pt	Port nativo · PS Vita · PT-BR · v0.5.1
-status.pt	Disponível · v0.5.1
-desc.pt	Pokémon Emerald v0.5.1 para PS Vita, com Pokémon selvagens aprimorados, PT-BR revisado e novos controles de câmera.
-feature_text.pt	Pokémon Emerald v0.5.1 para PS Vita com Pokémon selvagens visíveis, cenário voxel 3D e tradução PT-BR.
-about.pt	Pokémon Emerald recebeu um port nativo não oficial para PS Vita, desenvolvido por HctrRB a partir da descompilação pret/pokeemerald. Não é um emulador: o código C do jogo é compilado para o processador ARM do Vita, com uma camada de plataforma que substitui as funções do hardware do GBA. Com vitaGL e recursos do Emerald 3DS, o port transforma a experiência clássica com cenários e batalhas 3D, mantendo a aventura original.
-sec.pt	Novidades da v0.5.1 - Pokémon selvagens visíveis
-item.pt	População procedural: conjunto de até 48 Pokémon selvagens (`VW_POOL_MAX = 48`) independente dos 12 slots ativos, permitindo que apareçam pelo mapa como NPCs.
-item.pt	Pré-população de mapas vizinhos: seleção dos tiles válidos de encontros e leitura antecipada de até 24 tiles das áreas conectadas, com pré-carregamento das espécies.
-item.pt	Streaming adaptado à câmera de 25°: distâncias assimétricas norte/sul (`VW_VIEW_NORTH = 20`, `VW_SHOW_NORTH = 24`, `VW_HIDE_NORTH = 26`), histerese de entrada/saída e limite de dois sprites por quadro.
-item.pt	Correções de surgimento e animação: evita reaparecimentos na transição entre mapas; efeitos de grama/água e crescimento aparecem somente nos spawns ou respawns reais.
-sec.pt	Recursos do port
-item.pt	Mundo voxel 3D gerado em tempo real a partir dos mapas, com sol, sombras, ciclo de dia e noite e clima
-item.pt	Batalhas 3D em cenários derivados da área em que o confronto começa
-item.pt	Interface de toque sobre o mundo 3D, substituindo menus e caixas originais do GBA, com cinco temas
-item.pt	Pokémon seguidores no estilo HGSS, relógio acelerado, encontros por horário e melhorias opcionais de qualidade de vida
-sec.pt	Melhorias da Wolff's Room
-para.pt	*As opções de câmera e primeira pessoa são experimentais. É recomendado jogar inicialmente com o preset padrão.*
-item.pt	Revisão da tradução PT-BR, incluindo textos, menus e novas entradas da interface Voxel.
-item.pt	Interface adaptada em diferentes temas: letreiros para textos longos e descrições das cidades traduzidas.
-item.pt	Controle da câmera pelo analógico direito, opção experimental de primeira pessoa e árvores 2D acompanhando a câmera (opcional).
-item.pt	Splash screen do vitaGL removido da compilação personalizada.
-item.pt	Tela inicial traduzida (Versão Esmeralda e PRESSIONE START), LiveArea personalizada e manual em português.
-sec.pt	Instalação
-item.pt	Baixe o VPK v0.5.1 pelo Google Drive no botão Download
-item.pt	Instale pelo VitaShell em um PS Vita desbloqueado
-item.pt	Inicie o jogo pela LiveArea
-item.pt	Antes de atualizar uma instalação anterior, faça backup dos seus saves
-sec.pt	Créditos e referências
-item.pt	Port original: HctrRB
-item.pt	Versão PT-BR e personalização: Wolff's Room
-item.pt	Tradução de referência: Pokebat
-item.pt	Descompilação: pret/pokeemerald
-item.pt	Recursos 3D: Emerald 3DS
-item.pt	Fontes consultadas: Pokémon Classic e Font Meme - Pokémon
-item.pt	Referência dos assets da LiveArea: ícones de Pokémon Geração 3 para 3DS
-sec.pt	Observações
-item.pt	Port não oficial, sem vínculo com Nintendo, Game Freak ou The Pokémon Company.
-item.pt	A compilação VitaSDK foi concluída; os novos controles de câmera e recursos gráficos ainda aguardam validação no PS Vita físico.
-info.pt	Versão|v0.5.1
-info.pt	Versão Wolff's Room|PT-BR · LiveArea · Manual · Câmera
-info.pt	Port original|HctrRB
-info.pt	Plataforma|PS Vita / PSTV
-info.pt	Tecnologia|Código nativo ARM · vitaGL
-link.pt	Download VPK (Google Drive)|https://drive.google.com/file/d/1ZNVd7j6EZyGgYTHuwIL-Edj6r57hJCGn/view?usp=sharing
-title.en	Pokémon Emerald Voxel 3DS - PT-BR v0.5.1
-tag.en	Native port · PS Vita · PT-BR · v0.5.1
-status.en	Available · v0.5.1
-desc.en	Native PS Vita Pokémon Emerald v0.5.1, improved wild Pokémon, Brazilian Portuguese and new camera controls.
-feature_text.en	Pokémon Emerald v0.5.1 for PS Vita - overworld encounters, voxel 3D and PT-BR localization.
-about.en	Pokémon Emerald has an unofficial native PS Vita port developed by HctrRB, based on the pret/pokeemerald decompilation. It is not an emulator: the game's C code is compiled for Vita ARM, while a platform layer replaces GBA hardware functions. Using vitaGL and features from Emerald 3DS, the port offers a modern 3D presentation of the original adventure.
-sec.en	What's new in v0.5.1 - Visible Wild Pokémon
-item.en	Procedural overworld pool: up to 48 wild Pokémon (`VW_POOL_MAX = 48`) independent of the 12 active sprite slots, allowing encounters throughout the map like NPCs.
-item.en	Neighbor map pre-population: valid encounter tiles sampled in advance, scanning up to 24 tiles of connected map layouts with species prefetching.
-item.en	25° camera-aware streaming: asymmetric north/south ranges (`VW_VIEW_NORTH = 20`, `VW_SHOW_NORTH = 24`, `VW_HIDE_NORTH = 26`), entry/exit hysteresis and two-sprites-per-frame limit.
-item.en	Spawn and animation fixes: no repeat pop-ins on map changes; growth and grass/water rustling are reserved for actual spawns, respawns and in-view materializations.
-sec.en	Original port features
-item.en	Live voxel 3D overworld built from maps, with sun, shadows, day/night, and weather
-item.en	3D battle stages drawn from the map where battles start
-item.en	Touch menus with five themes, replacing the GBA's menus and dialog boxes
-item.en	HGSS-style follower Pokémon, accelerated clock, time-based encounters, and optional QoL features
-sec.en	Wolff's Room improvements
-para.en	*The new camera and first-person controls are experimental. We recommend using the default camera/graphics preset for initial gameplay.*
-item.en	Reviewed the Brazilian Portuguese localization, including new voxel UI labels and gameplay text.
-item.en	Adapted overflowing text with marquee animations and translated town descriptions for the different UI themes.
-item.en	Added right-stick camera controls, experimental first-person view and optional camera-facing 2D tree sprites.
-item.en	Removed the vitaGL startup splash from the customized build.
-item.en	Updated the title-screen labels (Versão Esmeralda and PRESSIONE START), LiveArea artwork and Portuguese manual.
-sec.en	Installation
-item.en	Download the v0.5.1 VPK using the Google Drive download button
-item.en	Install it with VitaShell on a homebrew-enabled PS Vita
-item.en	Launch the game from LiveArea
-item.en	Back up existing saves before replacing an earlier version
-sec.en	Credits and references
-item.en	Original port: HctrRB
-item.en	PT-BR edition: Wolff's Room
-item.en	Translation reference: Pokebat
-item.en	Game decompilation: pret/pokeemerald
-item.en	3D features: Emerald 3DS
-item.en	Fonts referenced: Pokémon Classic and Pokémon Font Meme
-item.en	LiveArea art reference: Gen 3 Pokémon 3DS-style icons
-sec.en	Notes
-item.en	Unofficial port, not affiliated with Nintendo, Game Freak, or The Pokémon Company.
-item.en	VitaSDK build completed; the latest title-banner palette fix has not yet been visually confirmed on hardware.
-info.en	Version|v0.5.1
-info.en	Wolff's Room edition|PT-BR · LiveArea · Manual · Camera
-info.en	Original port|HctrRB
-info.en	Platform|PS Vita / PSTV
-info.en	Technology|Native ARM code · vitaGL
-link.en	Download VPK (Google Drive)|https://drive.google.com/file/d/1ZNVd7j6EZyGgYTHuwIL-Edj6r57hJCGn/view?usp=sharing
-cover	1
-shots	10
 end	
 post	vampire-survivors-vita
 cat	ports

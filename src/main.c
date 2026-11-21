@@ -32,7 +32,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "1.0.13"
+#define WS_VERSION "1.0.14"
 #endif
 
 /* ================================================================ textos */
@@ -165,6 +165,8 @@ static int settings_open = 0, settings_row = 0, settings_page = 0, settings_root
 static int poll_selected = -1;
 static double poll_anim_t0 = -100;
 static int poll_anim_post = -1;
+/* Page position of the ballot box, directly below the confirm button. */
+static float poll_box_page_y = -1.f;
 static vita2d_texture *poll_box_tex = NULL, *poll_paper_tex = NULL;
 static unsigned poll_seen_version = 0;
 static int trans_confirm_post = -1, trans_confirm_dl = -1;
@@ -1395,6 +1397,15 @@ static void build_poll(int pi) {
              lang==LANG_PT ? "Resultado em %d dia(s)" : "Results in %d day(s)",
              poll_days_remaining(p->poll_ends_at));
     y+=para(time_label,24,y,912,C_MUTED,0,2,0)+16;
+    /* The poll's own cover appears centered before its voting options. */
+    if (cover_tex[pi]) {
+        y += 18;
+        rect(176,y,608,346,C_DARK);
+        Op *cover = op(OP_TEX,180,y+4,600,338);
+        cover->tex = cover_tex[pi];
+        frame(176,y,608,346,C_BORDER,C_WHITE,-1);
+        y += 346 + 28;
+    }
     rect(24,y,912,4,C_LINE);
     y+=24;
     int matched=strcmp(ps.id,p->poll_id)==0;
@@ -1441,8 +1452,8 @@ static void build_poll(int pi) {
                 24,y,912,C_SOFT,0,2,0)+18;
         for(int i=0;i<p->poll_count;i++) {
             char label[178];
-            snprintf(label,sizeof(label),"%s %s",
-                     poll_selected==i?"[X]":"[ ]",p->poll_options[i]);
+            /* Selection is represented by the filled pixel button itself. */
+            snprintf(label,sizeof(label),"%s",p->poll_options[i]);
             int button_id=button(keep(label),24,y,912,poll_selected==i,
                                  A_POLL_CHOOSE,i,NULL,view_t0+.07+i*.09);
             y+=(button_id>=0?items[button_id].h:48)+16;
@@ -1456,17 +1467,32 @@ static void build_poll(int pi) {
                     "Voting service unavailable. Please retry with secure HTTPS.",
                     24,y,912,C_MUTED,0,3,0)+18;
         }
-        if(poll_selected>=0 && poll_api_ready() && !(matched && ps.busy)) {
-            y+=24;
-            int button_id=button(lang==LANG_PT?"ENVIAR RESPOSTA":"SEND RESPONSE",
+        y += 24;
+        if (poll_selected >= 0 && poll_api_ready() && !(matched && ps.busy)) {
+            int button_id=button(lang==LANG_PT?"CONFIRMAR VOTO":"CONFIRM VOTE",
                                   24,y,912,1,A_POLL_SEND,0,NULL,view_t0+.45);
             y+=(button_id>=0?items[button_id].h:48)+16;
         } else if(!poll_api_ready()) {
             y+=para(lang==LANG_PT?
-                    "A votação abrirá quando o servidor seguro estiver configurado.":
-                    "Voting opens when the secure server has been configured.",
+                    "Votação temporariamente indisponível: servidor não configurado.":
+                    "Voting unavailable: backend not configured.",
                     24,y,912,C_MUTED,0,4,0)+16;
+        } else if (matched && ps.busy) {
+            y += 12;
+        } else {
+            y+=para(lang==LANG_PT?"Selecione uma opção para confirmar o voto.":
+                     "Select an option to confirm your vote.",
+                     24,y,912,C_MUTED,1,2,0)+12;
         }
+        /* Permanent ballot box immediately below the confirmation area. */
+        poll_box_page_y = y + 12;
+        if (poll_box_tex && (poll_anim_post != pi ||
+            now_s - poll_anim_t0 >= 1.65 || now_s < poll_anim_t0)) {
+            Op *box=op(OP_TEX,376,poll_box_page_y,208,163);
+            box->tex=poll_box_tex;
+            box->pop=view_t0+.45;
+        }
+        y = poll_box_page_y + 163 + 14;
     }
     y+=32;
     rect(24,y,912,4,C_LINE);
@@ -2673,22 +2699,22 @@ static void draw_scrollbar(float alpha) {
  * This is a submission animation, not a success acknowledgement. */
 static void draw_poll_vote_animation(void) {
     if (view != V_POST || view_post != poll_anim_post ||
-        !poll_box_tex || !poll_paper_tex) return;
+        !poll_box_tex || !poll_paper_tex || poll_box_page_y < 0) return;
     float elapsed = (float)(now_s - poll_anim_t0);
     if (elapsed < 0.f || elapsed >= 1.65f) return;
     float fade = fminf(1.f, fmaxf(0.f, (1.65f - elapsed) / .30f));
-    /* Black backdrop keeps both white silhouettes legible over the page. */
-    vita2d_draw_rectangle(345, 215, 270, 285,
-        RGBA8(6, 6, 6, (int)(224 * fade)));
+    /* Follow the page's ballot box, directly beneath the confirm button.
+     * The controller scrolls there on submission, even for long polls. */
+    float top = poll_box_page_y - cam;
     float t = fminf(1.f, fmaxf(0.f, (elapsed - .12f) / .78f));
     t = t * t * (3.f - 2.f * t);
     float paper_alpha = fade;
     if (elapsed > .90f)
         paper_alpha *= fmaxf(0.f, 1.f - (elapsed - .90f) / .16f);
-    /* First draw paper, then box: moving it down naturally hides it. */
-    tex_draw(poll_paper_tex, 427, 230 + 120 * t, 106, 121,
+    /* Paper first, ballot box second: slot obscures the inserted part. */
+    tex_draw(poll_paper_tex, 427, top - 126 + 120 * t, 106, 121,
              col_alpha(C_WHITE, paper_alpha));
-    tex_draw(poll_box_tex, 376, 352, 208, 163,
+    tex_draw(poll_box_tex, 376, top, 208, 163,
              col_alpha(C_WHITE, fade));
 }
 
@@ -3386,6 +3412,8 @@ static void activate(int it) {
         if(x->arg>=0 && x->arg<g_nposts && g_posts[x->arg].poll_id[0]) {
             Post *poll=&g_posts[x->arg];
             poll_selected=-1;
+            poll_box_page_y=-1.f;
+            poll_anim_post=-1;
             poll_open(poll->poll_id,poll->poll_ends_at,
                       poll->poll_count,poll_local_ended(poll->poll_ends_at));
         }
@@ -3403,6 +3431,12 @@ static void activate(int it) {
            g_posts[view_post].poll_id[0] && poll_vote(poll_selected)) {
             poll_anim_post = view_post;
             poll_anim_t0 = now_s;
+            /* Bring the box into view during confirmation. */
+            if (poll_box_page_y >= 0) {
+                float desired = poll_box_page_y + 190.f - (SCR_H - hint_h);
+                if (desired > cam_target) cam_target = desired;
+                cam_clamp();
+            }
             sfx("download");
             rebuild();
         } else sfx("notice");

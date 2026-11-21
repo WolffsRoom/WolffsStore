@@ -17,6 +17,11 @@ class PollVoteAnimationTests(unittest.TestCase):
     def test_animation_does_not_claim_vote_success_or_block_thread(self):
         code = (ROOT / "src/main.c").read_text(encoding="utf8")
         self.assertIn('poll_anim_t0 = now_s;', code)
+        self.assertIn('poll_box_page_y = y + 12;', code)
+        self.assertIn('CONFIRMAR VOTO', code)
+        self.assertNotIn('poll_selected==i?"[X]":"[ ]"', code)
+        self.assertIn('cover_tex[pi]', code)
+        self.assertIn('600,338', code)
         self.assertIn('draw_poll_vote_animation();', code)
         self.assertIn('poll_vote(poll_selected)', code)
         self.assertIn('app0:data/polls/caixa.png', code)
