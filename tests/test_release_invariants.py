@@ -18,6 +18,13 @@ class ReleaseInvariants(unittest.TestCase):
         self.assertIn('set(WS_SFO_VERSION "01.11")', self.cmake)
         self.assertIn('set(WS_FILE_VERSION "1.1.1")', self.cmake)
 
+    def test_home_bilingual_titles_and_featured_post_exclusion(self):
+        self.assertIn('"Confira também outras novidades..."', self.main)
+        self.assertIn('"Check out more updates..."', self.main)
+        self.assertIn('"Explore outros lançamentos"', self.main)
+        self.assertIn('"Explore other releases"', self.main)
+        self.assertIn("if (i == feat || g_posts[i].poll_id[0]", self.main)
+
     def test_featured_update_suffix_follows_app_title(self):
         hero=self.main[self.main.index("static void build_home("):
                        self.main.index("static void build_cat(")]
