@@ -120,6 +120,43 @@ char *net_fetch(const char *url, int *size) {
     return net_fetch_timeout(url, size, 60L);
 }
 
+/* Vita's libcurl/OpenSSL cannot always open app0: paths using its own
+ * certificate-file loader. Vita libc can read app0:, so load PEM via stdio
+ * and pass a COPY of the bytes directly to libcurl, avoiding CAINFO path
+ * interpretation without relaxing TLS validation. */
+static int poll_ca_blob(CURL *c) {
+    const char *path="app0:data/certs/cacert.pem";
+    FILE *f=fopen(path,"rb");
+    if(!f) {
+        snprintf(err,sizeof(err),"HTTPS: CA bundle unavailable (app0)");
+        return 0;
+    }
+    if(fseek(f,0,SEEK_END)!=0) {fclose(f);return 0;}
+    long len=ftell(f);
+    if(len<1024 || len>1024*1024 || fseek(f,0,SEEK_SET)!=0) {
+        fclose(f);
+        snprintf(err,sizeof(err),"HTTPS: invalid CA bundle");
+        return 0;
+    }
+    char *pem=malloc((size_t)len);
+    if(!pem){fclose(f);snprintf(err,sizeof(err),"HTTPS: no memory for CA");return 0;}
+    size_t n=fread(pem,1,(size_t)len,f);
+    fclose(f);
+    if(n!=(size_t)len) {
+        free(pem);
+        snprintf(err,sizeof(err),"HTTPS: CA bundle read failed");
+        return 0;
+    }
+    struct curl_blob blob={pem,(size_t)len,CURL_BLOB_COPY};
+    CURLcode result=curl_easy_setopt(c,CURLOPT_CAINFO_BLOB,&blob);
+    free(pem);
+    if(result!=CURLE_OK) {
+        snprintf(err,sizeof(err),"HTTPS: CA blob unsupported (%d)",(int)result);
+        return 0;
+    }
+    return 1;
+}
+
 /* Ballot requests fail closed if certificate verification is unavailable. */
 int net_json_verified(const char *url, const char *post_json, char *reply, int reply_size) {
     if (reply && reply_size > 0) reply[0] = 0;
@@ -133,8 +170,8 @@ int net_json_verified(const char *url, const char *post_json, char *reply, int r
     common(c, url);
     curl_easy_setopt(c, CURLOPT_SSL_VERIFYPEER, 1L);
     curl_easy_setopt(c, CURLOPT_SSL_VERIFYHOST, 2L);
-    /* VitaSDK curl has no reliable system CA roots; use bundled Mozilla CA. */
-    curl_easy_setopt(c, CURLOPT_CAINFO, "app0:data/certs/cacert.pem");
+    /* Keep peer and host verification enabled; trust Mozilla roots from memory. */
+    if(!poll_ca_blob(c)) {free(m.buf);curl_easy_cleanup(c);return -1;}
     char tls_error[CURL_ERROR_SIZE] = {0};
     curl_easy_setopt(c, CURLOPT_ERRORBUFFER, tls_error);
     curl_easy_setopt(c, CURLOPT_FOLLOWLOCATION, 0L);

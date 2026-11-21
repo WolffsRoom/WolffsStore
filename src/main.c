@@ -32,7 +32,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "1.0.15"
+#define WS_VERSION "1.0.16"
 #endif
 
 /* ================================================================ textos */
@@ -923,7 +923,11 @@ static void build_home(void) {
     first = nops;
     iy += para(t->feature, ix, iy, iw, C_SOFT, 0, fl, 0) + 16;
     for (int i = first; i < nops; i++) ops[i].pop = ip + 0.16;
-    int b1 = button(TXT(S_DETAILS), ix, iy, 0, 1, A_POST, feat, NULL, ip + 0.24);
+    char poll_action[72];
+    if (p->poll_id[0]) utf8_to_latin1(lang==LANG_PT ?
+        "Participe agora!" : "Vote now!",poll_action,sizeof(poll_action));
+    int b1 = button(p->poll_id[0] ? poll_action : TXT(S_DETAILS),
+                    ix, iy, 0, 1, A_POST, feat, NULL, ip + 0.24);
     /* A source repository is not the same as a release VPK download. */
     const char *gh = NULL;
     for (int i = 0; i < t->nsrcs && !gh; i++) {
@@ -1411,17 +1415,28 @@ static void build_poll(int pi) {
     /* The poll's own cover appears centered before its voting options. */
     if (cover_tex[pi]) {
         y += 18;
+        /* Same pixel-card treatment as Home: offset square shadow, a 4px
+         * black mat and stepped white border corners (no smooth rounding). */
+        rect(184,y+8,608,346,C_SH1);
         rect(176,y,608,346,C_DARK);
-        Op *cover = op(OP_TEX,180,y+4,600,338);
+        Op *cover = op(OP_TEX,184,y+8,592,330);
         cover->tex = cover_tex[pi];
         frame(176,y,608,346,C_WHITE,C_WHITE,-1);
         frame(180,y+4,600,338,C_BORDER,C_WHITE,-1);
+        /* Four 8-bit cut-corner accents give the frame its low-pixel shape. */
+        rect(176,y,8,8,C_DARK);
+        rect(776,y,8,8,C_DARK);
+        rect(176,y+338,8,8,C_DARK);
+        rect(776,y+338,8,8,C_DARK);
         y += 346 + 28;
     }
     rect(24,y,912,4,C_LINE);
     y+=24;
     int matched=strcmp(ps.id,p->poll_id)==0;
     int answered=matched ? ps.answered : poll_local_answered(p->poll_id);
+    /* Once the player submits, hide the options throughout the pending POST.
+     * A failed request restores them for a safe, explicit retry. */
+    const int submitting = matched && ps.busy && poll_anim_post == pi;
     if(ended) {
         const char *heading_text=lang==LANG_PT?"RESULTADOS":"RESULTS";
         y+=heading(heading_text,24,y,912,3,C_SOFT,0,0,1,32)+20;
@@ -1474,19 +1489,21 @@ static void build_poll(int pi) {
             y = poll_box_page_y + 163 + 14;
         }
     } else {
-        char poll_prompt[128];
-        utf8_to_latin1(lang==LANG_PT ? "Escolha uma opção:" : "Choose one option:",
-                       poll_prompt,sizeof(poll_prompt));
-        y+=para(poll_prompt,24,y,912,C_SOFT,0,2,0)+18;
-        for(int i=0;i<p->poll_count;i++) {
-            char label[178];
-            /* Selection is represented by the filled pixel button itself. */
-            snprintf(label,sizeof(label),"%s",p->poll_options[i]);
-            int button_id=button(keep(label),24,y,912,poll_selected==i,
-                                 A_POLL_CHOOSE,i,NULL,view_t0+.07+i*.09);
-            y+=(button_id>=0?items[button_id].h:48)+16;
+        if (!submitting) {
+            char poll_prompt[128];
+            utf8_to_latin1(lang==LANG_PT ? "Escolha uma opção:" : "Choose one option:",
+                           poll_prompt,sizeof(poll_prompt));
+            y+=para(poll_prompt,24,y,912,C_SOFT,0,2,0)+18;
+            for(int i=0;i<p->poll_count;i++) {
+                char label[178];
+                /* Selection is represented by the filled pixel button itself. */
+                snprintf(label,sizeof(label),"%s",p->poll_options[i]);
+                int button_id=button(keep(label),24,y,912,poll_selected==i,
+                                     A_POLL_CHOOSE,i,NULL,view_t0+.07+i*.09);
+                y+=(button_id>=0?items[button_id].h:48)+16;
+            }
         }
-        if(matched && ps.error) {
+        if(!submitting && matched && ps.error) {
             char msg[192];
             if (ps.http_status > 0)
                 snprintf(msg,sizeof(msg),lang==LANG_PT?
@@ -1504,7 +1521,7 @@ static void build_poll(int pi) {
             y+=para(localized,24,y,912,C_MUTED,0,4,0)+18;
         }
         y += 24;
-        if (matched && ps.busy && poll_anim_post==pi) {
+        if (submitting) {
             int button_id=button(lang==LANG_PT?"CONFIRMANDO...":"CONFIRMING...",
                                  308,y,344,0,A_POLL_SEND,-1,NULL,view_t0+.45);
             if(button_id>=0)items[button_id].act=-1;
@@ -1529,8 +1546,10 @@ static void build_poll(int pi) {
                            select_hint,sizeof(select_hint));
             y+=para(select_hint,24,y,912,C_MUTED,1,2,0)+12;
         }
-        /* Permanent ballot box immediately below the confirmation area. */
-        poll_box_page_y = y + 12;
+        /* Reserve an actual paper-sized vertical lane BETWEEN the button
+         * and the ballot box. At box top -126 the 121px paper never overlaps
+         * the 48px confirmation button: >50px clear space stays visible. */
+        poll_box_page_y = y + 172;
         if (poll_box_tex) {
             Op *box=op(OP_TEX,376,poll_box_page_y,208,163);
             box->tex=poll_box_tex;
@@ -3475,14 +3494,15 @@ static void activate(int it) {
            g_posts[view_post].poll_id[0] && poll_vote(poll_selected)) {
             poll_anim_post = view_post;
             poll_anim_t0 = now_s;
-            /* Bring the box into view during confirmation. */
+            sfx("download");
+            rebuild(); /* Rebuild first: options disappear before camera scroll. */
             if (poll_box_page_y >= 0) {
-                float desired = poll_box_page_y + 190.f - (SCR_H - hint_h);
-                if (desired > cam_target) cam_target = desired;
+                /* Frame the confirming button, floating paper and box, not
+                 * the previous voting-options layout. */
+                float desired = poll_box_page_y + 183.f - (SCR_H - hint_h);
+                cam_target = desired > 0.f ? desired : 0.f;
                 cam_clamp();
             }
-            sfx("download");
-            rebuild();
         } else sfx("notice");
         break;
     case A_DECK_CARD: {
@@ -4451,14 +4471,15 @@ static void draw_update_notes(void) {
     snprintf(line, sizeof(line), "Wolff's Store v%s", WS_VERSION);
     body_draw(line, x + (w - body_width(line)) / 2, y + 79, col_alpha(C_GOLD, p));
     vita2d_draw_rectangle(x + 32, y + 111, w - 64, 4, col_alpha(C_LINE, p));
+    /* Concise, user-visible update notes MUST change with every release. */
     static const char *pt[] = {
-        "Updater reutilizado sem apagar a bolha.",
-        "Corrigido o título Lançamentos no Vita.",
-        "Novidade Pokémon Emerald v0.5.8 no site."};
+        "Enquetes: HTTPS seguro corrigido no Vita.",
+        "Capa pixelada e botão Participe agora!",
+        "Votação: confirmação e recibo melhorados."};
     static const char *en[] = {
-        "Updater reused without deleting its bubble.",
-        "Fixed the Releases title on PS Vita.",
-        "Pokémon Emerald v0.5.8 news on the site."};
+        "Polls: fixed secure HTTPS on PS Vita.",
+        "Pixel cover and Vote now! action.",
+        "Voting: improved feedback and receipt."};
     for (int i = 0; i < 3; i++) {
         utf8_to_latin1(lang == LANG_PT ? pt[i] : en[i], details[i], sizeof(details[i]));
         body_draw(details[i], x + 40, y + 138 + i * 52, col_alpha(C_WHITE, p));
