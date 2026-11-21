@@ -34,7 +34,7 @@ cover	1
 shots	0
 end	
 post	youtube-on-vita
-github_downloads_total	290
+github_downloads_total	731
 cat	ferramentas
 subcat	apps
 group	0
@@ -43,8 +43,8 @@ updated	2026-11-20
 title.pt	YouTube on Vita
 tag.pt	YouTube on TV · Cobalt · PS Vita
 status.pt	v0.58 · First Release
-desc.pt	O YouTube on TV original no PS Vita, com login, touch, áudio, vídeo até 720p e Add-ons nativos.
-feature_text.pt	Chegou o YouTube on Vita v0.58! Primeira versão pública, com downloads Full e Lite.
+desc.pt	YouTube on Vita - cliente não oficial do YouTube para PS Vita. A experiência real do YouTube on TV através do Cobalt. Disponível nas versões Full e Lite.
+feature_text.pt	YouTube on Vita - Cliente não oficial do YouTube para PS Vita  A experiência real do YouTube on TV, trazida ao PlayStation Vita através do Cobalt.  Disponível em duas versões: Full e Lite.
 about.pt	E aí, pessoal! Wolff aqui. O YouTube on Vita v0.58 chegou à sua primeira versão pública! O projeto traz a interface original do YouTube on TV para o PlayStation Vita, utilizando Cobalt e integração com os recursos nativos do console.
 sec.pt	O que oferece
 item.pt	YouTube de verdade: navegação, pesquisa, login e player da interface de TV.
@@ -77,8 +77,8 @@ link.pt	Release v0.58 no GitHub|https://github.com/WolffsRoom/YouTubeOnVita/rele
 title.en	YouTube on Vita
 tag.en	YouTube on TV · Cobalt · PS Vita
 status.en	v0.58 · First Release
-desc.en	The genuine YouTube on TV experience on PS Vita, with sign-in, touch controls, native Add-ons and video playback up to 720p.
-feature_text.en	YouTube on Vita v0.58 is here! The first public release, available in Full and Lite editions.
+desc.en	YouTube on Vita - unofficial YouTube client for PS Vita. The real YouTube on TV experience, brought to PlayStation Vita through Cobalt. Available in Full and Lite editions.
+feature_text.en	YouTube on Vita - Unofficial YouTube client for PS Vita  The real YouTube on TV experience, brought to PlayStation Vita through Cobalt.  Available in two editions: Full and Lite.
 about.en	Hey everyone! Wolff here. YouTube on Vita v0.58 is here as its first public release! This port brings the genuine YouTube on TV experience to PlayStation Vita using Cobalt and the console's native features.
 sec.en	Features
 item.en	Real YouTube interface: browsing, search, account sign-in and TV player controls.
@@ -136,7 +136,7 @@ item.pt	Batalhas 3D em cenários derivados da área em que o confronto começa
 item.pt	Interface de toque sobre o mundo 3D, substituindo menus e caixas originais do GBA, com diferentes temas, mantendo cenas GBA onde necessário
 item.pt	Pokémon seguidores no estilo HGSS, relógio acelerado, encontros por horário e melhorias opcionais de qualidade de vida
 sec.pt	Melhorias da Wolff's Room
-para.pt	*As opções de câmera e primeira pessoa seguem experimentais. As telas recém-integradas e a nova compilação PT-BR ainda precisam de testes completos em um PS Vita físico; use a câmera padrão se encontrar problemas gráficos.*
+para.pt	As opções de câmera e primeira pessoa seguem experimentais. As telas recém-integradas e a nova compilação PT-BR ainda precisam de testes completos em um PS Vita físico; use a câmera padrão se encontrar problemas gráficos.
 item.pt	Revisão da tradução PT-BR, com 14.253 entradas dos textos do jogo e mais de mil termos na interface, incluindo novos menus da v0.5.8.
 item.pt	Interface adaptada em diferentes temas: letreiros para textos longos e descrições das cidades traduzidas.
 item.pt	Câmera livre pelo analógico direito, com movimentação alinhada à tela mesmo após girar a visão; modo de primeira pessoa e vegetação voltada à câmera continuam opcionais.
@@ -184,7 +184,7 @@ item.en	3D battle stages drawn from the map where battles start
 item.en	Touch menus with several themes, while retaining the original GBA layout where needed
 item.en	HGSS-style follower Pokémon, accelerated clock, time-based encounters, and optional QoL features
 sec.en	Wolff's Room improvements
-para.en	*Camera and first-person options remain experimental. Newly integrated menus and this PT-BR build still require a complete physical Vita test; use the default camera if you notice visual issues.*
+para.en	Camera and first-person options remain experimental. Newly integrated menus and this PT-BR build still require a complete physical Vita test; use the default camera if you notice visual issues.
 item.en	Updated the Brazilian Portuguese localization, covering 14,253 game-text entries and over a thousand native UI dictionary strings, including the v0.5.8 additions.
 item.en	Adapted overflowing text with marquee animations and translated town descriptions for the different UI themes.
 item.en	Updated right-stick free-look with screen-aligned character movement when rotating the camera; optional first-person view and camera-facing foliage.
@@ -251,7 +251,7 @@ cover	1
 shots	1
 end	
 post	pizza
-github_downloads_total	36
+github_downloads_total	38
 cat	ports
 subcat	
 group	1
@@ -268,7 +268,7 @@ feature_text.pt	Pizza Tower SAGE 2019 chegou ao PS Vita! Demo v14 jogável em 60 
 about.pt	Port não oficial da demo gratuita Pizza Tower SAGE 2019 (v14) para PlayStation Vita, lançado na versão v0.64. Utiliza o runner Butterscotch com VitaGL e OpenAL. O projeto relata jogabilidade completa do início ao fim, com 95% de progresso geral.
 sec.pt	Novidades da v0.64
 item.pt	Ordem de camadas corrigida: Peppino não aparece mais atrás de portas, escadas ou do efeito de provocação (`obj_taunteffect`). A atualização preserva a profundidade (`depth`) das instâncias entre salas e desativa os testes e gravações de profundidade na `application_surface` do VitaGL.
-item.pt	Analógico esquerdo para cima restaurado: o comando vertical volta a funcionar em escadas, portas/portões e ao carregar o Super Jump. O controle possui zona morta (*deadzone*) e verificação do eixo vertical para impedir ativações acidentais durante corridas Mach horizontais.
+item.pt	Analógico esquerdo para cima restaurado: o comando vertical volta a funcionar em escadas, portas/portões e ao carregar o Super Jump. O controle possui zona morta (deadzone) e verificação do eixo vertical para impedir ativações acidentais durante corridas Mach horizontais.
 sec.pt	Melhorias anteriores (v0.62)
 item.pt	Texturas BC3 (DXT5) residentes: 35 páginas de texturas (~87 MiB), reduzindo evicções durante a renderização e adicionando uma barreira de sincronização da GPU na troca de salas
 item.pt	Roupa azul SAGE de Peppino renderizada com shader pal_swapper, sem duplicar a VRAM em atlas descompactados
@@ -357,7 +357,7 @@ cover	1
 shots	6
 end	
 post	dd-touchonvita
-github_downloads_total	18
+github_downloads_total	19
 cat	ferramentas
 subcat	plugins
 group	0
@@ -410,7 +410,7 @@ cover	1
 shots	4
 end	
 post	vampire-survivors-vita
-github_downloads_total	1741
+github_downloads_total	1776
 cat	ports
 subcat	
 group	3
@@ -586,7 +586,7 @@ cover	1
 shots	2
 end	
 post	fm
-github_downloads_total	6440
+github_downloads_total	6452
 cat	ferramentas
 subcat	apps
 group	1
@@ -716,7 +716,7 @@ cover	1
 shots	0
 end	
 post	delta
-github_downloads_total	10201
+github_downloads_total	10238
 cat	ports
 subcat	
 group	0
@@ -855,7 +855,7 @@ cover	1
 shots	2
 end	
 post	godot
-github_downloads_total	297
+github_downloads_total	298
 cat	ferramentas
 subcat	ferramentas
 group	0
@@ -1154,7 +1154,7 @@ shots	0
 video	https://youtu.be/uLmCN01wOwo
 end	
 post	sonic
-github_downloads_total	84921
+github_downloads_total	84942
 cat	traducoes
 subcat	
 group	0
@@ -1690,7 +1690,7 @@ status.pt	Nota 8.9/10
 desc.pt	Uma jornada sobre amizade, mistérios e autoconhecimento em Inaba. Review após 86 horas de jogo.
 feature_text.pt	Persona 4 Golden no PS Vita - seis categorias avaliadas e um mistério que vale a pena conhecer.
 bars_title.pt	Notas · Seis ao Cubo
-about.pt	Após 86 horas em Inaba, Persona 4 Golden se destaca pela maneira como transforma amizade, autoconhecimento e mistério em uma experiência pessoal. A análise foi publicada originalmente em 26 de abril de 2025, depois de finalizar o jogo no PS Vita. As notas seguem meu método *Seis ao Cubo*, que avalia seis categorias com até 36 pontos cada.
+about.pt	Após 86 horas em Inaba, Persona 4 Golden se destaca pela maneira como transforma amizade, autoconhecimento e mistério em uma experiência pessoal. A análise foi publicada originalmente em 26 de abril de 2025, depois de finalizar o jogo no PS Vita. As notas seguem meu método Seis ao Cubo, que avalia seis categorias com até 36 pontos cada.
 sec.pt	Gráficos - Perfeito (36/36)
 item.pt	Modelos, expressões e texturas melhorados em relação à versão de PS2.
 item.pt	Ambientes e personagens combinam com o estilo visual do jogo, mesmo nas limitações do PS Vita.
@@ -1714,7 +1714,7 @@ item.pt	A campanha combina dezenas de horas de história, vínculos sociais e cont
 item.pt	Minha conclusão levou 86 horas, sem esgotar todas as possibilidades da aventura.
 sec.pt	Recomendo?
 sec.pt	Veredito - 8.9/10
-para.pt	*Esta é uma adaptação da análise publicada no WordPress. Para ler os comentários e argumentos completos, use o link «Ler análise original completa».*
+para.pt	Esta é uma adaptação da análise publicada no WordPress. Para ler os comentários e argumentos completos, use o link «Ler análise original completa».
 item.pt	Recomendo! Persona 4 Golden é uma ótima porta de entrada para a série e uma jornada memorável sobre amizade, superação e mistério.
 item.pt	A pontuação final apresentada no artigo original é 192/216 (8.9/10).
 bar.pt	Nota final|89|192/216
@@ -1737,7 +1737,7 @@ status.en	Score 8.9/10
 desc.en	Friendship, mystery and self-discovery in Inaba, reviewed after 86 hours of gameplay.
 feature_text.en	Persona 4 Golden on PS Vita - six review categories and a mystery worth experiencing.
 bars_title.en	Scores · Six Cubed
-about.en	After 86 hours in Inaba, Persona 4 Golden stands out for turning friendship, self-discovery and mystery into a deeply personal experience. This review was first published on April 26, 2025 after finishing the PS Vita edition. Scores follow the *Six Cubed* system: six categories, each worth up to 36 points.
+about.en	After 86 hours in Inaba, Persona 4 Golden stands out for turning friendship, self-discovery and mystery into a deeply personal experience. This review was first published on April 26, 2025 after finishing the PS Vita edition. Scores follow the Six Cubed system: six categories, each worth up to 36 points.
 sec.en	Graphics - Perfect (36/36)
 item.en	Improved models, character expressions and textures compared with the PS2 edition.
 item.en	The locations and characters blend well with the art direction, despite the Vita hardware constraints.
@@ -1761,7 +1761,7 @@ item.en	Plenty of story, relationship building and optional content.
 item.en	My playthrough lasted 86 hours.
 sec.en	Recommendation
 sec.en	Verdict - 8.9/10
-para.en	*This page summarizes the author's original Portuguese review; see the linked WordPress article for the full analysis.*
+para.en	This page summarizes the author's original Portuguese review; see the linked WordPress article for the full analysis.
 item.en	Recommended! An excellent introduction to Persona and a memorable journey through friendship, personal growth and mystery.
 item.en	Original published score: 192/216 (8.9/10).
 bar.en	Final score|89|192/216
@@ -1946,7 +1946,7 @@ status.pt	100% · Disponível
 desc.pt	Uma história no universo de Undertale, com mistério e reviravoltas.
 feature_text.pt	Uma história no universo de Undertale, com mistério e reviravoltas.
 bars_title.pt	Progresso
-about.pt	DELTARUNE: Capítulo 1 é uma história paralela ao universo de *Undertale*, com diálogos marcantes, mistério, amizade e escolhas que acompanham Kris, Susie e Ralsei.
+about.pt	DELTARUNE: Capítulo 1 é uma história paralela ao universo de Undertale, com diálogos marcantes, mistério, amizade e escolhas que acompanham Kris, Susie e Ralsei.
 sec.pt	Sobre o projeto
 para.pt	O jogo foi portado ao PS Vita de forma não oficial por tijesef. Para adaptar a tradução brasileira da equipe Teiarruma, foram mesclados arquivos de diferentes versões, corrigidas estruturas incompatíveis com o port e ajustados sprites e controles.
 para.pt	Inicialmente, a tradução foi testada por meio de rePatch. Para facilitar a instalação, a versão disponibilizada foi reempacotada em um único VPK com os arquivos em português, os ajustes de 16:9 e os novos manuais da LiveArea. Os scripts da tradução estão registrados como 100% concluídos.
@@ -1992,7 +1992,7 @@ status.en	100% · Available
 desc.en	A story in the Undertale universe, full of mystery and twists.
 feature_text.en	A story in the Undertale universe, full of mystery and twists.
 bars_title.en	Progress
-about.en	DELTARUNE: Chapter 1 is a parallel story set in the *Undertale* universe, with memorable dialogue, mystery, friendship and choices, following Kris, Susie and Ralsei.
+about.en	DELTARUNE: Chapter 1 is a parallel story set in the Undertale universe, with memorable dialogue, mystery, friendship and choices, following Kris, Susie and Ralsei.
 sec.en	About the project
 para.en	The game was unofficially ported to PS Vita by tijesef. To adapt the Teiarruma team's Brazilian Portuguese translation, files from multiple versions were merged, compatibility issues were fixed, and sprites and controls were adjusted.
 para.en	The translation was initially tested with rePatch, but the final distribution is a single VPK with the translated content, 16:9 adjustments and new LiveArea manuals already integrated. The translation scripts are recorded as 100% complete.
@@ -2222,7 +2222,7 @@ status.pt	Nota 198/216
 desc.pt	Kratos e Atreus encerram a saga nórdica em uma jornada emocionante, com combates excelentes e alguns problemas de ritmo.
 feature_text.pt	God of War Ragnarök no PS4 - uma experiência marcante avaliada pelo método Seis ao Cubo.
 bars_title.pt	Notas · Seis ao Cubo
-about.pt	God of War Ragnarök continua a jornada de Kratos e Atreus pelo mundo nórdico e encerra uma fase importante da franquia. Esta análise pessoal, publicada originalmente em 26 de janeiro de 2025, foi feita após 48 horas de jogo no PlayStation 4. As seis categorias seguem o método *Seis ao Cubo*, com até 36 pontos por categoria.
+about.pt	God of War Ragnarök continua a jornada de Kratos e Atreus pelo mundo nórdico e encerra uma fase importante da franquia. Esta análise pessoal, publicada originalmente em 26 de janeiro de 2025, foi feita após 48 horas de jogo no PlayStation 4. As seis categorias seguem o método Seis ao Cubo, com até 36 pontos por categoria.
 sec.pt	Gráficos - Perfeito (36/36)
 item.pt	O PS4 ainda entrega cenários impressionantes, com riqueza de detalhes na água, na vegetação, nas embarcações e nos reinos nórdicos.
 item.pt	A direção de arte proporciona diversos momentos de contemplação e exploração.
@@ -2243,7 +2243,7 @@ sec.pt	Duração - Ótimo (30/36)
 item.pt	As atividades opcionais complementam a história sem tornar a campanha excessivamente longa.
 item.pt	Concluí a aventura em 48 horas, priorizando o que achei interessante, sem perseguir a platina.
 sec.pt	Veredito - 198/216
-para.pt	*Esta página adapta a review publicada em 2025. Leia o artigo original no WordPress para a análise completa e todas as considerações pessoais.*
+para.pt	Esta página adapta a review publicada em 2025. Leia o artigo original no WordPress para a análise completa e todas as considerações pessoais.
 item.pt	Recomendo! Ragnarök traz uma história envolvente, combates excelentes e um mundo rico em detalhes, apesar de algumas escolhas de ritmo e progressão.
 item.pt	A nota original foi 198/216 (aproximadamente 9,2/10 em escala decimal).
 bar.pt	Nota final|92|198/216
@@ -2266,7 +2266,7 @@ status.en	Score 198/216
 desc.en	Kratos and Atreus close their Norse saga with strong combat, memorable moments and a few pacing issues.
 feature_text.en	God of War Ragnarök on PS4, reviewed using the author's Six Cubed scoring method.
 bars_title.en	Scores · Six Cubed
-about.en	God of War Ragnarök follows Kratos and Atreus on the final stretch of their Norse adventure. This personal review was first published on January 26, 2025 after 48 hours on PlayStation 4. It uses the author's *Six Cubed* method: six categories, each worth up to 36 points.
+about.en	God of War Ragnarök follows Kratos and Atreus on the final stretch of their Norse adventure. This personal review was first published on January 26, 2025 after 48 hours on PlayStation 4. It uses the author's Six Cubed method: six categories, each worth up to 36 points.
 sec.en	Graphics - Perfect (36/36)
 item.en	Beautiful PS4 environments, full of detail in water, forests, boats and the Norse realms.
 item.en	Strong art direction rewards exploration and offers plenty of memorable scenes.
@@ -2287,7 +2287,7 @@ sec.en	Length - Great (30/36)
 item.en	The optional activities enrich the campaign without excessive padding.
 item.en	My playthrough took 48 hours without focusing on platinum trophies.
 sec.en	Verdict - 198/216
-para.en	*This adaptation summarizes the author's Portuguese review. Follow the WordPress link for the complete original article.*
+para.en	This adaptation summarizes the author's Portuguese review. Follow the WordPress link for the complete original article.
 item.en	Recommended! An excellent follow-up with powerful combat and a richly detailed world despite minor pacing and progression problems.
 item.en	Original score: 198/216, approximately 9.2/10.
 bar.en	Final score|92|198/216
@@ -2403,7 +2403,7 @@ tag.pt	Tradução · PS Vita · PT-BR
 status.pt	Disponível · Em revisão
 desc.pt	Viva as histórias de VA-11 HALL-A em português brasileiro no PS Vita, com diálogos, interface e gráficos adaptados.
 feature_text.pt	Uma noite no bar mais cyberpunk de Glitch City, agora em português brasileiro.
-about.pt	Um bar cyberpunk, personagens marcantes e histórias que se revelam a cada drink. *VA-11 HALL-A: Cyberpunk Bartender Action* combina narrativa, pixel art e uma trilha sonora envolvente em um futuro distópico.
+about.pt	Um bar cyberpunk, personagens marcantes e histórias que se revelam a cada drink. VA-11 HALL-A: Cyberpunk Bartender Action combina narrativa, pixel art e uma trilha sonora envolvente em um futuro distópico.
 sec.pt	Sobre a tradução
 para.pt	Meu primeiro projeto como tradutor no PS Vita. Adaptei a tradução brasileira originalmente realizada por CoffeLordran no PC para a versão PCSE00756 (USA) do Vita, aproveitando também a estrutura de acentuação de uma tradução espanhola.
 para.pt	O trabalho incluiu revisão de diálogos, correção de quebras de linha para a tela do portátil, recriação de sprites e elementos gráficos e a adaptação de ferramentas próprias de conversão.
@@ -2435,7 +2435,7 @@ tag.en	Translation · PS Vita · PT-BR
 status.en	Available · Under review
 desc.en	Experience VA-11 HALL-A on PS Vita in Brazilian Portuguese, with adapted text, interface and graphics.
 feature_text.en	Visit Glitch City's most cyberpunk bar, now in Brazilian Portuguese.
-about.en	*VA-11 HALL-A: Cyberpunk Bartender Action* is a cyberpunk visual novel about mixing drinks and getting to know your customers.
+about.en	VA-11 HALL-A: Cyberpunk Bartender Action is a cyberpunk visual novel about mixing drinks and getting to know your customers.
 sec.en	About this translation
 para.en	This PS Vita port adapts CoffeLordran's original Brazilian Portuguese PC translation to the USA build PCSE00756, incorporating Spanish Vita localization work to improve accented glyphs and adjusting text wrapping and graphics.
 sec.en	Translation status

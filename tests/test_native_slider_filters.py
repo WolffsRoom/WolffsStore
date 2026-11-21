@@ -19,7 +19,7 @@ class NativeCarouselAndFiltersTests(unittest.TestCase):
                "deck_rank[i] = i + 1"):
    self.assertIn(line,s)
   self.assertIn('grid(latest_ids, latest_n, y, nav_pop(0) + .05, .08)',s)
-  self.assertIn('lang == LANG_PT ? "Lançamentos" : "Releases"',s)
+  self.assertIn('lang == LANG_PT ? "Explore outros lançamentos" : "Explore other releases"',s)
   self.assertIn("utf8_to_latin1(lang == LANG_PT",s)
   self.assertIn("heading(keep(release_heading)",s)
   self.assertIn("const int visual[5] = {-2, 2, -1, 1, 0}",s)
@@ -93,7 +93,7 @@ class NativeCarouselAndFiltersTests(unittest.TestCase):
 
  def test_translated_heading_and_caption_are_gated_until_intro(self):
   s=self.source
-  for text in ("Check out the latest updates...", "Confira as últimas novidades...",
+  for text in ("Check out more updates...", "Confira também outras novidades...",
                "Explore other completed and in-development projects...",
                "Explore outros trabalhos finalizados ou em desenvolvimento..."):
    self.assertIn(text,s)
