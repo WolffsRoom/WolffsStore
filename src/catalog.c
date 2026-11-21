@@ -69,12 +69,14 @@ int catalog_load(const char *path) {
             p = &g_posts[g_nposts++];
             memset(p, 0, sizeof(*p));
             p->progress = -1;
+            p->github_downloads_total = -1;
             snprintf(p->slug, sizeof(p->slug), "%s", v);
             continue;
         }
         if (!p) continue;
         if (!strcmp(k, "cat")) p->cat = cat_id(v);
         else if (!strcmp(k, "subcat")) p->subcat = subcat_id(v);
+        else if (!strcmp(k, "github_downloads_total")) p->github_downloads_total = atoll(v);
         else if (!strcmp(k, "poll_id")) snprintf(p->poll_id,sizeof(p->poll_id),"%s",v);
         else if (!strcmp(k, "poll_question")) snprintf(p->poll_question,sizeof(p->poll_question),"%s",v);
         else if (!strcmp(k, "poll_question.en")) snprintf(p->poll_question_en,sizeof(p->poll_question_en),"%s",v);

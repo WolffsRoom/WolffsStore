@@ -32,7 +32,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "1.1.0"
+#define WS_VERSION "1.1.1"
 #endif
 
 /* ================================================================ textos */
@@ -1771,6 +1771,27 @@ static void build_post(int pi) {
             yy += (it >= 0 ? items[it].h : 48) + 12;
         }
         ry += box_end(bg, rx, ry, rw, yy - 12) + 36;
+        pop_range(bg, box_pop);
+        box_pop += .1;
+    }
+    /* GitHub release asset downloads: appears after Downloads, before Details.
+     * Unknown counts remain hidden instead of showing a misleading zero. */
+    if (p->github_downloads_total >= 0 && (p->ndls || t->nlinks)) {
+        int bg = box_begin(rx, ry, rw);
+        float yy = ry + in;
+        const char *caption = lang == LANG_PT ? "Total de downloads" : "Total downloads";
+        yy += para(caption, rx + in, yy, rw - 2 * in, C_MUTED, 1, 2, 0) + 12;
+        char value[48], formatted[64];
+        snprintf(value, sizeof(value), "%lld", p->github_downloads_total);
+        int digits = (int)strlen(value), z=0;
+        for(int k=0;k<digits && z<(int)sizeof(formatted)-2;k++) {
+            formatted[z++]=value[k];
+            if((digits-k-1)%3==0 && k<digits-1)formatted[z++]='.';
+        }
+        formatted[z]=0;
+        yy += heading(keep(formatted), rx + in, yy, rw - 2 * in,
+                      2, C_WHITE, 0, 1, 1, 24) + 10;
+        ry += box_end(bg, rx, ry, rw, yy) + 36;
         pop_range(bg, box_pop);
         box_pop += .1;
     }
@@ -4480,13 +4501,13 @@ static void draw_update_notes(void) {
     vita2d_draw_rectangle(x + 32, y + 111, w - 64, 4, col_alpha(C_LINE, p));
     /* Concise, user-visible update notes MUST change with every release. */
     static const char *pt[] = {
-        "Voto processado sem sobreposição da urna.",
-        "Pergunta e opções em português ou inglês.",
-        "Enquetes com idioma da Store respeitado."};
+        "Total de downloads por projeto no GitHub.",
+        "Exibido entre Downloads e Detalhes.",
+        "Contagem atualizada com o catálogo."};
     static const char *en[] = {
-        "Vote processed message stays unobstructed.",
-        "Poll question and options localized in PT/EN.",
-        "Poll language follows Store settings."};
+        "Total GitHub downloads for each project.",
+        "Shown between Downloads and Details.",
+        "Counts refresh with the Store catalog."};
     for (int i = 0; i < 3; i++) {
         utf8_to_latin1(lang == LANG_PT ? pt[i] : en[i], details[i], sizeof(details[i]));
         body_draw(details[i], x + 40, y + 138 + i * 52, col_alpha(C_WHITE, p));

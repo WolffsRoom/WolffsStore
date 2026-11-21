@@ -93,6 +93,13 @@ int store_parse(const char *text, Post *out, int max, AppRelease *app) {
         if (json_type(o) != JSON_OBJECT) continue;
         Post *p = &out[n++];
         memset(p, 0, sizeof(*p));
+        p->github_downloads_total = -1;
+        const JsonValue *downloads_count=json_object_get(o,"github_downloads_total");
+        if(downloads_count && json_type(downloads_count)==JSON_NUMBER) {
+            double count=json_number(downloads_count,-1);
+            if(count>=0 && count<9007199254740992.0)
+                p->github_downloads_total=(long long)count;
+        }
         snprintf(p->slug, sizeof(p->slug), "%s", json_string(json_object_get(o, "slug"), "post"));
         const char *category = json_string(json_object_get(o, "cat"), "");
         p->cat = cat_of(category);

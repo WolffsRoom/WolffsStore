@@ -20,7 +20,7 @@ class PollVoteAnimationTests(unittest.TestCase):
         self.assertIn('poll_box_page_y = y + 172;', code)
         self.assertIn('CONFIRMAR VOTO', code)
         self.assertIn('Participe agora!',code)
-        self.assertIn('Voto processado sem sobreposição da urna.',code)
+        self.assertIn('Total de downloads por projeto no GitHub.',code)
         self.assertIn('rect(184,y+8,608,346,C_SH1);',code)
         self.assertNotIn('poll_selected==i?"[X]":"[ ]"', code)
         self.assertIn('cover_tex[pi]', code)

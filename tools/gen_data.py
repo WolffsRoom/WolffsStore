@@ -141,6 +141,8 @@ def main():
         wrt(Image.open(os.path.join(site, 'assets', n + '.png')), os.path.join(OUT, 'tex', n + '.wrt'))
 
     posts, order = build.load_all()
+    from store import populate_download_totals
+    populate_download_totals(posts)
     feat = next((k for k in order if posts[k]['feature']), order[0])
     L = []
 
@@ -152,6 +154,8 @@ def main():
         en = p['en'] or {}
         folder = p['folder']
         put('post', slug)
+        if p.get('github_downloads_total') is not None:
+            put('github_downloads_total', str(p['github_downloads_total']))
         put('cat', p['cat'])
         put('subcat', p.get('subcat') or '')
         if p.get('poll'):
