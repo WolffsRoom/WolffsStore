@@ -153,7 +153,14 @@ static int worker(SceSize arg, void *param) {
                 }
             } else if(mode==2)current.error=4;
             json_free(root);
-        } else current.error=http<0?1:4;
+        } else {
+            current.error=http<0?1:4;
+            current.http_status=http;
+            if (http < 0)
+                snprintf(current.error_detail,sizeof(current.error_detail),"%.120s",net_error());
+            else
+                snprintf(current.error_detail,sizeof(current.error_detail),"HTTP %d",http);
+        }
     }
     current.busy=0;
     current.version++;

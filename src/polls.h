@@ -6,6 +6,8 @@ typedef struct {
     int busy, answered, selected, results_ready, total, count;
     int votes[MAX_POLL_CHOICES];
     int error;
+    int http_status;
+    char error_detail[128];
     unsigned version;
 } PollState;
 void poll_set_api(const char *api);

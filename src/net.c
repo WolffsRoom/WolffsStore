@@ -133,6 +133,10 @@ int net_json_verified(const char *url, const char *post_json, char *reply, int r
     common(c, url);
     curl_easy_setopt(c, CURLOPT_SSL_VERIFYPEER, 1L);
     curl_easy_setopt(c, CURLOPT_SSL_VERIFYHOST, 2L);
+    /* VitaSDK curl has no reliable system CA roots; use bundled Mozilla CA. */
+    curl_easy_setopt(c, CURLOPT_CAINFO, "app0:data/certs/cacert.pem");
+    char tls_error[CURL_ERROR_SIZE] = {0};
+    curl_easy_setopt(c, CURLOPT_ERRORBUFFER, tls_error);
     curl_easy_setopt(c, CURLOPT_FOLLOWLOCATION, 0L);
     curl_easy_setopt(c, CURLOPT_TIMEOUT, 20L);
     curl_easy_setopt(c, CURLOPT_FAILONERROR, 0L);
@@ -153,7 +157,8 @@ int net_json_verified(const char *url, const char *post_json, char *reply, int r
     if (headers) curl_slist_free_all(headers);
     curl_easy_cleanup(c);
     if (result == CURLE_OK) snprintf(reply, reply_size, "%s", m.buf);
-    else snprintf(err, sizeof(err), "Secure HTTPS: %s", curl_easy_strerror(result));
+    else snprintf(err, sizeof(err), "HTTPS (%d): %.120s", (int)result,
+                  tls_error[0] ? tls_error : curl_easy_strerror(result));
     free(m.buf);
     return result == CURLE_OK ? (int)http : -1;
 }

@@ -22,6 +22,23 @@ class PollVoteAnimationTests(unittest.TestCase):
         self.assertNotIn('poll_selected==i?"[X]":"[ ]"', code)
         self.assertIn('cover_tex[pi]', code)
         self.assertIn('600,338', code)
+        self.assertIn('poll_local_answered(g_posts[chosen].poll_id)',code)
+        self.assertIn('g_posts[i].cat != CAT_REVIEWS) return i;',code)
+        self.assertIn('CONFIRMANDO...', code)
+        self.assertIn('VOTO PROCESSADO!', code)
+        self.assertIn('Obrigado por participar!',code)
+        self.assertIn('Resultado sairá em %d dia(s)',code)
+        self.assertIn('const int just_confirmed',code)
+        self.assertIn('if (just_confirmed && poll_box_tex)',code)
+        # The already-voted branch precedes the selectable-options branch.
+        poll=code.split('static void build_poll(int pi)',1)[1].split('static void build_post',1)[0]
+        receipt=poll.split('} else if(answered) {',1)[1].split('} else {',1)[0]
+        self.assertNotIn('A_POLL_CHOOSE',receipt)
+        self.assertNotIn('A_POLL_SEND',receipt)
+        self.assertIn('utf8_to_latin1(lang==LANG_PT ? "Escolha uma opção:"', code)
+        self.assertIn('Erro de conexão HTTPS:', code)
+        self.assertIn('top - 126 + bob',code)
+        self.assertNotIn('120 * t',code)
         self.assertIn('draw_poll_vote_animation();', code)
         self.assertIn('poll_vote(poll_selected)', code)
         self.assertIn('app0:data/polls/caixa.png', code)
@@ -34,6 +51,11 @@ class PollVoteAnimationTests(unittest.TestCase):
         cmake = (ROOT / "CMakeLists.txt").read_text(encoding="utf8")
         self.assertIn('assets/polls/caixa.png data/polls/caixa.png', cmake)
         self.assertIn('assets/polls/papel.png data/polls/papel.png', cmake)
+        self.assertIn('data/certs/cacert.pem',cmake)
+        net=(ROOT/'src/net.c').read_text('utf8')
+        self.assertIn('CURLOPT_CAINFO',net)
+        self.assertIn('CURLOPT_SSL_VERIFYPEER, 1L',net)
+        self.assertTrue((ROOT/'data/certs/cacert.pem').is_file())
 
 if __name__ == "__main__":
     unittest.main()

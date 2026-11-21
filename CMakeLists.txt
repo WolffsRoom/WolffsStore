@@ -14,8 +14,8 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2 -Wall -Wno-format-truncation")
 set(WS_TITLEID "WFFS00042")
 set(WS_UPDATER_TITLEID "WFFS00043")
 # LiveArea padrão: assets/livearea (icon0 128x128, bg0 840x500, startup 280x158, PNG indexado de 8 bits)
-set(WS_SFO_VERSION "01.14")
-set(WS_FILE_VERSION "1.0.14")
+set(WS_SFO_VERSION "01.15")
+set(WS_FILE_VERSION "1.0.15")
 set(WS_VPK_NAME "WolffsStore.vpk")
 set(WS_ARTIFACTS_DIR "${CMAKE_SOURCE_DIR}/artifacts/current")
 
@@ -156,6 +156,7 @@ add_custom_target(ws_legacy_updater_sfo ALL DEPENDS ${WS_LEGACY_UPDATER_SFO})
 # recursos da interface. Capas e capturas de data/posts não entram no VPK:
 # são baixadas do site para o cache na primeira sincronização.
 file(GLOB_RECURSE ws_data RELATIVE ${CMAKE_SOURCE_DIR}
+  ${CMAKE_SOURCE_DIR}/data/certs/cacert.pem
   ${CMAKE_SOURCE_DIR}/data/tex/*
   ${CMAKE_SOURCE_DIR}/data/catalog.txt
   ${CMAKE_SOURCE_DIR}/data/music/morning.pcm

@@ -32,7 +32,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "1.0.14"
+#define WS_VERSION "1.0.15"
 #endif
 
 /* ================================================================ textos */
@@ -164,6 +164,7 @@ static int brightness = 100;  /* % (escurece a imagem do app; 40..100) */
 static int settings_open = 0, settings_row = 0, settings_page = 0, settings_root_row = 0;
 static int poll_selected = -1;
 static double poll_anim_t0 = -100;
+static double poll_success_t0 = -100;
 static int poll_anim_post = -1;
 /* Page position of the ballot box, directly below the confirm button. */
 static float poll_box_page_y = -1.f;
@@ -864,7 +865,10 @@ static int featured_post_for_device(void) {
     if(chosen>=0 && chosen<g_nposts &&
        g_posts[chosen].poll_id[0] && poll_local_answered(g_posts[chosen].poll_id)) {
         for(int i=0;i<g_nposts;i++)
-            if(!g_posts[i].poll_id[0] && g_posts[i].news_kind) return i;
+            if(!g_posts[i].poll_id[0] && g_posts[i].news_kind &&
+               g_posts[i].cat != CAT_REVIEWS) return i;
+        for(int i=0;i<g_nposts;i++)
+            if(!g_posts[i].poll_id[0] && g_posts[i].cat != CAT_REVIEWS) return i;
     }
     return chosen;
 }
@@ -1393,17 +1397,25 @@ static void build_poll(int pi) {
     y+=heading(title_text,24,y,912,4,C_WHITE,C_SHADOW,1,0,48)+24;
     y+=para(p->poll_question,24,y,912,C_WHITE,0,5,1)+24;
     char time_label[96];
-    snprintf(time_label,sizeof(time_label),
-             lang==LANG_PT ? "Resultado em %d dia(s)" : "Results in %d day(s)",
+    char countdown_utf8[96];
+    snprintf(countdown_utf8,sizeof(countdown_utf8),
+             lang==LANG_PT ? "Resultado sairá em %d dia(s)" : "Results in %d day(s)",
              poll_days_remaining(p->poll_ends_at));
-    y+=para(time_label,24,y,912,C_MUTED,0,2,0)+16;
+    utf8_to_latin1(countdown_utf8,time_label,sizeof(time_label));
+    /* The receipt has its countdown beneath the thank-you message. */
+    const int matched_before_layout=strcmp(ps.id,p->poll_id)==0;
+    const int answered_before_layout=matched_before_layout ? ps.answered :
+                                     poll_local_answered(p->poll_id);
+    if (!answered_before_layout || ended)
+        y+=para(time_label,24,y,912,C_MUTED,1,2,0)+16;
     /* The poll's own cover appears centered before its voting options. */
     if (cover_tex[pi]) {
         y += 18;
         rect(176,y,608,346,C_DARK);
         Op *cover = op(OP_TEX,180,y+4,600,338);
         cover->tex = cover_tex[pi];
-        frame(176,y,608,346,C_BORDER,C_WHITE,-1);
+        frame(176,y,608,346,C_WHITE,C_WHITE,-1);
+        frame(180,y+4,600,338,C_BORDER,C_WHITE,-1);
         y += 346 + 28;
     }
     rect(24,y,912,4,C_LINE);
@@ -1440,16 +1452,32 @@ static void build_poll(int pi) {
                      24,y,912,C_MUTED,0,4,0)+16;
         }
     } else if(answered) {
-        y+=heading(lang==LANG_PT?"RESPONDIDA":"ANSWERED",
-                   24,y,912,3,C_GOLD,0,0,1,36)+22;
-        y+=para(lang==LANG_PT
-                ? "Obrigado por participar! A resposta foi registrada."
-                : "Thank you for participating! Your vote is recorded.",
-                24,y,912,C_WHITE,0,3,0)+16;
-        y+=para(time_label,24,y,912,C_SOFT,0,2,0)+24;
+        /* This branch is used both immediately after a confirmed response
+         * and on future JOURNAL visits. Never show options or vote button. */
+        const int just_confirmed =
+            poll_anim_post == pi && poll_success_t0 >= 0 &&
+            now_s - poll_success_t0 < 2.2;
+        if (just_confirmed)
+            y+=heading(lang==LANG_PT?"VOTO PROCESSADO!":"VOTE PROCESSED!",
+                       24,y,912,3,C_GOLD,0,1,1,36)+18;
+        char thanks[112];
+        utf8_to_latin1(lang==LANG_PT ? "Obrigado por participar!" :
+                       "Thank you for participating!",thanks,sizeof(thanks));
+        y+=para(thanks,24,y,912,C_WHITE,1,3,1)+18;
+        y+=para(time_label,24,y,912,C_SOFT,1,2,0)+30;
+        /* Keep the ballot visual only during the immediate success animation.
+         * Reopening from JOURNAL remains a minimal centered receipt. */
+        if (just_confirmed && poll_box_tex) {
+            poll_box_page_y = y + 16;
+            Op *box=op(OP_TEX,376,poll_box_page_y,208,163);
+            box->tex=poll_box_tex;
+            y = poll_box_page_y + 163 + 14;
+        }
     } else {
-        y+=para(lang==LANG_PT ? "Escolha uma opção:" : "Choose one option:",
-                24,y,912,C_SOFT,0,2,0)+18;
+        char poll_prompt[128];
+        utf8_to_latin1(lang==LANG_PT ? "Escolha uma opção:" : "Choose one option:",
+                       poll_prompt,sizeof(poll_prompt));
+        y+=para(poll_prompt,24,y,912,C_SOFT,0,2,0)+18;
         for(int i=0;i<p->poll_count;i++) {
             char label[178];
             /* Selection is represented by the filled pixel button itself. */
@@ -1458,36 +1486,52 @@ static void build_poll(int pi) {
                                  A_POLL_CHOOSE,i,NULL,view_t0+.07+i*.09);
             y+=(button_id>=0?items[button_id].h:48)+16;
         }
-        if(matched && ps.busy) {
-            y+=para(lang==LANG_PT?"Enviando/consultando voto..." :
-                    "Submitting/checking vote...",24,y,912,C_MUTED,0,3,0)+22;
-        } else if(matched && ps.error) {
-            y+=para(lang==LANG_PT?
-                    "Falha no serviço. Tente novamente com HTTPS ativo.":
-                    "Voting service unavailable. Please retry with secure HTTPS.",
-                    24,y,912,C_MUTED,0,3,0)+18;
+        if(matched && ps.error) {
+            char msg[192];
+            if (ps.http_status > 0)
+                snprintf(msg,sizeof(msg),lang==LANG_PT?
+                         "Falha ao votar (HTTP %d). Tente novamente.":
+                         "Vote failed (HTTP %d). Please retry.",ps.http_status);
+            else if (ps.error_detail[0])
+                snprintf(msg,sizeof(msg),lang==LANG_PT?
+                         "Erro de conexão HTTPS: %.110s":
+                         "HTTPS connection error: %.110s",ps.error_detail);
+            else snprintf(msg,sizeof(msg),"%s",lang==LANG_PT?
+                         "Falha ao conectar ao serviço. Tente novamente.":
+                         "Could not connect to voting service. Retry.");
+            char localized[192];
+            utf8_to_latin1(msg,localized,sizeof(localized));
+            y+=para(localized,24,y,912,C_MUTED,0,4,0)+18;
         }
         y += 24;
-        if (poll_selected >= 0 && poll_api_ready() && !(matched && ps.busy)) {
+        if (matched && ps.busy && poll_anim_post==pi) {
+            int button_id=button(lang==LANG_PT?"CONFIRMANDO...":"CONFIRMING...",
+                                 308,y,344,0,A_POLL_SEND,-1,NULL,view_t0+.45);
+            if(button_id>=0)items[button_id].act=-1;
+            y+=(button_id>=0?items[button_id].h:48)+16;
+        } else if (poll_selected >= 0 && poll_api_ready() && !(matched && ps.busy)) {
             int button_id=button(lang==LANG_PT?"CONFIRMAR VOTO":"CONFIRM VOTE",
-                                  24,y,912,1,A_POLL_SEND,0,NULL,view_t0+.45);
+                                  308,y,344,1,A_POLL_SEND,0,NULL,view_t0+.45);
             y+=(button_id>=0?items[button_id].h:48)+16;
         } else if(!poll_api_ready()) {
-            y+=para(lang==LANG_PT?
-                    "Votação temporariamente indisponível: servidor não configurado.":
-                    "Voting unavailable: backend not configured.",
-                    24,y,912,C_MUTED,0,4,0)+16;
+            char missing_api[128];
+            utf8_to_latin1(lang==LANG_PT?
+                           "Votação indisponível: servidor não configurado.":
+                           "Voting unavailable: backend not configured.",
+                           missing_api,sizeof(missing_api));
+            y+=para(missing_api,24,y,912,C_MUTED,0,4,0)+16;
         } else if (matched && ps.busy) {
             y += 12;
         } else {
-            y+=para(lang==LANG_PT?"Selecione uma opção para confirmar o voto.":
-                     "Select an option to confirm your vote.",
-                     24,y,912,C_MUTED,1,2,0)+12;
+            char select_hint[160];
+            utf8_to_latin1(lang==LANG_PT?"Selecione uma opção para confirmar o voto.":
+                           "Select an option to confirm your vote.",
+                           select_hint,sizeof(select_hint));
+            y+=para(select_hint,24,y,912,C_MUTED,1,2,0)+12;
         }
         /* Permanent ballot box immediately below the confirmation area. */
         poll_box_page_y = y + 12;
-        if (poll_box_tex && (poll_anim_post != pi ||
-            now_s - poll_anim_t0 >= 1.65 || now_s < poll_anim_t0)) {
+        if (poll_box_tex) {
             Op *box=op(OP_TEX,376,poll_box_page_y,208,163);
             box->tex=poll_box_tex;
             box->pop=view_t0+.45;
@@ -2700,22 +2744,21 @@ static void draw_scrollbar(float alpha) {
 static void draw_poll_vote_animation(void) {
     if (view != V_POST || view_post != poll_anim_post ||
         !poll_box_tex || !poll_paper_tex || poll_box_page_y < 0) return;
+    PollState ps; poll_state(&ps);
+    if (strcmp(ps.id,g_posts[view_post].poll_id)!=0) return;
     float elapsed = (float)(now_s - poll_anim_t0);
-    if (elapsed < 0.f || elapsed >= 1.65f) return;
-    float fade = fminf(1.f, fmaxf(0.f, (1.65f - elapsed) / .30f));
-    /* Follow the page's ballot box, directly beneath the confirm button.
-     * The controller scrolls there on submission, even for long polls. */
+    /* The paper floats above the ballot box, no insertion. */
+    if (elapsed < 0.f || (!ps.busy && !ps.answered)) return;
+    float alpha = 1.f;
+    if (ps.answered) {
+        float done = (float)(now_s - poll_success_t0);
+        if (done > 2.0f) return;
+        alpha = fminf(1.f,fmaxf(0.f,(2.f-done)/.35f));
+    }
     float top = poll_box_page_y - cam;
-    float t = fminf(1.f, fmaxf(0.f, (elapsed - .12f) / .78f));
-    t = t * t * (3.f - 2.f * t);
-    float paper_alpha = fade;
-    if (elapsed > .90f)
-        paper_alpha *= fmaxf(0.f, 1.f - (elapsed - .90f) / .16f);
-    /* Paper first, ballot box second: slot obscures the inserted part. */
-    tex_draw(poll_paper_tex, 427, top - 126 + 120 * t, 106, 121,
-             col_alpha(C_WHITE, paper_alpha));
-    tex_draw(poll_box_tex, 376, top, 208, 163,
-             col_alpha(C_WHITE, fade));
+    float bob = 5.f * sinf(elapsed * 5.5f);
+    tex_draw(poll_paper_tex,427,top - 126 + bob,106,121,
+             col_alpha(C_WHITE,alpha));
 }
 
 static void draw_viewer(void) {
@@ -3414,6 +3457,7 @@ static void activate(int it) {
             poll_selected=-1;
             poll_box_page_y=-1.f;
             poll_anim_post=-1;
+            poll_success_t0=-100;
             poll_open(poll->poll_id,poll->poll_ends_at,
                       poll->poll_count,poll_local_ended(poll->poll_ends_at));
         }
@@ -4040,6 +4084,12 @@ static void tick_store(void) {
     poll_state(&poll_snapshot);
     if(poll_snapshot.version != poll_seen_version) {
         poll_seen_version = poll_snapshot.version;
+        if(poll_snapshot.answered && poll_anim_post>=0 &&
+           poll_anim_post<g_nposts &&
+           !strcmp(g_posts[poll_anim_post].poll_id,poll_snapshot.id)) {
+            poll_success_t0=now_s;
+            sfx("confirm");
+        }
         if(poll_snapshot.answered && feat>=0 && feat<g_nposts &&
            g_posts[feat].poll_id[0]) feat=featured_post_for_device();
         if(view==V_POST && view_post>=0 && view_post<g_nposts &&
