@@ -9,6 +9,9 @@
 #include <psp2/net/netctl.h>
 #include <psp2/sysmodule.h>
 #include <curl/curl.h>
+#include <openssl/ssl.h>
+#include <openssl/pem.h>
+#include <openssl/err.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -120,41 +123,64 @@ char *net_fetch(const char *url, int *size) {
     return net_fetch_timeout(url, size, 60L);
 }
 
-/* Vita's libcurl/OpenSSL cannot always open app0: paths using its own
- * certificate-file loader. Vita libc can read app0:, so load PEM via stdio
- * and pass a COPY of the bytes directly to libcurl, avoiding CAINFO path
- * interpretation without relaxing TLS validation. */
-static int poll_ca_blob(CURL *c) {
-    const char *path="app0:data/certs/cacert.pem";
-    FILE *f=fopen(path,"rb");
+/* VitaSDK libcurl 8.x can return 77 while importing Mozilla's entire
+ * PEM bundle via CAINFO/CAINFO_BLOB, despite the Vita libc reading app0:.
+ * Load the minimal trusted GTS CA roots with Vita libc and add them to the
+ * OpenSSL X509_STORE in CURLOPT_SSL_CTX_FUNCTION instead.
+ *
+ * This NEVER disables libcurl's peer/hostname verification. */
+typedef struct { char *data; size_t size; } PollCa;
+static int poll_ca_read(PollCa *ca) {
+    memset(ca,0,sizeof(*ca));
+    FILE *f=fopen("app0:data/certs/cacert.pem","rb");
     if(!f) {
-        snprintf(err,sizeof(err),"HTTPS: CA bundle unavailable (app0)");
+        snprintf(err,sizeof(err),"HTTPS: CA bundle missing (app0)");
         return 0;
     }
-    if(fseek(f,0,SEEK_END)!=0) {fclose(f);return 0;}
-    long len=ftell(f);
-    if(len<1024 || len>1024*1024 || fseek(f,0,SEEK_SET)!=0) {
+    if(fseek(f,0,SEEK_END)!=0) { fclose(f); return 0; }
+    long n=ftell(f);
+    if(n<512 || n>64*1024 || fseek(f,0,SEEK_SET)!=0) {
         fclose(f);
         snprintf(err,sizeof(err),"HTTPS: invalid CA bundle");
         return 0;
     }
-    char *pem=malloc((size_t)len);
-    if(!pem){fclose(f);snprintf(err,sizeof(err),"HTTPS: no memory for CA");return 0;}
-    size_t n=fread(pem,1,(size_t)len,f);
-    fclose(f);
-    if(n!=(size_t)len) {
-        free(pem);
-        snprintf(err,sizeof(err),"HTTPS: CA bundle read failed");
+    ca->data=malloc((size_t)n+1);
+    if(!ca->data) {
+        fclose(f);
+        snprintf(err,sizeof(err),"HTTPS: no memory for CA");
         return 0;
     }
-    struct curl_blob blob={pem,(size_t)len,CURL_BLOB_COPY};
-    CURLcode result=curl_easy_setopt(c,CURLOPT_CAINFO_BLOB,&blob);
-    free(pem);
-    if(result!=CURLE_OK) {
-        snprintf(err,sizeof(err),"HTTPS: CA blob unsupported (%d)",(int)result);
+    ca->size=fread(ca->data,1,(size_t)n,f);
+    fclose(f);
+    ca->data[ca->size]=0;
+    if(ca->size!=(size_t)n) {
+        free(ca->data);ca->data=NULL;
+        snprintf(err,sizeof(err),"HTTPS: CA read failed");
         return 0;
     }
     return 1;
+}
+static CURLcode poll_ssl_ctx(CURL *handle,void *context,void *data) {
+    (void)handle;
+    const PollCa *ca=(const PollCa *)data;
+    if(!ca || !ca->data || !context)return CURLE_SSL_CERTPROBLEM;
+    BIO *bio=BIO_new_mem_buf(ca->data,(int)ca->size);
+    if(!bio)return CURLE_OUT_OF_MEMORY;
+    X509_STORE *store=SSL_CTX_get_cert_store((SSL_CTX *)context);
+    if(!store) { BIO_free(bio);return CURLE_SSL_CERTPROBLEM; }
+    int loaded=0;
+    X509 *cert=NULL;
+    while((cert=PEM_read_bio_X509(bio,NULL,NULL,NULL))!=NULL) {
+        if(X509_STORE_add_cert(store,cert)==1)loaded++;
+        X509_free(cert);
+    }
+    ERR_clear_error(); /* EOF from PEM parser is expected. */
+    BIO_free(bio);
+    if(loaded<1) {
+        snprintf(err,sizeof(err),"HTTPS: no trusted roots added to SSL context");
+        return CURLE_SSL_CACERT_BADFILE;
+    }
+    return CURLE_OK;
 }
 
 /* Ballot requests fail closed if certificate verification is unavailable. */
@@ -170,8 +196,19 @@ int net_json_verified(const char *url, const char *post_json, char *reply, int r
     common(c, url);
     curl_easy_setopt(c, CURLOPT_SSL_VERIFYPEER, 1L);
     curl_easy_setopt(c, CURLOPT_SSL_VERIFYHOST, 2L);
-    /* Keep peer and host verification enabled; trust Mozilla roots from memory. */
-    if(!poll_ca_blob(c)) {free(m.buf);curl_easy_cleanup(c);return -1;}
+    /* Verified OpenSSL trust via X509_STORE, bypassing curl's broken CA
+     * file/blob import on Vita. Never accept a certificate blindly. */
+    PollCa trust={0};
+    if(!poll_ca_read(&trust)) {free(m.buf);curl_easy_cleanup(c);return -1;}
+    curl_easy_setopt(c,CURLOPT_CAINFO,(char *)NULL);
+    curl_easy_setopt(c,CURLOPT_CAPATH,(char *)NULL);
+    CURLcode cfg=curl_easy_setopt(c,CURLOPT_SSL_CTX_FUNCTION,poll_ssl_ctx);
+    if(cfg==CURLE_OK)
+        cfg=curl_easy_setopt(c,CURLOPT_SSL_CTX_DATA,&trust);
+    if(cfg!=CURLE_OK) {
+        snprintf(err,sizeof(err),"HTTPS: custom CA context unsupported (%d)",(int)cfg);
+        free(trust.data);free(m.buf);curl_easy_cleanup(c);return -1;
+    }
     char tls_error[CURL_ERROR_SIZE] = {0};
     curl_easy_setopt(c, CURLOPT_ERRORBUFFER, tls_error);
     curl_easy_setopt(c, CURLOPT_FOLLOWLOCATION, 0L);
@@ -193,6 +230,7 @@ int net_json_verified(const char *url, const char *post_json, char *reply, int r
     curl_easy_getinfo(c, CURLINFO_RESPONSE_CODE, &http);
     if (headers) curl_slist_free_all(headers);
     curl_easy_cleanup(c);
+    free(trust.data);
     if (result == CURLE_OK) snprintf(reply, reply_size, "%s", m.buf);
     else snprintf(err, sizeof(err), "HTTPS (%d): %.120s", (int)result,
                   tls_error[0] ? tls_error : curl_easy_strerror(result));

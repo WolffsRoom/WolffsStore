@@ -15,8 +15,8 @@ class ReleaseInvariants(unittest.TestCase):
         cls.updater = (ROOT / "updater/main.c").read_text(encoding="utf-8")
 
     def test_release_is_v111(self):
-        self.assertIn('set(WS_SFO_VERSION "01.16")', self.cmake)
-        self.assertIn('set(WS_FILE_VERSION "1.0.16")', self.cmake)
+        self.assertIn('set(WS_SFO_VERSION "01.17")', self.cmake)
+        self.assertIn('set(WS_FILE_VERSION "1.0.17")', self.cmake)
 
     def test_featured_update_suffix_follows_app_title(self):
         hero=self.main[self.main.index("static void build_home("):
@@ -38,9 +38,9 @@ class ReleaseInvariants(unittest.TestCase):
     def test_title_id_migration_keeps_old_bubble_safe(self):
         self.assertIn('set(WS_TITLEID "WFFS00042")', self.cmake)
         self.assertIn('set(WS_UPDATER_TITLEID "WFFS00043")', self.cmake)
-        self.assertIn('set(WS_FILE_VERSION "1.0.16")', self.cmake)
-        self.assertIn('set(WS_SFO_VERSION "01.16")', self.cmake)
-        self.assertIn('#define WS_VERSION "1.0.16"', self.main)
+        self.assertIn('set(WS_FILE_VERSION "1.0.17")', self.cmake)
+        self.assertIn('set(WS_SFO_VERSION "01.17")', self.cmake)
+        self.assertIn('#define WS_VERSION "1.0.17"', self.main)
         self.assertIn('#define MAIN_TITLE "WFFS00042"', self.updater)
         self.assertNotIn('set(WS_TITLEID "WOLF00001")',self.cmake)
         self.assertNotIn('#define MAIN_TITLE "WOLF00001"',self.updater)

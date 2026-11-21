@@ -32,7 +32,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "1.0.16"
+#define WS_VERSION "1.0.17"
 #endif
 
 /* ================================================================ textos */
@@ -4473,13 +4473,13 @@ static void draw_update_notes(void) {
     vita2d_draw_rectangle(x + 32, y + 111, w - 64, 4, col_alpha(C_LINE, p));
     /* Concise, user-visible update notes MUST change with every release. */
     static const char *pt[] = {
-        "Enquetes: HTTPS seguro corrigido no Vita.",
-        "Capa pixelada e botão Participe agora!",
-        "Votação: confirmação e recibo melhorados."};
+        "Enquetes: certificados HTTPS aprimorados.",
+        "Votos: conexão e validação mais seguras.",
+        "Erros HTTPS agora exibem mais detalhes."};
     static const char *en[] = {
-        "Polls: fixed secure HTTPS on PS Vita.",
-        "Pixel cover and Vote now! action.",
-        "Voting: improved feedback and receipt."};
+        "Polls: improved trusted HTTPS certificates.",
+        "Voting: safer TLS and certificate checks.",
+        "Detailed HTTPS diagnostics for votes."};
     for (int i = 0; i < 3; i++) {
         utf8_to_latin1(lang == LANG_PT ? pt[i] : en[i], details[i], sizeof(details[i]));
         body_draw(details[i], x + 40, y + 138 + i * 52, col_alpha(C_WHITE, p));
