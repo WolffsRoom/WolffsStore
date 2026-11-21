@@ -14,8 +14,8 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2 -Wall -Wno-format-truncation")
 set(WS_TITLEID "WFFS00042")
 set(WS_UPDATER_TITLEID "WFFS00043")
 # LiveArea padrão: assets/livearea (icon0 128x128, bg0 840x500, startup 280x158, PNG indexado de 8 bits)
-set(WS_SFO_VERSION "01.12")
-set(WS_FILE_VERSION "1.0.12")
+set(WS_SFO_VERSION "01.13")
+set(WS_FILE_VERSION "1.0.13")
 set(WS_VPK_NAME "WolffsStore.vpk")
 set(WS_ARTIFACTS_DIR "${CMAKE_SOURCE_DIR}/artifacts/current")
 
@@ -170,6 +170,9 @@ vita_create_vpk(${WS_VPK_NAME} ${WS_TITLEID} eboot.bin
   VERSION ${WS_SFO_VERSION}
   NAME "Wolff's Store"
   FILE
+    # Native poll vote insertion sprites (cropped, small RGBA PNGs).
+    ${CMAKE_SOURCE_DIR}/assets/polls/caixa.png data/polls/caixa.png
+    ${CMAKE_SOURCE_DIR}/assets/polls/papel.png data/polls/papel.png
     ${CMAKE_SOURCE_DIR}/assets/livearea/icon0.png sce_sys/icon0.png
     ${CMAKE_SOURCE_DIR}/assets/livearea/bg0.png sce_sys/livearea/contents/bg0.png
     ${CMAKE_SOURCE_DIR}/assets/livearea/startup.png sce_sys/livearea/contents/startup.png

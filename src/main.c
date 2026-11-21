@@ -32,7 +32,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "1.0.12"
+#define WS_VERSION "1.0.13"
 #endif
 
 /* ================================================================ textos */
@@ -163,6 +163,9 @@ static float hint_h = 36; /* barra de dicas (+ faixa de status quando aparece) *
 static int brightness = 100;  /* % (escurece a imagem do app; 40..100) */
 static int settings_open = 0, settings_row = 0, settings_page = 0, settings_root_row = 0;
 static int poll_selected = -1;
+static double poll_anim_t0 = -100;
+static int poll_anim_post = -1;
+static vita2d_texture *poll_box_tex = NULL, *poll_paper_tex = NULL;
 static unsigned poll_seen_version = 0;
 static int trans_confirm_post = -1, trans_confirm_dl = -1;
 static int trans_confirm_mod = 0, trans_confirm_backup = 0, trans_confirm_plugin = 0;
@@ -2665,6 +2668,30 @@ static void draw_scrollbar(float alpha) {
     vita2d_draw_rectangle(SCR_W - 10, (int)(y / 4) * 4, 4, th, col_alpha(active ? C_WHITE : C_BORDER, alpha));
 }
 
+/* Native vote feedback overlay. Always in screen coordinates (not page
+ * coordinates): users can submit at any scroll position and still see it.
+ * This is a submission animation, not a success acknowledgement. */
+static void draw_poll_vote_animation(void) {
+    if (view != V_POST || view_post != poll_anim_post ||
+        !poll_box_tex || !poll_paper_tex) return;
+    float elapsed = (float)(now_s - poll_anim_t0);
+    if (elapsed < 0.f || elapsed >= 1.65f) return;
+    float fade = fminf(1.f, fmaxf(0.f, (1.65f - elapsed) / .30f));
+    /* Black backdrop keeps both white silhouettes legible over the page. */
+    vita2d_draw_rectangle(345, 215, 270, 285,
+        RGBA8(6, 6, 6, (int)(224 * fade)));
+    float t = fminf(1.f, fmaxf(0.f, (elapsed - .12f) / .78f));
+    t = t * t * (3.f - 2.f * t);
+    float paper_alpha = fade;
+    if (elapsed > .90f)
+        paper_alpha *= fmaxf(0.f, 1.f - (elapsed - .90f) / .16f);
+    /* First draw paper, then box: moving it down naturally hides it. */
+    tex_draw(poll_paper_tex, 427, 230 + 120 * t, 106, 121,
+             col_alpha(C_WHITE, paper_alpha));
+    tex_draw(poll_box_tex, 376, 352, 208, 163,
+             col_alpha(C_WHITE, fade));
+}
+
 static void draw_viewer(void) {
     vita2d_draw_rectangle(0, 0, SCR_W, SCR_H, RGBA8(0, 0, 0, 0xF2));
     if (viewer < 0 || viewer >= shot_count || !shot_tex[viewer]) return;
@@ -3374,6 +3401,8 @@ static void activate(int it) {
     case A_POLL_SEND:
         if(view==V_POST && view_post>=0 && poll_selected>=0 &&
            g_posts[view_post].poll_id[0] && poll_vote(poll_selected)) {
+            poll_anim_post = view_post;
+            poll_anim_t0 = now_s;
             sfx("download");
             rebuild();
         } else sfx("notice");
@@ -4369,6 +4398,12 @@ int main(void) {
     sceTouchSetSamplingState(SCE_TOUCH_PORT_FRONT, SCE_TOUCH_SAMPLING_STATE_START);
 
     gfx_init();
+    poll_box_tex = vita2d_load_PNG_file("app0:data/polls/caixa.png");
+    poll_paper_tex = vita2d_load_PNG_file("app0:data/polls/papel.png");
+    if (poll_box_tex) vita2d_texture_set_filters(poll_box_tex,
+        SCE_GXM_TEXTURE_FILTER_POINT, SCE_GXM_TEXTURE_FILTER_POINT);
+    if (poll_paper_tex) vita2d_texture_set_filters(poll_paper_tex,
+        SCE_GXM_TEXTURE_FILTER_POINT, SCE_GXM_TEXTURE_FILTER_POINT);
     audio_init();
     settings_load();
     reg_load();
@@ -4688,6 +4723,7 @@ int main(void) {
             cam = (float)(int)cam;
             draw_page();
             cam = save;
+            draw_poll_vote_animation();
             /* a pergunta some com o efeito de TV desligando (.3 s, 5 passos) */
             if (t < .3) draw_title_screen(now_s - title_t0, ((int)(t / .06) + 1) / 5.f);
             if (viewer >= 0) draw_viewer();
