@@ -14,7 +14,7 @@ class ReleaseInvariants(unittest.TestCase):
         cls.video = (ROOT / "src/video.c").read_text(encoding="utf-8")
         cls.updater = (ROOT / "updater/main.c").read_text(encoding="utf-8")
 
-    def test_release_is_v111(self):
+    def test_release_is_v112(self):
         self.assertIn('set(WS_SFO_VERSION "01.12")', self.cmake)
         self.assertIn('set(WS_FILE_VERSION "1.1.2")', self.cmake)
 
