@@ -125,9 +125,9 @@ def main():
 
     if os.path.isdir(OUT):
         # v0.99.9 introduced the bundled daypart OST under data/music.
-        # Refresh generated images/catalog without deleting the actual music.
+        # Refresh generated images/catalog without deleting bundled music or TLS certificates.
         for name in os.listdir(OUT):
-            if name == 'music':
+            if name in ('music', 'certs'):
                 continue
             target = os.path.join(OUT, name)
             if os.path.isdir(target):
@@ -158,10 +158,13 @@ def main():
             survey=p['poll']
             put('poll_id', survey['id'])
             put('poll_question', survey['question'])
+            put('poll_question.en', en.get('poll_question') or survey['question'])
             put('poll_starts_at', survey['starts_at'])
             put('poll_ends_at', survey['ends_at'])
             for opt in survey['options']:
                 put('poll_option', opt)
+            for opt in (en.get('poll_options') or survey['options']):
+                put('poll_option.en', opt)
         put('group', build.GROUPS.index(p['group']))
         put('date', p['date'].isoformat())
         if p.get('updated'):

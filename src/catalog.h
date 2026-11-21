@@ -48,6 +48,7 @@ typedef struct {
     int cat, subcat, group, feat, pixel, progress, cover, shots;
     char poll_id[48], poll_question[192], poll_starts_at[32], poll_ends_at[32];
     char poll_options[8][112];
+    char poll_question_en[192], poll_options_en[8][112];
     int poll_count;
     char date[16];       /* publicação ISO YYYY-MM-DD */
     char updated[16];    /* última alteração do post; vazio se não houver */

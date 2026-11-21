@@ -109,10 +109,21 @@ int store_parse(const char *text, Post *out, int max, AppRelease *app) {
                          json_string(json_object_get(poll,"starts_at"),""));
                 snprintf(p->poll_ends_at,sizeof(p->poll_ends_at),"%s",
                          json_string(json_object_get(poll,"ends_at"),""));
-                const JsonValue *opts=json_object_get(poll,"options");
+                const JsonValue *opts=json_object_get(poll,"options_pt");
+                if(!opts)opts=json_object_get(poll,"options");
+                const JsonValue *opts_en=json_object_get(poll,"options_en");
+                const char *question_pt=json_string(json_object_get(poll,"question_pt"),"");
+                const char *question_en=json_string(json_object_get(poll,"question_en"),"");
+                if(question_pt[0])utf8_to_latin1(question_pt,p->poll_question,sizeof(p->poll_question));
+                utf8_to_latin1(question_en[0]?question_en:
+                                json_string(json_object_get(poll,"question"),""),
+                                p->poll_question_en,sizeof(p->poll_question_en));
                 for(int x=0;x<json_array_count(opts) && x<8;x++) {
-                    utf8_to_latin1(json_string(json_array_get(opts,x),""),
-                                   p->poll_options[x],sizeof(p->poll_options[x]));
+                    const char *pt_opt=json_string(json_array_get(opts,x),"");
+                    utf8_to_latin1(pt_opt,p->poll_options[x],sizeof(p->poll_options[x]));
+                    const char *en_opt=json_string(json_array_get(opts_en,x),"");
+                    utf8_to_latin1(en_opt[0]?en_opt:pt_opt,
+                                    p->poll_options_en[x],sizeof(p->poll_options_en[x]));
                     p->poll_count++;
                 }
             }

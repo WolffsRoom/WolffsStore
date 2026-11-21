@@ -20,7 +20,7 @@ class PollVoteAnimationTests(unittest.TestCase):
         self.assertIn('poll_box_page_y = y + 172;', code)
         self.assertIn('CONFIRMAR VOTO', code)
         self.assertIn('Participe agora!',code)
-        self.assertIn('Enquetes: certificados HTTPS aprimorados.',code)
+        self.assertIn('Voto processado sem sobreposição da urna.',code)
         self.assertIn('rect(184,y+8,608,346,C_SH1);',code)
         self.assertNotIn('poll_selected==i?"[X]":"[ ]"', code)
         self.assertIn('cover_tex[pi]', code)
@@ -33,10 +33,15 @@ class PollVoteAnimationTests(unittest.TestCase):
         self.assertIn('poll_box_page_y = y + 172;',code)
         self.assertIn('rebuild(); /* Rebuild first: options disappear before camera scroll. */',code)
         self.assertIn('VOTO PROCESSADO!', code)
+        self.assertIn('cam_target = fmaxf(0.f,poll_receipt_page_y-132.f);',code)
+        self.assertIn('|| ps.answered) return;',code)
+        self.assertNotIn('if (just_confirmed && poll_box_tex)',code)
+        self.assertIn('p->poll_question_en[0]',code)
+        self.assertIn('p->poll_options_en[i][0]',code)
         self.assertIn('Obrigado por participar!',code)
         self.assertIn('Resultado sairá em %d dia(s)',code)
         self.assertIn('const int just_confirmed',code)
-        self.assertIn('if (just_confirmed && poll_box_tex)',code)
+        self.assertIn('poll_receipt_page_y = y;',code)
         # The already-voted branch precedes the selectable-options branch.
         poll=code.split('static void build_poll(int pi)',1)[1].split('static void build_post',1)[0]
         receipt=poll.split('} else if(answered) {',1)[1].split('} else {',1)[0]

@@ -32,7 +32,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "1.0.17"
+#define WS_VERSION "1.1.0"
 #endif
 
 /* ================================================================ textos */
@@ -168,6 +168,7 @@ static double poll_success_t0 = -100;
 static int poll_anim_post = -1;
 /* Page position of the ballot box, directly below the confirm button. */
 static float poll_box_page_y = -1.f;
+static float poll_receipt_page_y = -1.f;
 static vita2d_texture *poll_box_tex = NULL, *poll_paper_tex = NULL;
 static unsigned poll_seen_version = 0;
 static int trans_confirm_post = -1, trans_confirm_dl = -1;
@@ -1393,13 +1394,17 @@ static void build_poll(int pi) {
     PollState ps;
     poll_state(&ps);
     const int ended=poll_local_ended(p->poll_ends_at);
+    poll_box_page_y = -1.f;
+    poll_receipt_page_y = -1.f;
     layout_begin();
     float y=page_bar(header()+24,A_BACK,TXT(S_CAT3),p->t[lang].title)+28;
     char title_text[144];
     snprintf(title_text,sizeof(title_text),"%s",
         lang==LANG_PT ? "ENQUETE!" : "POLL!");
     y+=heading(title_text,24,y,912,4,C_WHITE,C_SHADOW,1,0,48)+24;
-    y+=para(p->poll_question,24,y,912,C_WHITE,0,5,1)+24;
+    const char *poll_question = lang==LANG_EN && p->poll_question_en[0]
+        ? p->poll_question_en : p->poll_question;
+    y+=para(poll_question,24,y,912,C_WHITE,0,5,1)+24;
     char time_label[96];
     char countdown_utf8[96];
     snprintf(countdown_utf8,sizeof(countdown_utf8),
@@ -1444,7 +1449,9 @@ static void build_poll(int pi) {
             for(int i=0;i<p->poll_count;i++) {
                 int pct=ps.total ? (ps.votes[i]*100+ps.total/2)/ps.total : 0;
                 char label[172], right[24];
-                snprintf(label,sizeof(label),"%s%s",p->poll_options[i],
+                const char *choice_label = lang==LANG_EN && p->poll_options_en[i][0]
+                    ? p->poll_options_en[i] : p->poll_options[i];
+                snprintf(label,sizeof(label),"%s%s",choice_label,
                          ps.selected==i ? (lang==LANG_PT?" * SUA ESCOLHA":" * YOUR CHOICE") : "");
                 snprintf(right,sizeof(right),"%d%%",pct);
                 body(keep(label),24,y,ps.selected==i ? C_GOLD : C_WHITE);
@@ -1467,27 +1474,20 @@ static void build_poll(int pi) {
                      24,y,912,C_MUTED,0,4,0)+16;
         }
     } else if(answered) {
-        /* This branch is used both immediately after a confirmed response
-         * and on future JOURNAL visits. Never show options or vote button. */
+        /* A recorded vote is a clean receipt. Stop drawing the ballot box
+         * and the floating paper as soon as the server confirms success. */
+        poll_receipt_page_y = y;
         const int just_confirmed =
             poll_anim_post == pi && poll_success_t0 >= 0 &&
             now_s - poll_success_t0 < 2.2;
         if (just_confirmed)
             y+=heading(lang==LANG_PT?"VOTO PROCESSADO!":"VOTE PROCESSED!",
-                       24,y,912,3,C_GOLD,0,1,1,36)+18;
+                       24,y,912,3,C_GOLD,0,1,1,36)+20;
         char thanks[112];
         utf8_to_latin1(lang==LANG_PT ? "Obrigado por participar!" :
                        "Thank you for participating!",thanks,sizeof(thanks));
         y+=para(thanks,24,y,912,C_WHITE,1,3,1)+18;
-        y+=para(time_label,24,y,912,C_SOFT,1,2,0)+30;
-        /* Keep the ballot visual only during the immediate success animation.
-         * Reopening from JOURNAL remains a minimal centered receipt. */
-        if (just_confirmed && poll_box_tex) {
-            poll_box_page_y = y + 16;
-            Op *box=op(OP_TEX,376,poll_box_page_y,208,163);
-            box->tex=poll_box_tex;
-            y = poll_box_page_y + 163 + 14;
-        }
+        y+=para(time_label,24,y,912,C_SOFT,1,2,0)+42;
     } else {
         if (!submitting) {
             char poll_prompt[128];
@@ -1497,7 +1497,9 @@ static void build_poll(int pi) {
             for(int i=0;i<p->poll_count;i++) {
                 char label[178];
                 /* Selection is represented by the filled pixel button itself. */
-                snprintf(label,sizeof(label),"%s",p->poll_options[i]);
+                const char *choice_label = lang==LANG_EN && p->poll_options_en[i][0]
+                ? p->poll_options_en[i] : p->poll_options[i];
+            snprintf(label,sizeof(label),"%s",choice_label);
                 int button_id=button(keep(label),24,y,912,poll_selected==i,
                                      A_POLL_CHOOSE,i,NULL,view_t0+.07+i*.09);
                 y+=(button_id>=0?items[button_id].h:48)+16;
@@ -2764,16 +2766,11 @@ static void draw_poll_vote_animation(void) {
     if (view != V_POST || view_post != poll_anim_post ||
         !poll_box_tex || !poll_paper_tex || poll_box_page_y < 0) return;
     PollState ps; poll_state(&ps);
-    if (strcmp(ps.id,g_posts[view_post].poll_id)!=0) return;
+    if (strcmp(ps.id,g_posts[view_post].poll_id)!=0 || ps.answered) return;
     float elapsed = (float)(now_s - poll_anim_t0);
     /* The paper floats above the ballot box, no insertion. */
     if (elapsed < 0.f || (!ps.busy && !ps.answered)) return;
     float alpha = 1.f;
-    if (ps.answered) {
-        float done = (float)(now_s - poll_success_t0);
-        if (done > 2.0f) return;
-        alpha = fminf(1.f,fmaxf(0.f,(2.f-done)/.35f));
-    }
     float top = poll_box_page_y - cam;
     float bob = 5.f * sinf(elapsed * 5.5f);
     tex_draw(poll_paper_tex,427,top - 126 + bob,106,121,
@@ -4114,7 +4111,17 @@ static void tick_store(void) {
            g_posts[feat].poll_id[0]) feat=featured_post_for_device();
         if(view==V_POST && view_post>=0 && view_post<g_nposts &&
            g_posts[view_post].poll_id[0] &&
-           !strcmp(g_posts[view_post].poll_id,poll_snapshot.id)) rebuild();
+           !strcmp(g_posts[view_post].poll_id,poll_snapshot.id)) {
+            rebuild();
+            if(poll_snapshot.answered && poll_receipt_page_y>=0.f) {
+                /* Keep "Voto processado!" on-screen after the layout shrinks:
+                 * scrolling from the taller vote form would otherwise leave
+                 * the receipt behind, near the off-screen floating box. */
+                cam_target = fmaxf(0.f,poll_receipt_page_y-132.f);
+                cam_clamp();
+                cam = cam_target;
+            }
+        }
     }
     int intro_done = started && now_s - intro_t0 >= T_DONE;
     int st = sync_state();
@@ -4473,13 +4480,13 @@ static void draw_update_notes(void) {
     vita2d_draw_rectangle(x + 32, y + 111, w - 64, 4, col_alpha(C_LINE, p));
     /* Concise, user-visible update notes MUST change with every release. */
     static const char *pt[] = {
-        "Enquetes: certificados HTTPS aprimorados.",
-        "Votos: conexão e validação mais seguras.",
-        "Erros HTTPS agora exibem mais detalhes."};
+        "Voto processado sem sobreposição da urna.",
+        "Pergunta e opções em português ou inglês.",
+        "Enquetes com idioma da Store respeitado."};
     static const char *en[] = {
-        "Polls: improved trusted HTTPS certificates.",
-        "Voting: safer TLS and certificate checks.",
-        "Detailed HTTPS diagnostics for votes."};
+        "Vote processed message stays unobstructed.",
+        "Poll question and options localized in PT/EN.",
+        "Poll language follows Store settings."};
     for (int i = 0; i < 3; i++) {
         utf8_to_latin1(lang == LANG_PT ? pt[i] : en[i], details[i], sizeof(details[i]));
         body_draw(details[i], x + 40, y + 138 + i * 52, col_alpha(C_WHITE, p));
