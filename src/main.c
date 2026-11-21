@@ -87,7 +87,7 @@ static const char *UI_UTF8[2][S_COUNT] = {
         "Installed", "Installed", "Open project", "Queue",
         "Source", "Recommended clock", "Download data", "Extracted to ux0:data/", "Syncing...", "Music", "Effects", "Audio",
         "Loading video", "Couldn't play the video.", "X pause \xb7 Left/Right 10 s \xb7 O close", "WOOF!", "Watch here",
-        "The video plays right here in the app.", "Check out the latest updates...", "Native trophies", "Open", "Sync", "Downloads", "Audio", "Settings", "Search",
+        "The video plays right here in the app.", "Check out more updates...", "Native trophies", "Open", "Sync", "Downloads", "Audio", "Settings", "Search",
         "Published on", "Last update",
         "After installation: refresh LiveArea with FMVita or File Manager.",
         "INSTALL TRANSLATION", "This translation requires the rePatch plugin!",
@@ -126,7 +126,7 @@ static const char *UI_UTF8[2][S_COUNT] = {
         "Instalado", "Instalados", "Abrir projeto", "Fila",
         "Source", "Clock recomendado", "Baixar dados", "Extraído em ux0:data/", "Sincron...", "Música", "Efeitos", "Áudio",
         "Carregando vídeo", "Não deu para tocar o vídeo.", "X pausa \xb7 Esq./Dir. 10 s \xb7 O fecha", "AU AU!", "Assistir aqui",
-        "O vídeo toca aqui mesmo no app.", "Confira as últimas novidades...", "Troféus nativos", "Abrir", "Sincronizar", "Downloads", "Áudio", "Configurações", "Pesquisar",
+        "O vídeo toca aqui mesmo no app.", "Confira também outras novidades...", "Troféus nativos", "Abrir", "Sincronizar", "Downloads", "Áudio", "Configurações", "Pesquisar",
         "Publicado em", "Atualizado em",
         "Após instalar, atualize a LiveArea pelo FMVita ou File Manager.",
         "INSTALAR TRADUÇÃO", "Essa tradução exige o plugin rePatch instalado!",
@@ -954,7 +954,7 @@ static void build_home(void) {
     int older_ids[DECK_LIMIT];
     deck_n = 0;
     for (int i = 0; i < g_nposts; i++) {
-        if (g_posts[i].poll_id[0] || g_posts[i].cat == CAT_REVIEWS) continue;
+        if (i == feat || g_posts[i].poll_id[0] || g_posts[i].cat == CAT_REVIEWS) continue;
         if (latest_n < 3) latest_ids[latest_n++] = i;
         else if (deck_n < DECK_LIMIT) older_ids[deck_n++] = i;
         if (latest_n == 3 && deck_n == DECK_LIMIT) break;
@@ -987,7 +987,7 @@ static void build_home(void) {
         deck_access_t0 = others_pop;
         int heading_first = nops;
         char release_heading[48];
-        utf8_to_latin1(lang == LANG_PT ? "Lançamentos" : "Releases",
+        utf8_to_latin1(lang == LANG_PT ? "Explore outros lançamentos" : "Explore other releases",
                        release_heading, sizeof(release_heading));
         y += heading(keep(release_heading),
                      24, y, 912, 2, C_SOFT, 0, 1, 1, 24) + 22;
