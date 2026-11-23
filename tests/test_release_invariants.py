@@ -448,23 +448,24 @@ class ReleaseInvariants(unittest.TestCase):
         self.assertGreater((fresh-stale), .3+30*.045)
         self.assertLess(fresh-fresh,.3)
 
-    def test_falling_logo_dialogs_preserve_delayed_slow_sync_phrases(self):
+    def test_original_bounce_message_only_after_falling_logo(self):
         splash=self.main[self.main.index("static void draw_first_sync(void) {"):
-                         self.main.index("static void letters_wave(",self.main.index("static void draw_first_sync(void) {"))]
-        self.assertIn('startup_layer_y(now_s - first_sync_t0, i)',splash)
-        self.assertIn('UPDATING CATALOG...',splash)
-        self.assertIn('Tirando a poeira dos ports',splash)
-        self.assertIn('Recompilando projetos',splash)
-        self.assertIn('Corrigindo alguns bugs aqui e ali',splash)
-        self.assertIn('Organizando as prateleiras',splash)
-        self.assertIn('Movendo as coisas de lugar',splash)
-        self.assertIn("if (elapsed >= 3.4)",splash)
-        self.assertIn('now_s - first_sync_t0 >= 8.0',splash)
-        self.assertIn('body_draw(detail,',splash)
-        self.assertIn('tex_draw(startup_layers[i],',splash)
-        # The loading frame is visible for the entire animation; slow
-        # explanatory phrases are still gated by actual elapsed time.
-        self.assertIn('frame_rect(fx, fy, fw, fh, 4, C_WHITE)',splash)
+                         self.main.index("static void letters_wave(", self.main.index("static void draw_first_sync(void) {"))]
+        self.assertIn('startup_layer_y(now_s - first_sync_t0, i)', splash)
+        self.assertIn('double elapsed = now_s - first_sync_t0 - STARTUP_FINISH;', splash)
+        self.assertIn('if (elapsed < 0.0) return;', splash)
+        self.assertLess(splash.index('if (elapsed < 0.0) return;'),
+                        splash.index('const char *heading = headings'))
+        self.assertIn('Atualizando a loja...', splash)
+        self.assertIn('Tirando a poeira dos ports', splash)
+        self.assertIn('Recompilando projetos', splash)
+        self.assertIn('Corrigindo alguns bugs aqui e ali', splash)
+        self.assertIn('Organizando as prateleiras', splash)
+        self.assertIn('Movendo as coisas de lugar', splash)
+        self.assertIn('if (st == SYNC_RUNNING && elapsed >= 3.4)', splash)
+        self.assertIn('title_draw(ch, cx, y - bounce, scale, C_WHITE);', splash)
+        self.assertIn('body_draw(sub,', splash)
+        self.assertNotIn('frame_rect(', splash)
 
     def test_download_queue_shows_project_not_mirror_label(self):
         act=self.main[self.main.index("static void activate(int it) {"):

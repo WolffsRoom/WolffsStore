@@ -193,6 +193,7 @@ static double title_t0 = 0, first_sync_t0 = 0;
 static vita2d_texture *startup_layers[3]; /* original layers: 3, 2, 1 */
 static unsigned startup_sfx_mask = 0;
 #define STARTUP_FINISH 3.42
+#define STARTUP_NOTICE_MIN .85
 
 static double app_clock_t0 = 0; /* monotonic origin for post-sync typewriter */
 static double home_t0 = -100; /* animação de volta ao início */
@@ -3872,55 +3873,45 @@ static void draw_first_sync(void) {
                           205, 3, C_WHITE, C_SHADOW);
     }
 
-    /* Original in-app pixel frame; text and subdialogs remain live during sync. */
-    const float fx = 199.f, fy = 278.f, fw = 562.f, fh = 168.f;
-    vita2d_draw_rectangle(fx, fy, fw, fh, C_DARK);
-    frame_rect(fx, fy, fw, fh, 4, C_WHITE);
-    const char *heading = lang == LANG_PT ? "ATUALIZANDO CAT\xC1LOGO..." : "UPDATING CATALOG...";
-    title_draw(heading, (SCR_W - title_width(heading, 2)) / 2, fy + 20, 2, C_WHITE);
+    /* Keep the falling-logo opening visually clean. The ORIGINAL unframed
+     * bouncing update message only begins once every layer has landed. */
+    double elapsed = now_s - first_sync_t0 - STARTUP_FINISH;
+    if (elapsed < 0.0) return;
 
-    const char *detail;
-    if (st == SYNC_READY)
-        detail = lang == LANG_PT ? "Cat\xE1logo atualizado!" : "Catalog updated!";
-    else if (st == SYNC_OFFLINE || st == SYNC_FAIL)
-        detail = lang == LANG_PT ? "Sem conexao. Usando dados salvos." : "Offline. Using cached data.";
-    else {
-        static const char *slow_messages[2][5] = {
-            { "Dusting off the ports", "Recompiling projects",
-              "Fixing a bug or two", "Organizing the shelves", "Moving things around" },
-            { "Tirando a poeira dos ports", "Recompilando projetos",
-              "Corrigindo alguns bugs aqui e ali", "Organizando as prateleiras",
-              "Movendo as coisas de lugar" }
-        };
-        double elapsed = now_s - first_sync_t0;
-        if (elapsed >= 3.4) {
-            int phrase = (int)((elapsed - 3.4) / 3.0) % 5;
-            detail = slow_messages[lang == LANG_PT ? 1 : 0][phrase];
-        } else
-            detail = lang == LANG_PT ? "Sincronizando projetos e novidades..." : "Syncing projects and new releases...";
-    }
-    body_draw(detail, (SCR_W - body_width(detail)) / 2, fy + 58, C_SOFT);
-    char pct[24];
-    if (st == SYNC_RUNNING) snprintf(pct, sizeof(pct), "%d%%", (int)(sync_progress() * 100));
-    else if (st == SYNC_READY) snprintf(pct, sizeof(pct), "100%%");
-    else snprintf(pct, sizeof(pct), "...");
-    title_draw(pct, (SCR_W - title_width(pct, 2)) / 2, fy + 91, 2, C_WHITE);
+    static const char *headings[2] = {
+        "Updating the Store...", "Atualizando a loja..."
+    };
+    static const char *subtitles[2][5] = {
+        {"Dusting off the ports", "Recompiling projects",
+         "Fixing a bug or two", "Organizing the shelves",
+         "Moving things around"},
+        {"Tirando a poeira dos ports", "Recompilando projetos",
+         "Corrigindo alguns bugs aqui e ali", "Organizando as prateleiras",
+         "Movendo as coisas de lugar"}
+    };
+    const char *heading = headings[lang == LANG_PT ? 1 : 0];
+    const int scale = 2;
+    float x = (SCR_W - title_width(heading, scale)) / 2.f;
+    float y = 306.f;
 
-    /* Subdialog is shown only for a genuinely long-running first sync. */
-    if (first_sync && st == SYNC_RUNNING && now_s - first_sync_t0 >= 8.0) {
-        float bx = fx + 18, by = fy + 124, bw = fw - 36;
-        vita2d_draw_rectangle(bx, by, bw, 35, C_PANEL);
-        frame_rect(bx, by, bw, 35, 2, C_BORDER);
-        const char *slow = lang == LANG_PT
-            ? "Demorando mais que o normal. Aguarde..."
-            : "Taking longer than usual. Please wait...";
-        body_draw(slow, (SCR_W - body_width(slow)) / 2, by + 6, C_TEXT);
-    } else if (st == SYNC_RUNNING) {
-        for (int i = 0; i < 3; ++i) {
-            unsigned color = ((int)((now_s - first_sync_t0) * 4) % 3 == i) ? C_WHITE : C_BORDER;
-            vita2d_draw_rectangle(SCR_W / 2 - 26 + i * 20, fy + 130, 12, 12, color);
-        }
+    /* Exact original per-letter bounce from draw_first_sync. The animation
+     * is offset by STARTUP_FINISH, so it never overlaps with falling layers. */
+    for (int i = 0; heading[i]; i++) {
+        char ch[2] = {heading[i], 0};
+        int bounce = (int)(fabsf(sinf((float)elapsed * 5.2f - i * .36f)) * 8.f);
+        float cx = x + i * (8 * scale);
+        title_draw(ch, cx + 2, y + 2 - bounce, scale, C_SHADOW);
+        title_draw(ch, cx, y - bounce, scale, C_WHITE);
     }
+
+    /* The Store's humorous submessages are unchanged. They rotate ONLY
+     * during genuinely long synchronization (3.4 s after notice appears). */
+    if (st == SYNC_RUNNING && elapsed >= 3.4) {
+        int idx = (int)((elapsed - 3.4) / 3.0) % 5;
+        const char *sub = subtitles[lang == LANG_PT ? 1 : 0][idx];
+        body_draw(sub, (SCR_W - body_width(sub)) / 2.f, y + 56, C_SOFT);
+    }
+
 }
 
 static void letters_wave(double at, int notes) {
@@ -4213,7 +4204,7 @@ static void tick_store(void) {
     }
     int intro_done = started && now_s - intro_t0 >= T_DONE;
     int st = sync_state();
-    if (first_sync && st == SYNC_READY && now_s - first_sync_t0 >= STARTUP_FINISH) {
+    if (first_sync && st == SYNC_READY && now_s - first_sync_t0 >= STARTUP_FINISH + STARTUP_NOTICE_MIN) {
         /* apply_sync() may synchronously decode many covers and rebuild
          * the featured mosaic. The 'now_s' value from the start of this
          * frame becomes stale during that work. If it is reused as the
@@ -4228,7 +4219,7 @@ static void tick_store(void) {
         return;
     }
     if (first_sync && (st == SYNC_OFFLINE || st == SYNC_FAIL) &&
-        now_s - first_sync_t0 >= STARTUP_FINISH) {
+        now_s - first_sync_t0 >= STARTUP_FINISH + STARTUP_NOTICE_MIN) {
         /* The same timeline restart applies to offline cached catalogs. */
         ws_log("intro: offline catalog ready; starting full typewriter");
         now_s = clock_s() - app_clock_t0;
