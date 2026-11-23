@@ -141,6 +141,17 @@ def main():
     font_body()
     for n in ('paw4', 'halo24', 'halo12', 'w25', 'w50', 'w75'):
         wrt(Image.open(os.path.join(site, 'assets', n + '.png')), os.path.join(OUT, 'tex', n + '.wrt'))
+    # Store startup animation: preserve the three ORIGINAL layered wordmark PNGs.
+    # This must be regenerated every time data/tex is wiped by a catalog rebuild.
+    # The 786x108 originals are displayed at exactly 50% in the 960x544 Vita UI.
+    anim = os.path.join(HERE, 'assets', 'Animação')
+    for number in (3, 2, 1):
+        src = os.path.join(anim, f'{number} Camada.png')
+        layer = Image.open(src).convert('RGBA')
+        if layer.size != (786, 108):
+            raise ValueError(f'Invalid original startup layer: {src} (expected 786x108)')
+        layer = layer.resize((393, 54), Image.Resampling.NEAREST)
+        wrt(layer, os.path.join(OUT, 'tex', f'startup_layer{number}.wrt'))
 
     posts, order = build.load_all()
     from store import populate_download_totals

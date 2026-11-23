@@ -190,6 +190,11 @@ static double now_s, view_t0, peek_t0, intro_t0 = -1, wipe_t0 = -100, wave_t0 = 
 static int started = 0, pressed_item = -1;
 static int first_sync = 0;
 static double title_t0 = 0, first_sync_t0 = 0;
+static vita2d_texture *startup_layers[3]; /* original layers: 3, 2, 1 */
+static unsigned startup_sfx_mask = 0;
+#define STARTUP_FINISH 3.42
+#define STARTUP_NOTICE_MIN .85
+
 static double app_clock_t0 = 0; /* monotonic origin for post-sync typewriter */
 static double home_t0 = -100; /* animação de volta ao início */
 static int feat = 0;
@@ -3803,27 +3808,75 @@ static void title_cues(void) {
     }
 }
 
-/* Primeira execução: sincroniza antes da pergunta da intro. A pata e o logo
- * continuam vivos enquanto o catálogo e as imagens são preparados. */
-static void draw_first_sync(void) {
-    /* Initial catalog is synchronized BEFORE the title-screen question or
-     * intro is allowed to begin. Cached content is the offline fallback,
-     * not a reason to delay updating until after Home. */
-    const int sc = 5, step = 8 * sc;
-    /* Sync shows the animated logo without the paw icon. */
-    float lw = title_width(LOGO, sc);
-    for (int i = 0; LOGO[i]; i++) {
-        char ch[2] = {LOGO[i], 0};
-        double e = now_s - letter_hop[i];
-        float hop = e >= 0 && e < .16 ? -10 : 0;
-        float x = (SCR_W - lw) / 2 + i * step;
-        title_draw(ch, x + 5, SCR_H / 2 - 38 + 5 + hop, sc, C_SHADOW);
-        title_draw(ch, x, SCR_H / 2 - 38 + hop, sc, C_WHITE);
+/* The site logo is split in three exact transparent pixel layers, embedded
+ * as 393x54 point-filtered .wrt assets. Keep all layers at identical coordinates
+ * when they have landed: this produces the provided combined image exactly. */
+static void startup_load_layers(void) {
+    startup_layers[0] = tex_load("app0:data/tex/startup_layer3.wrt", 1);
+    startup_layers[1] = tex_load("app0:data/tex/startup_layer2.wrt", 1);
+    startup_layers[2] = tex_load("app0:data/tex/startup_layer1.wrt", 1);
+}
+
+static void startup_tick_sounds(void) {
+    static const double starts[3] = {.16, 1.08, 2.00};
+    static const double hits[3] = {.86, 1.78, 2.70};
+    for (int i = 0; i < 3; ++i) {
+        unsigned fall_bit = 1u << (2 * i);
+        unsigned hit_bit = 1u << (2 * i + 1);
+        if ((now_s - first_sync_t0) >= starts[i] && !(startup_sfx_mask & fall_bit)) {
+            startup_sfx_mask |= fall_bit;
+            sfx("logo_fall");
+        }
+        if ((now_s - first_sync_t0) >= hits[i] && !(startup_sfx_mask & hit_bit)) {
+            startup_sfx_mask |= hit_bit;
+            sfx(i == 0 ? "logo_hit3" : i == 1 ? "logo_hit2" : "logo_hit1");
+        }
     }
-    double elapsed = now_s - first_sync_t0;
-    /* No loading copy is shown on quick synchronization. This quiet
-     * preface is just the normal paw/logo, not a fake progress screen. */
-    if (elapsed < 1.10) return;
+}
+
+static float startup_layer_y(double t, int i) {
+    const double start[3] = {.16, 1.08, 2.00};
+    const double end[3] = {.86, 1.78, 2.70};
+    const float target = 185.f; /* frame remains below the centered wordmark */
+    if (t < start[i]) return -128.f;
+    if (t <= end[i]) {
+        float u = (float)((t - start[i]) / (end[i] - start[i]));
+        /* Accelerating falling layers; no arbitrary offsets after landing. */
+        return -128.f + (target + 128.f) * u * u * u;
+    }
+    if (t < end[i] + .23) {
+        float q = (float)((t - end[i]) / .23);
+        return target - 6.f * sinf(3.14159265f * q) * (1.f - q);
+    }
+    return target;
+}
+
+static void draw_first_sync(void) {
+    const float logo_x = (SCR_W - 393) / 2.f;
+    int st = sync_state();
+    /* Solid black like the supplied preview, regardless of later theme. */
+    vita2d_draw_rectangle(0, 0, SCR_W, SCR_H, RGBA8(0, 0, 0, 255));
+    int valid = 1;
+    for (int i = 0; i < 3; ++i) {
+        if (!startup_layers[i]) { valid = 0; break; }
+    }
+    if (valid) {
+        for (int i = 0; i < 3; ++i) {
+            float yy = startup_layer_y(now_s - first_sync_t0, i);
+            if (yy > -70.f)
+                tex_draw(startup_layers[i], logo_x, yy, 393, 54, C_WHITE);
+        }
+    } else {
+        /* Graceful fallback for missing startup resources. */
+        const char *logo = "WOLFF'S ROOM";
+        title_draw_shadow(logo, (SCR_W - title_width(logo, 3)) / 2,
+                          205, 3, C_WHITE, C_SHADOW);
+    }
+
+    /* Keep the falling-logo opening visually clean. The ORIGINAL unframed
+     * bouncing update message only begins once every layer has landed. */
+    double elapsed = now_s - first_sync_t0 - STARTUP_FINISH;
+    if (elapsed < 0.0) return;
 
     static const char *headings[2] = {
         "Updating the Store...", "Atualizando a loja..."
@@ -3837,23 +3890,28 @@ static void draw_first_sync(void) {
          "Movendo as coisas de lugar"}
     };
     const char *heading = headings[lang == LANG_PT ? 1 : 0];
-    const int scale = 2, letters = (int)strlen(heading);
-    float x = (SCR_W - title_width(heading, scale)) / 2;
-    float y = SCR_H / 2 + 54;
-    for (int i = 0; i < letters; i++) {
+    const int scale = 2;
+    float x = (SCR_W - title_width(heading, scale)) / 2.f;
+    float y = 306.f;
+
+    /* Exact original per-letter bounce from draw_first_sync. The animation
+     * is offset by STARTUP_FINISH, so it never overlaps with falling layers. */
+    for (int i = 0; heading[i]; i++) {
         char ch[2] = {heading[i], 0};
         int bounce = (int)(fabsf(sinf((float)elapsed * 5.2f - i * .36f)) * 8.f);
         float cx = x + i * (8 * scale);
         title_draw(ch, cx + 2, y + 2 - bounce, scale, C_SHADOW);
         title_draw(ch, cx, y - bounce, scale, C_WHITE);
     }
-    if (elapsed >= 3.4) {
-        /* Small rotating phrases only during a genuinely slow fetch. */
+
+    /* The Store's humorous submessages are unchanged. They rotate ONLY
+     * during genuinely long synchronization (3.4 s after notice appears). */
+    if (st == SYNC_RUNNING && elapsed >= 3.4) {
         int idx = (int)((elapsed - 3.4) / 3.0) % 5;
         const char *sub = subtitles[lang == LANG_PT ? 1 : 0][idx];
-        body_draw(sub, (SCR_W - body_width(sub)) / 2,
-                  SCR_H / 2 + 110, C_SOFT);
+        body_draw(sub, (SCR_W - body_width(sub)) / 2.f, y + 56, C_SOFT);
     }
+
 }
 
 static void letters_wave(double at, int notes) {
@@ -4146,7 +4204,7 @@ static void tick_store(void) {
     }
     int intro_done = started && now_s - intro_t0 >= T_DONE;
     int st = sync_state();
-    if (first_sync && st == SYNC_READY) {
+    if (first_sync && st == SYNC_READY && now_s - first_sync_t0 >= STARTUP_FINISH + STARTUP_NOTICE_MIN) {
         /* apply_sync() may synchronously decode many covers and rebuild
          * the featured mosaic. The 'now_s' value from the start of this
          * frame becomes stale during that work. If it is reused as the
@@ -4160,7 +4218,8 @@ static void tick_store(void) {
         title_cues();
         return;
     }
-    if (first_sync && (st == SYNC_OFFLINE || st == SYNC_FAIL)) {
+    if (first_sync && (st == SYNC_OFFLINE || st == SYNC_FAIL) &&
+        now_s - first_sync_t0 >= STARTUP_FINISH + STARTUP_NOTICE_MIN) {
         /* The same timeline restart applies to offline cached catalogs. */
         ws_log("intro: offline catalog ready; starting full typewriter");
         now_s = clock_s() - app_clock_t0;
@@ -4531,6 +4590,7 @@ int main(void) {
     sceTouchSetSamplingState(SCE_TOUCH_PORT_FRONT, SCE_TOUCH_SAMPLING_STATE_START);
 
     gfx_init();
+    startup_load_layers();
     poll_box_tex = vita2d_load_PNG_file("app0:data/polls/caixa.png");
     poll_paper_tex = vita2d_load_PNG_file("app0:data/polls/papel.png");
     if (poll_box_tex) vita2d_texture_set_filters(poll_box_tex,
@@ -4629,11 +4689,7 @@ int main(void) {
         if (pad.lx > 216) b |= SCE_CTRL_RIGHT;
 
         if (first_sync) {
-            if (down & (SCE_CTRL_START | SCE_CTRL_CROSS)) {
-                bark_t0 = now_s;
-                letters_wave(now_s, 1);
-                sfx("bark");
-            }
+            /* Opening and synchronization are non-interactive. */
         } else if (!started) {
             if (down & (SCE_CTRL_START | SCE_CTRL_CROSS | SCE_CTRL_CIRCLE)) start_intro();
         } else if (now_s - intro_t0 < T_DONE) {
@@ -4755,7 +4811,7 @@ int main(void) {
                 dragged = 1;
             }
             /* passar o dedo no logo: as letras pulam com a nota (como o hover no PC) */
-            if ((started || first_sync) && !vid_open && !settings_open && trans_confirm_post < 0 && plugin_advice_post < 0) {
+            if (started && !first_sync && !vid_open && !settings_open && trans_confirm_post < 0 && plugin_advice_post < 0) {
                 float wy = ty + cam;
                 float logo_x = first_sync ? (SCR_W - title_width(LOGO, 5)) / 2 : LOGO_X;
                 float logo_y = first_sync ? SCR_H / 2 - 52 : 30;
@@ -4778,9 +4834,7 @@ int main(void) {
             touching = 0;
             if (!dragged && now_s - t_t0 < .6) {
                 if (first_sync) {
-                    bark_t0 = now_s;
-                    letters_wave(now_s, 1);
-                    sfx("bark");
+                    /* Keep falling logo and update frame uninterrupted. */
                 } else if (!started) start_intro();
                 else if (vid_open) video_toggle_pause();
                 else if (update_notes_visible) close_update_notes();
@@ -4830,6 +4884,7 @@ int main(void) {
         prev_ly = pad.ly;
         poll_ime();
         run_cues();
+        if (first_sync) startup_tick_sounds();
         tick_store();
         {
             float nh = 36; /* notifications reuse unused right side of hints */

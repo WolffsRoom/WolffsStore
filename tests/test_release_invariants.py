@@ -14,9 +14,9 @@ class ReleaseInvariants(unittest.TestCase):
         cls.video = (ROOT / "src/video.c").read_text(encoding="utf-8")
         cls.updater = (ROOT / "updater/main.c").read_text(encoding="utf-8")
 
-    def test_release_is_v112(self):
-        self.assertIn('set(WS_SFO_VERSION "01.12")', self.cmake)
-        self.assertIn('set(WS_FILE_VERSION "1.1.2")', self.cmake)
+    def test_release_is_v113(self):
+        self.assertIn('set(WS_SFO_VERSION "01.13")', self.cmake)
+        self.assertIn('set(WS_FILE_VERSION "1.1.3")', self.cmake)
 
     def test_home_bilingual_titles_and_featured_post_exclusion(self):
         self.assertIn('"Confira também outras novidades..."', self.main)
@@ -45,8 +45,8 @@ class ReleaseInvariants(unittest.TestCase):
     def test_title_id_migration_keeps_old_bubble_safe(self):
         self.assertIn('set(WS_TITLEID "WFFS00042")', self.cmake)
         self.assertIn('set(WS_UPDATER_TITLEID "WFFS00043")', self.cmake)
-        self.assertIn('set(WS_FILE_VERSION "1.1.2")', self.cmake)
-        self.assertIn('set(WS_SFO_VERSION "01.12")', self.cmake)
+        self.assertIn('set(WS_FILE_VERSION "1.1.3")', self.cmake)
+        self.assertIn('set(WS_SFO_VERSION "01.13")', self.cmake)
         self.assertIn('#define WS_VERSION "1.1.2"', self.main)
         self.assertIn('#define MAIN_TITLE "WFFS00042"', self.updater)
         self.assertNotIn('set(WS_TITLEID "WOLF00001")',self.cmake)
@@ -402,8 +402,8 @@ class ReleaseInvariants(unittest.TestCase):
         self.assertNotIn("if (!first_sync) title_cues();",entry)
         tick=self.main[self.main.index("static void tick_store("):
                        self.main.index("/* ================================================================ main */")]
-        ready=tick.index("if (first_sync && st == SYNC_READY)")
-        post=tick[ready:tick.index("if (first_sync && (st == SYNC_OFFLINE || st == SYNC_FAIL))",ready)]
+        ready=tick.index("if (first_sync && st == SYNC_READY")
+        post=tick[ready:tick.index("if (first_sync && (st == SYNC_OFFLINE || st == SYNC_FAIL)",ready)]
         self.assertLess(post.index("apply_sync();"),post.index("first_sync = 0;"))
         self.assertLess(post.index("first_sync = 0;"),post.index("title_cues();"))
         self.assertIn("SYNC_OFFLINE || st == SYNC_FAIL",tick)
@@ -413,15 +413,15 @@ class ReleaseInvariants(unittest.TestCase):
         # featured covers. Reusing frame-start now_s skips the typewriter.
         tick = self.main[self.main.index("static void tick_store("):
                          self.main.index("/* ================================================================ main */")]
-        online = tick[tick.index("if (first_sync && st == SYNC_READY)"):
-                      tick.index("if (first_sync && (st == SYNC_OFFLINE || st == SYNC_FAIL))")]
+        online = tick[tick.index("if (first_sync && st == SYNC_READY"):
+                      tick.index("if (first_sync && (st == SYNC_OFFLINE || st == SYNC_FAIL)")]
         self.assertLess(online.index("apply_sync();"),
                         online.index("now_s = clock_s() - app_clock_t0;"))
         self.assertLess(online.index("now_s = clock_s() - app_clock_t0;"),
                         online.index("title_t0 = now_s;"))
         self.assertLess(online.index("title_t0 = now_s;"),
                         online.index("title_cues();"))
-        offline=tick[tick.index("if (first_sync && (st == SYNC_OFFLINE || st == SYNC_FAIL))"):
+        offline=tick[tick.index("if (first_sync && (st == SYNC_OFFLINE || st == SYNC_FAIL)"):
                      tick.index("/* resultado da sincronização:")]
         self.assertLess(offline.index("now_s = clock_s() - app_clock_t0;"),
                         offline.index("title_t0 = now_s;"))
@@ -448,19 +448,24 @@ class ReleaseInvariants(unittest.TestCase):
         self.assertGreater((fresh-stale), .3+30*.045)
         self.assertLess(fresh-fresh,.3)
 
-    def test_delayed_bounce_messages_do_not_show_during_fast_sync(self):
+    def test_original_bounce_message_only_after_falling_logo(self):
         splash=self.main[self.main.index("static void draw_first_sync(void) {"):
-                         self.main.index("static void letters_wave(",self.main.index("static void draw_first_sync(void) {"))]
-        self.assertIn("if (elapsed < 1.10) return;",splash)
-        self.assertIn('Atualizando a loja...',splash)
-        self.assertIn('Tirando a poeira dos ports',splash)
-        self.assertIn('Recompilando projetos',splash)
-        self.assertIn('Corrigindo alguns bugs aqui e ali',splash)
-        self.assertIn('Organizando as prateleiras',splash)
-        self.assertIn('Movendo as coisas de lugar',splash)
-        self.assertIn("if (elapsed >= 3.4)",splash)
-        self.assertIn("title_draw(ch,",splash)
-        self.assertIn("body_draw(sub,",splash)
+                         self.main.index("static void letters_wave(", self.main.index("static void draw_first_sync(void) {"))]
+        self.assertIn('startup_layer_y(now_s - first_sync_t0, i)', splash)
+        self.assertIn('double elapsed = now_s - first_sync_t0 - STARTUP_FINISH;', splash)
+        self.assertIn('if (elapsed < 0.0) return;', splash)
+        self.assertLess(splash.index('if (elapsed < 0.0) return;'),
+                        splash.index('const char *heading = headings'))
+        self.assertIn('Atualizando a loja...', splash)
+        self.assertIn('Tirando a poeira dos ports', splash)
+        self.assertIn('Recompilando projetos', splash)
+        self.assertIn('Corrigindo alguns bugs aqui e ali', splash)
+        self.assertIn('Organizando as prateleiras', splash)
+        self.assertIn('Movendo as coisas de lugar', splash)
+        self.assertIn('if (st == SYNC_RUNNING && elapsed >= 3.4)', splash)
+        self.assertIn('title_draw(ch, cx, y - bounce, scale, C_WHITE);', splash)
+        self.assertIn('body_draw(sub,', splash)
+        self.assertNotIn('frame_rect(', splash)
 
     def test_download_queue_shows_project_not_mirror_label(self):
         act=self.main[self.main.index("static void activate(int it) {"):
