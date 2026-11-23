@@ -190,6 +190,10 @@ static double now_s, view_t0, peek_t0, intro_t0 = -1, wipe_t0 = -100, wave_t0 = 
 static int started = 0, pressed_item = -1;
 static int first_sync = 0;
 static double title_t0 = 0, first_sync_t0 = 0;
+static vita2d_texture *startup_layers[3]; /* original layers: 3, 2, 1 */
+static unsigned startup_sfx_mask = 0;
+#define STARTUP_FINISH 3.42
+
 static double app_clock_t0 = 0; /* monotonic origin for post-sync typewriter */
 static double home_t0 = -100; /* animação de volta ao início */
 static int feat = 0;
@@ -3803,56 +3807,119 @@ static void title_cues(void) {
     }
 }
 
-/* Primeira execução: sincroniza antes da pergunta da intro. A pata e o logo
- * continuam vivos enquanto o catálogo e as imagens são preparados. */
-static void draw_first_sync(void) {
-    /* Initial catalog is synchronized BEFORE the title-screen question or
-     * intro is allowed to begin. Cached content is the offline fallback,
-     * not a reason to delay updating until after Home. */
-    const int sc = 5, step = 8 * sc;
-    /* Sync shows the animated logo without the paw icon. */
-    float lw = title_width(LOGO, sc);
-    for (int i = 0; LOGO[i]; i++) {
-        char ch[2] = {LOGO[i], 0};
-        double e = now_s - letter_hop[i];
-        float hop = e >= 0 && e < .16 ? -10 : 0;
-        float x = (SCR_W - lw) / 2 + i * step;
-        title_draw(ch, x + 5, SCR_H / 2 - 38 + 5 + hop, sc, C_SHADOW);
-        title_draw(ch, x, SCR_H / 2 - 38 + hop, sc, C_WHITE);
-    }
-    double elapsed = now_s - first_sync_t0;
-    /* No loading copy is shown on quick synchronization. This quiet
-     * preface is just the normal paw/logo, not a fake progress screen. */
-    if (elapsed < 1.10) return;
+/* The site logo is split in three exact transparent pixel layers, embedded
+ * as 393x54 point-filtered .wrt assets. Keep all layers at identical coordinates
+ * when they have landed: this produces the provided combined image exactly. */
+static void startup_load_layers(void) {
+    startup_layers[0] = tex_load("app0:data/tex/startup_layer3.wrt", 1);
+    startup_layers[1] = tex_load("app0:data/tex/startup_layer2.wrt", 1);
+    startup_layers[2] = tex_load("app0:data/tex/startup_layer1.wrt", 1);
+}
 
-    static const char *headings[2] = {
-        "Updating the Store...", "Atualizando a loja..."
-    };
-    static const char *subtitles[2][5] = {
-        {"Dusting off the ports", "Recompiling projects",
-         "Fixing a bug or two", "Organizing the shelves",
-         "Moving things around"},
-        {"Tirando a poeira dos ports", "Recompilando projetos",
-         "Corrigindo alguns bugs aqui e ali", "Organizando as prateleiras",
-         "Movendo as coisas de lugar"}
-    };
-    const char *heading = headings[lang == LANG_PT ? 1 : 0];
-    const int scale = 2, letters = (int)strlen(heading);
-    float x = (SCR_W - title_width(heading, scale)) / 2;
-    float y = SCR_H / 2 + 54;
-    for (int i = 0; i < letters; i++) {
-        char ch[2] = {heading[i], 0};
-        int bounce = (int)(fabsf(sinf((float)elapsed * 5.2f - i * .36f)) * 8.f);
-        float cx = x + i * (8 * scale);
-        title_draw(ch, cx + 2, y + 2 - bounce, scale, C_SHADOW);
-        title_draw(ch, cx, y - bounce, scale, C_WHITE);
+static void startup_tick_sounds(void) {
+    static const double starts[3] = {.16, 1.08, 2.00};
+    static const double hits[3] = {.86, 1.78, 2.70};
+    for (int i = 0; i < 3; ++i) {
+        unsigned fall_bit = 1u << (2 * i);
+        unsigned hit_bit = 1u << (2 * i + 1);
+        if ((now_s - first_sync_t0) >= starts[i] && !(startup_sfx_mask & fall_bit)) {
+            startup_sfx_mask |= fall_bit;
+            sfx("logo_fall");
+        }
+        if ((now_s - first_sync_t0) >= hits[i] && !(startup_sfx_mask & hit_bit)) {
+            startup_sfx_mask |= hit_bit;
+            sfx(i == 0 ? "logo_hit3" : i == 1 ? "logo_hit2" : "logo_hit1");
+        }
     }
-    if (elapsed >= 3.4) {
-        /* Small rotating phrases only during a genuinely slow fetch. */
-        int idx = (int)((elapsed - 3.4) / 3.0) % 5;
-        const char *sub = subtitles[lang == LANG_PT ? 1 : 0][idx];
-        body_draw(sub, (SCR_W - body_width(sub)) / 2,
-                  SCR_H / 2 + 110, C_SOFT);
+}
+
+static float startup_layer_y(double t, int i) {
+    const double start[3] = {.16, 1.08, 2.00};
+    const double end[3] = {.86, 1.78, 2.70};
+    const float target = 185.f; /* frame remains below the centered wordmark */
+    if (t < start[i]) return -128.f;
+    if (t <= end[i]) {
+        float u = (float)((t - start[i]) / (end[i] - start[i]));
+        /* Accelerating falling layers; no arbitrary offsets after landing. */
+        return -128.f + (target + 128.f) * u * u * u;
+    }
+    if (t < end[i] + .23) {
+        float q = (float)((t - end[i]) / .23);
+        return target - 6.f * sinf(3.14159265f * q) * (1.f - q);
+    }
+    return target;
+}
+
+static void draw_first_sync(void) {
+    const float logo_x = (SCR_W - 393) / 2.f;
+    int st = sync_state();
+    /* Solid black like the supplied preview, regardless of later theme. */
+    vita2d_draw_rectangle(0, 0, SCR_W, SCR_H, RGBA8(0, 0, 0, 255));
+    int valid = 1;
+    for (int i = 0; i < 3; ++i) {
+        if (!startup_layers[i]) { valid = 0; break; }
+    }
+    if (valid) {
+        for (int i = 0; i < 3; ++i) {
+            float yy = startup_layer_y(now_s - first_sync_t0, i);
+            if (yy > -70.f)
+                tex_draw(startup_layers[i], logo_x, yy, 393, 54, C_WHITE);
+        }
+    } else {
+        /* Graceful fallback for missing startup resources. */
+        const char *logo = "WOLFF'S ROOM";
+        title_draw_shadow(logo, (SCR_W - title_width(logo, 3)) / 2,
+                          205, 3, C_WHITE, C_SHADOW);
+    }
+
+    /* Original in-app pixel frame; text and subdialogs remain live during sync. */
+    const float fx = 199.f, fy = 278.f, fw = 562.f, fh = 168.f;
+    vita2d_draw_rectangle(fx, fy, fw, fh, C_DARK);
+    frame_rect(fx, fy, fw, fh, 4, C_WHITE);
+    const char *heading = lang == LANG_PT ? "ATUALIZANDO CAT\xC1LOGO..." : "UPDATING CATALOG...";
+    title_draw(heading, (SCR_W - title_width(heading, 2)) / 2, fy + 20, 2, C_WHITE);
+
+    const char *detail;
+    if (st == SYNC_READY)
+        detail = lang == LANG_PT ? "Cat\xE1logo atualizado!" : "Catalog updated!";
+    else if (st == SYNC_OFFLINE || st == SYNC_FAIL)
+        detail = lang == LANG_PT ? "Sem conexao. Usando dados salvos." : "Offline. Using cached data.";
+    else {
+        static const char *slow_messages[2][5] = {
+            { "Dusting off the ports", "Recompiling projects",
+              "Fixing a bug or two", "Organizing the shelves", "Moving things around" },
+            { "Tirando a poeira dos ports", "Recompilando projetos",
+              "Corrigindo alguns bugs aqui e ali", "Organizando as prateleiras",
+              "Movendo as coisas de lugar" }
+        };
+        double elapsed = now_s - first_sync_t0;
+        if (elapsed >= 3.4) {
+            int phrase = (int)((elapsed - 3.4) / 3.0) % 5;
+            detail = slow_messages[lang == LANG_PT ? 1 : 0][phrase];
+        } else
+            detail = lang == LANG_PT ? "Sincronizando projetos e novidades..." : "Syncing projects and new releases...";
+    }
+    body_draw(detail, (SCR_W - body_width(detail)) / 2, fy + 58, C_SOFT);
+    char pct[24];
+    if (st == SYNC_RUNNING) snprintf(pct, sizeof(pct), "%d%%", (int)(sync_progress() * 100));
+    else if (st == SYNC_READY) snprintf(pct, sizeof(pct), "100%%");
+    else snprintf(pct, sizeof(pct), "...");
+    title_draw(pct, (SCR_W - title_width(pct, 2)) / 2, fy + 91, 2, C_WHITE);
+
+    /* Subdialog is shown only for a genuinely long-running first sync. */
+    if (first_sync && st == SYNC_RUNNING && now_s - first_sync_t0 >= 8.0) {
+        float bx = fx + 18, by = fy + 124, bw = fw - 36;
+        vita2d_draw_rectangle(bx, by, bw, 35, C_PANEL);
+        frame_rect(bx, by, bw, 35, 2, C_BORDER);
+        const char *slow = lang == LANG_PT
+            ? "Demorando mais que o normal. Aguarde..."
+            : "Taking longer than usual. Please wait...";
+        body_draw(slow, (SCR_W - body_width(slow)) / 2, by + 6, C_TEXT);
+    } else if (st == SYNC_RUNNING) {
+        for (int i = 0; i < 3; ++i) {
+            unsigned color = ((int)((now_s - first_sync_t0) * 4) % 3 == i) ? C_WHITE : C_BORDER;
+            vita2d_draw_rectangle(SCR_W / 2 - 26 + i * 20, fy + 130, 12, 12, color);
+        }
     }
 }
 
@@ -4146,7 +4213,7 @@ static void tick_store(void) {
     }
     int intro_done = started && now_s - intro_t0 >= T_DONE;
     int st = sync_state();
-    if (first_sync && st == SYNC_READY) {
+    if (first_sync && st == SYNC_READY && now_s - first_sync_t0 >= STARTUP_FINISH) {
         /* apply_sync() may synchronously decode many covers and rebuild
          * the featured mosaic. The 'now_s' value from the start of this
          * frame becomes stale during that work. If it is reused as the
@@ -4160,7 +4227,8 @@ static void tick_store(void) {
         title_cues();
         return;
     }
-    if (first_sync && (st == SYNC_OFFLINE || st == SYNC_FAIL)) {
+    if (first_sync && (st == SYNC_OFFLINE || st == SYNC_FAIL) &&
+        now_s - first_sync_t0 >= STARTUP_FINISH) {
         /* The same timeline restart applies to offline cached catalogs. */
         ws_log("intro: offline catalog ready; starting full typewriter");
         now_s = clock_s() - app_clock_t0;
@@ -4531,6 +4599,7 @@ int main(void) {
     sceTouchSetSamplingState(SCE_TOUCH_PORT_FRONT, SCE_TOUCH_SAMPLING_STATE_START);
 
     gfx_init();
+    startup_load_layers();
     poll_box_tex = vita2d_load_PNG_file("app0:data/polls/caixa.png");
     poll_paper_tex = vita2d_load_PNG_file("app0:data/polls/papel.png");
     if (poll_box_tex) vita2d_texture_set_filters(poll_box_tex,
@@ -4629,11 +4698,7 @@ int main(void) {
         if (pad.lx > 216) b |= SCE_CTRL_RIGHT;
 
         if (first_sync) {
-            if (down & (SCE_CTRL_START | SCE_CTRL_CROSS)) {
-                bark_t0 = now_s;
-                letters_wave(now_s, 1);
-                sfx("bark");
-            }
+            /* Opening and synchronization are non-interactive. */
         } else if (!started) {
             if (down & (SCE_CTRL_START | SCE_CTRL_CROSS | SCE_CTRL_CIRCLE)) start_intro();
         } else if (now_s - intro_t0 < T_DONE) {
@@ -4755,7 +4820,7 @@ int main(void) {
                 dragged = 1;
             }
             /* passar o dedo no logo: as letras pulam com a nota (como o hover no PC) */
-            if ((started || first_sync) && !vid_open && !settings_open && trans_confirm_post < 0 && plugin_advice_post < 0) {
+            if (started && !first_sync && !vid_open && !settings_open && trans_confirm_post < 0 && plugin_advice_post < 0) {
                 float wy = ty + cam;
                 float logo_x = first_sync ? (SCR_W - title_width(LOGO, 5)) / 2 : LOGO_X;
                 float logo_y = first_sync ? SCR_H / 2 - 52 : 30;
@@ -4778,9 +4843,7 @@ int main(void) {
             touching = 0;
             if (!dragged && now_s - t_t0 < .6) {
                 if (first_sync) {
-                    bark_t0 = now_s;
-                    letters_wave(now_s, 1);
-                    sfx("bark");
+                    /* Keep falling logo and update frame uninterrupted. */
                 } else if (!started) start_intro();
                 else if (vid_open) video_toggle_pause();
                 else if (update_notes_visible) close_update_notes();
@@ -4830,6 +4893,7 @@ int main(void) {
         prev_ly = pad.ly;
         poll_ime();
         run_cues();
+        if (first_sync) startup_tick_sounds();
         tick_store();
         {
             float nh = 36; /* notifications reuse unused right side of hints */

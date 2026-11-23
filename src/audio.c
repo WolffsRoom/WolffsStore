@@ -444,6 +444,16 @@ void sfx(const char *k) {
     else if (!strcmp(k, "hover")) PLAY(N(1760, 1760, 0, .018f, W_P12, .35f));
     else if (!strcmp(k, "open")) PLAY(N(988, 988, 0, .05f, W_P25, 1), N(1319, 1319, .05f, .12f, W_P25, 1));
     else if (!strcmp(k, "back")) PLAY(N(784, 523, 0, .08f, W_P50, .9f), N(392, 262, .07f, .1f, W_P50, .9f));
+    /* Falling 8-bit logo, built from the app's own pulse/triangle/noise synth.
+       No decoded video or wav and no extra mixer thread. */
+    else if (!strcmp(k, "logo_fall"))
+        PLAY(N(960, 195, 0, .27f, W_P12, .36f), N(0, 0, .08f, .19f, W_NOISE, .12f));
+    else if (!strcmp(k, "logo_hit3"))
+        PLAY(N(220, 78, 0, .23f, W_TRI, 1.6f), N(0, 0, 0, .09f, W_NOISE, .70f), N(330, 220, 0, .07f, W_P25, .85f));
+    else if (!strcmp(k, "logo_hit2"))
+        PLAY(N(260, 92, 0, .23f, W_TRI, 1.6f), N(0, 0, 0, .09f, W_NOISE, .75f), N(392, 260, 0, .07f, W_P25, .85f));
+    else if (!strcmp(k, "logo_hit1"))
+        PLAY(N(310, 104, 0, .28f, W_TRI, 1.75f), N(0, 0, 0, .11f, W_NOISE, .80f), N(494, 310, 0, .08f, W_P25, .95f));
     else if (!strcmp(k, "tick")) PLAY(N(1568, 1568, 0, .03f, W_P12, .8f));
     else if (!strcmp(k, "peek")) PLAY(N(C5, C5, 0, .04f, W_P25, 1), N(E5, E5, .04f, .04f, W_P25, 1), N(G5, G5, .08f, .04f, W_P25, 1),
                                       N(C6, C6, .12f, .1f, W_P25, 1), N(131, 131, 0, .22f, W_TRI, 1.4f));
