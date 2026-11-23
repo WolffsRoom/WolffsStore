@@ -44,6 +44,25 @@ Availability and installation behavior depend on each project's download format 
 
 ---
 
+## Screenshots
+
+<table align="center">
+  <tr>
+    <td align="center" width="50%">
+      <a href="docs/screenshots/01-home.png"><img src="docs/screenshots/01-home.png" alt="Wolff's Store home screen" width="420"></a>
+      <br><sub><b>Home</b> — Featured project and recent updates</sub>
+    </td>
+    <td align="center" width="50%">
+      <a href="docs/screenshots/02-project-downloads.png"><img src="docs/screenshots/02-project-downloads.png" alt="Wolff's Store project information and download options" width="420"></a>
+      <br><sub><b>Project details</b> — Cover art and download options</sub>
+    </td>
+  </tr>
+</table>
+
+<sub>Captured directly from Wolff's Store running in Vita3K at 960 × 544. Screenshots show the emulator build; actual hardware presentation may vary.</sub>
+
+---
+
 ## Download & Installation
 
 1. Download **`WolffsStore.vpk`** from the [latest GitHub release](https://github.com/WolffsRoom/WolffsStore/releases/latest).
