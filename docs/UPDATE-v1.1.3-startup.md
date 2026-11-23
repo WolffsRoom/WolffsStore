@@ -1,4 +1,4 @@
-# Wolff's Store v1.1.3 — startup animation (test build)
+# Wolff's Store v1.1.3 — New animated opening
 
 ## New
 
@@ -18,4 +18,4 @@
 - Release toolchain: VitaSDK Docker atamanenko/vitasdk-softfp:latest.
 - Pending: smoke test on physical PS Vita (sync success, slow network, offline startup, volume off/on, LiveArea artwork and performance).
 
-This is a **test build**, not a GitHub release. Publish only after hardware verification.
+The VPK was compiled with VitaSDK and passed automated checks. Physical PS Vita verification remains recommended, especially for slow/offline synchronization and audio levels.
