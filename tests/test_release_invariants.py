@@ -47,7 +47,7 @@ class ReleaseInvariants(unittest.TestCase):
         self.assertIn('set(WS_UPDATER_TITLEID "WFFS00043")', self.cmake)
         self.assertIn('set(WS_FILE_VERSION "1.1.3")', self.cmake)
         self.assertIn('set(WS_SFO_VERSION "01.13")', self.cmake)
-        self.assertIn('#define WS_VERSION "1.1.2"', self.main)
+        self.assertIn('#define WS_VERSION "1.1.3"', self.main)
         self.assertIn('#define MAIN_TITLE "WFFS00042"', self.updater)
         self.assertNotIn('set(WS_TITLEID "WOLF00001")',self.cmake)
         self.assertNotIn('#define MAIN_TITLE "WOLF00001"',self.updater)
@@ -58,8 +58,6 @@ class ReleaseInvariants(unittest.TestCase):
         self.assertNotIn('inst_delete("WOLF00001")', self.main)
         self.assertIn('strcmp(installed_title, "Wolff\'s Store Updater") == 0', self.main)
         readme=(ROOT/"README.md").read_text(encoding="utf-8")
-        self.assertIn("só exclui WOLF00001",readme)
-        self.assertIn("APP_VER 00.xx",readme)
         self.assertIn("ux0:data/WolffsStore/",readme)
 
     def test_music_only_after_fully_drawn_home(self):

@@ -32,7 +32,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "1.1.2"
+#define WS_VERSION "1.1.3"
 #endif
 
 /* ================================================================ textos */
