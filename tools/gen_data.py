@@ -125,6 +125,27 @@ def main():
     sys.path.insert(0, os.path.join(site, 'tools'))
     import build  # leitor oficial dos posts do site
 
+    # Preserve last-known verified GitHub download counts if a catalog build
+    # hits a temporary GitHub API rate limit (None is not a measured zero).
+    last_downloads = {}
+    previous_catalog = os.path.join(OUT, 'catalog.txt')
+    if os.path.isfile(previous_catalog):
+        current_slug = None
+        with open(previous_catalog, encoding='latin-1') as existing:
+            for line in existing:
+                k, sep, value = line.rstrip('\r\n').partition('\t')
+                if not sep:
+                    continue
+                if k == 'post':
+                    current_slug = value
+                elif k == 'github_downloads_total' and current_slug:
+                    try:
+                        n = int(value)
+                        if n >= 0:
+                            last_downloads[current_slug] = n
+                    except ValueError:
+                        pass
+
     if os.path.isdir(OUT):
         # v0.99.9 introduced the bundled daypart OST under data/music.
         # Refresh generated images/catalog without deleting bundled music or TLS certificates.
@@ -156,6 +177,9 @@ def main():
     posts, order = build.load_all()
     from store import populate_download_totals
     populate_download_totals(posts)
+    for slug, post in posts.items():
+        if post.get('github_downloads_total') is None and slug in last_downloads:
+            post['github_downloads_total'] = last_downloads[slug]
     feat = next((k for k in order if posts[k]['feature']), order[0])
     L = []
 
