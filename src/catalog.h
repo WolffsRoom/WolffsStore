@@ -50,6 +50,7 @@ typedef struct {
     char poll_options[8][112];
     char poll_question_en[192], poll_options_en[8][112];
     int poll_count;
+    int poll_closed, poll_has_counts, poll_total, poll_votes[8];
     long long github_downloads_total; /* -1: GitHub total not available */
     char date[16];       /* publicação ISO YYYY-MM-DD */
     char updated[16];    /* última alteração do post; vazio se não houver */

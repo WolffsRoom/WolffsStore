@@ -77,6 +77,18 @@ int catalog_load(const char *path) {
         if (!strcmp(k, "cat")) p->cat = cat_id(v);
         else if (!strcmp(k, "subcat")) p->subcat = subcat_id(v);
         else if (!strcmp(k, "github_downloads_total")) p->github_downloads_total = atoll(v);
+        else if (!strcmp(k, "poll_closed")) p->poll_closed=atoi(v)!=0;
+        else if (!strncmp(k, "poll_votes_", 11)) {
+            int idx=atoi(k+11);
+            if (idx>=0 && idx<8) {
+                int votes=atoi(v);
+                if (votes>=0 && votes<=100000000) {
+                    p->poll_votes[idx]=votes;
+                    p->poll_total+=votes;
+                    p->poll_has_counts=1;
+                }
+            }
+        }
         else if (!strcmp(k, "poll_id")) snprintf(p->poll_id,sizeof(p->poll_id),"%s",v);
         else if (!strcmp(k, "poll_question")) snprintf(p->poll_question,sizeof(p->poll_question),"%s",v);
         else if (!strcmp(k, "poll_question.en")) snprintf(p->poll_question_en,sizeof(p->poll_question_en),"%s",v);

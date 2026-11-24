@@ -173,6 +173,10 @@ def main():
         put('subcat', p.get('subcat') or '')
         if p.get('poll'):
             survey=p['poll']
+            if survey.get('counts'):
+                put('poll_closed', 1)
+                for idx, count in enumerate(survey['counts']):
+                    put(f'poll_votes_{idx}', count)
             put('poll_id', survey['id'])
             put('poll_question', survey['question'])
             put('poll_question.en', en.get('poll_question') or survey['question'])

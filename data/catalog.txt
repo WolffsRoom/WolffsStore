@@ -1,6 +1,281 @@
+post	next-vita-project-poll-result
+cat	journal
+subcat	news
+group	0
+date	2026-11-23
+feat	1
+title.pt	VOTAÇÃO ENCERRADA! - New Browser for Vita venceu!
+tag.pt	Poll Result · Wolff's Room · PS Vita
+status.pt	Resultado oficial da enquete
+desc.pt	A comunidade escolheu! New Browser for Vita venceu a enquete com 16 dos 19 votos.
+feature_text.pt	VOTAÇÃO ENCERRADA! Conheça o próximo projeto escolhido pela comunidade!
+bars_title.pt	Resultado final
+about.pt	Votação Encerrada!  E aí, pessoal! Wolff aqui!  A nossa enquete chegou ao fim e vocês decidiram qual será o próximo projeto da Wolff's Room para PlayStation Vita!  NEW BROWSER FOR VITA foi o vencedor, com 16 votos (84,21%)!  Obrigado a todos que participaram da votação!
+sec.pt	Resultado final
+sec.pt	E agora?
+para.pt	O novo navegador será nosso próximo projeto escolhido pela comunidade! Vou compartilhar o progresso e as novidades aqui no site e na Wolff's Store.
+para.pt	Este é um anúncio do projeto selecionado, não uma confirmação de lançamento ou uma promessa de data.
+para.pt	Mais uma vez, obrigado por votarem! Vita means life!
+bar.pt	New Browser for Vita|84|16 votos - 84,21%
+bar.pt	Reddit Vita|5|1 voto - 5,26%
+bar.pt	Internet Archive Vita|5|1 voto - 5,26%
+bar.pt	GameFAQs Vita|5|1 voto - 5,26%
+info.pt	Projeto vencedor|New Browser for Vita
+info.pt	Votos no vencedor|16 (84,21%)
+info.pt	Encerramento|23/11/2026 às 22h25
+title.en	POLL ENDED! - New Browser for Vita wins!
+tag.en	Poll Result · Wolff's Room · PS Vita
+status.en	Official poll results
+desc.en	The community has spoken! New Browser for Vita won with 16 out of 19 votes.
+feature_text.en	POLL ENDED! Meet the next project chosen by the community!
+bars_title.en	Final results
+about.en	POLL ENDED!  Hey everyone! Wolff here!  Our community poll has officially ended, and you decided what Wolff's Room should bring to PlayStation Vita next!  NEW BROWSER FOR VITA is the winner, with 16 votes (84.21%)!  Thank you to everyone who participated.
+sec.en	Final results
+sec.en	What's next?
+para.en	The new browser will be our next community-chosen project! I'll share development progress and updates here and in Wolff's Store.
+para.en	This is an announcement of the selected project, not a release announcement or a promised launch date.
+para.en	Thanks again for voting! Vita means life!
+bar.en	New Browser for Vita|84|16 votes - 84.21%
+bar.en	Reddit Vita|5|1 vote - 5.26%
+bar.en	Internet Archive Vita|5|1 vote - 5.26%
+bar.en	GameFAQs Vita|5|1 vote - 5.26%
+info.en	Winning project|New Browser for Vita
+info.en	Winning votes|16 (84.21%)
+info.en	Poll closed|November 23, 2026 at 10:25 PM (BRT)
+cover	1
+shots	0
+end	
+post	pizza-tower-noises-hardoween
+cat	ports
+subcat	
+group	1
+date	2026-11-22
+pixel	1
+progress	95
+title.pt	Pizza Tower - Noise's Hardoween Demo
+tag.pt	Port · GameMaker · PS Vita
+status.pt	v0.41 · Jogável
+desc.pt	Noise's Hardoween Demo chega ao PS Vita na v0.41, com correções gráficas e otimização automática do data.win no primeiro boot.
+feature_text.pt	The Noise chega ao PlayStation Vita! A demo de Halloween de Pizza Tower em um port nativo com otimizações de textura, gráficos e áudio.
+about.pt	Port não oficial da demo gratuita Pizza Tower: Noise's Hardoween para PlayStation Vita, lançado na versão v0.41. Jogue como The Noise em uma aventura temática de Halloween. O projeto está marcado com 95% de progresso geral.
+sec.pt	Novidades da v0.41
+item.pt	Travamento na transformação de cavaleiro corrigido: shader de troca de paletas adaptado para a GPU do PS Vita, incluindo as roupas desbloqueáveis de The Noise e cores dos inimigos.
+item.pt	Texturas em resolução nativa: páginas de textura ativas em 2048x2048, com melhorias na nitidez dos cenários, sprites e interface.
+item.pt	Fundos corrigidos: maior precisão dos shaders para evitar linhas vermelhas e artefatos entre texturas.
+item.pt	Ordem de desenho corrigida: The Noise não aparece indevidamente atrás de portas e escadas.
+item.pt	Áudio otimizado: streaming OpenAL para reduzir o consumo de memória.
+item.pt	Otimização automática: o port prepara as texturas do jogo diretamente no PS Vita no primeiro boot.
+sec.pt	Instalação
+item.pt	Baixe o VPK v0.41 pelo botão de download e instale usando o VitaShell.
+item.pt	Obtenha o arquivo original data.win da demo gratuita pelo botão Baixar dados ou pela página da demo original.
+item.pt	Coloque o arquivo data.win na pasta /ux0:/data/noisehardoween/ do PS Vita (caminho VitaShell: ux0:data/noisehardoween/data.win).
+item.pt	Abra o jogo pela LiveArea.
+sec.pt	Observações importantes
+item.pt	O primeiro boot pode demorar mais. O próprio VPK ajustará o arquivo data.win do jogo, otimizando os atlas de texturas para o PS Vita. Não é necessário usar patchers em outro dispositivo.
+item.pt	O port mantém um backup do arquivo original como data.original.win durante a otimização inicial.
+item.pt	O VPK não inclui os dados proprietários da demo. É necessário fornecer o data.win original, compatível com a versão indicada no projeto.
+sec.pt	Requisitos
+item.pt	PS Vita desbloqueado (HENkaku/Ens?).
+item.pt	Plugins kubridge, FdFix e libshacccg.suprx.
+item.pt	Arquivo data.win da demo original.
+sec.pt	Créditos
+item.pt	Port para PS Vita: Wolff's Room
+item.pt	Demo original: Tour de Pizza
+item.pt	Disponibilização da demo: Pizza Tower Fan (itch.io)
+item.pt	Runtime: Butterscotch, VitaGL e OpenAL
+info.pt	Status|Lançado · Jogável (95% de progresso)
+info.pt	Versão|v0.41
+info.pt	Demo original|Pizza Tower: Noise's Hardoween Demo
+info.pt	Criadores|Tour de Pizza
+info.pt	Engine original|GameMaker
+info.pt	Runtime|Butterscotch + VitaGL + OpenAL
+info.pt	Title ID|PTNHW0001
+info.pt	Dados|ux0:data/noisehardoween/data.win
+link.pt	Baixar VPK|https://github.com/WolffsRoom/PizzaTowerNoisesHardoween/releases/download/v0.41/PizzaTowerHardoween-v0.41.vpk
+link.pt	Baixar dados|https://drive.google.com/file/d/1X9lZ5Y_hcBPbsNbI_hIj6bz8I8johboy/view?usp=sharing
+title.en	Pizza Tower - Noise's Hardoween Demo
+tag.en	Port · GameMaker · PS Vita
+status.en	v0.41 · Playable
+desc.en	Noise's Hardoween Demo reaches PS Vita in v0.41 with graphics fixes and automatic first-boot data.win optimization.
+feature_text.en	The Noise arrives on PlayStation Vita! The Halloween-themed Pizza Tower demo with native rendering, texture optimizations and improved audio.
+about.en	Unofficial PlayStation Vita port of the free Pizza Tower: Noise's Hardoween Demo, released as v0.41. Play as The Noise through the Halloween-themed demo. The project is marked 95% complete.
+sec.en	What's new in v0.41
+item.en	Knight transformation GPU crash fix: SGX543-compatible palette shaders support The Noise's unlockable Halloween costumes and enemy color palettes.
+item.en	Native-resolution textures: active texture pages at 2048x2048 for sharper backgrounds, sprites and HUD.
+item.en	Background rendering fixes: higher shader precision prevents red seam lines and texture artifacts.
+item.en	Layer ordering fixes: The Noise no longer renders behind doors and ladders.
+item.en	Optimized audio: on-demand OpenAL streaming reduces memory usage.
+item.en	Automatic optimization: the port prepares the game's texture atlases on the Vita during the first launch.
+sec.en	Installation
+item.en	Download the v0.41 VPK and install it using VitaShell.
+item.en	Obtain the original data.win from the free demo using Download data, or from the original demo page.
+item.en	Copy data.win into /ux0:/data/noisehardoween/ (VitaShell notation: ux0:data/noisehardoween/data.win).
+item.en	Launch the game from LiveArea.
+sec.en	Important notes
+item.en	The first launch may take longer. The VPK automatically optimizes the game's data.win texture atlases for PS Vita. No external patcher or second device is necessary.
+item.en	A backup of the original data is saved as data.original.win during first-boot optimization.
+item.en	The VPK does not contain the demo's proprietary data. You must provide a compatible original data.win.
+sec.en	Requirements
+item.en	Homebrew-enabled PS Vita (HENkaku/Ens?).
+item.en	kubridge, FdFix and libshacccg.suprx.
+item.en	Original demo data.win.
+sec.en	Credits
+item.en	PS Vita port: Wolff's Room
+item.en	Original demo: Tour de Pizza
+item.en	Demo availability: Pizza Tower Fan (itch.io)
+item.en	Runtime: Butterscotch, VitaGL and OpenAL
+info.en	Status|Released · Playable (95% progress)
+info.en	Version|v0.41
+info.en	Original demo|Pizza Tower: Noise's Hardoween Demo
+info.en	Original creators|Tour de Pizza
+info.en	Original engine|GameMaker
+info.en	Runtime|Butterscotch + VitaGL + OpenAL
+info.en	Title ID|PTNHW0001
+info.en	Game data|ux0:data/noisehardoween/data.win
+link.en	Download VPK|https://github.com/WolffsRoom/PizzaTowerNoisesHardoween/releases/download/v0.41/PizzaTowerHardoween-v0.41.vpk
+link.en	Download data|https://drive.google.com/file/d/1X9lZ5Y_hcBPbsNbI_hIj6bz8I8johboy/view?usp=sharing
+cover	1
+shots	6
+end	
+post	youtube-on-vita
+cat	ferramentas
+subcat	apps
+group	0
+date	2026-11-17
+updated	2026-11-22
+title.pt	YouTube on Vita
+tag.pt	YouTube on TV · Cobalt · PS Vita
+status.pt	v0.65 · Update
+desc.pt	YouTube on Vita v0.65: novos controles, Shorts verticais, Aspect Ratio, sons de UI e melhorias em reprodução e downloads.
+feature_text.pt	A verdadeira experiência do YouTube on TV, trazida ao PlayStation Vita através do Cobalt.  Novidades da v0.65: Shorts verticais, novos controles, modos de proporção de tela e melhorias na interface.  Versões Full e Lite disponíveis.
+about.pt	E aí, pessoal! Wolff aqui.  A atualização v0.65 do YouTube on Vita chegou! Desde a primeira versão pública, a experiência original do YouTube on TV no PlayStation Vita ganhou novos controles, recursos e otimizações.
+sec.pt	Novidades da v0.65
+item.pt	Shorts e Vertical Mode: reprodução de vídeos verticais com navegação por gestos ao girar o Vita. Inverted screen ainda é experimental.
+item.pt	Player: H.264 até 720p, modos Aspect Ratio (Original, Zoom e Stretch), filtros Bilinear/Nearest e melhor compatibilidade com resoluções não convencionais.
+item.pt	Controles: navegação pelo analógico esquerdo, ajuste de volume/brilho pelo direito e Player settings pelo Triângulo.
+item.pt	Interface: nova animação de inicialização a 60 FPS, sons nativos com volume ajustável e melhorias no Add-ons.
+item.pt	Sleep Timer: opção de 5 minutos, contador final de 60 segundos e alertas sonoros.
+item.pt	Downloads: melhorias de MP3/MP4, conversão do áudio durante o download, lista paginada e aviso quando a qualidade selecionada não está disponível.
+item.pt	Estabilidade: otimizações de memória, renderização, reconexão de rede e preservação dos logs da sessão anterior.
+sec.pt	Qual versão baixar?
+para.pt	Instale pelo VitaShell. As edições Full e Lite possuem ícones próprios na LiveArea e podem coexistir.
+para.pt	Requisito: instale o kubridge v0.3.1 ou superior em `KERNEL` e reinicie o console. Versões antigas podem causar falhas após a animação de abertura. Você não precisa apagar as configurações ou os dados de login para atualizar.
+item.pt	YouTube Full - recomendado: RAM estendida para favorecer a reprodução de vídeos.
+item.pt	YouTube Lite - menos RAM: menor consumo de memória, útil para manter outros aplicativos em segundo plano.
+sec.pt	Limitações conhecidas
+para.pt	Full HD, Inverted screen e alguns controles dos Shorts ainda são experimentais. O AdBlock é parcial, downloads MP4 podem apresentar resolução inferior à solicitada e travamentos ocasionais ao trocar vídeos continuam em investigação. O atalho para comentários pelo Quadrado ainda está pendente.
+para.pt	Se encontrar problemas, compartilhe os logs `cobalt_boot_prev.log`, `starboard15_prev.log` e, quando disponível, o dump `.psp2dmp`.
+para.pt	Para instruções técnicas e mais detalhes, consulte o README do YouTube on Vita.
+para.pt	Vita means life!
+info.pt	Version|v0.65 · Update
+info.pt	Platform|PlayStation Vita / Vita3K
+info.pt	Engine|Cobalt / Starboard 15 / VitaGL
+info.pt	Video|H.264 / AAC · até 720p; Full HD experimental
+info.pt	Controls|Botões, analógicos, touch e microfone
+info.pt	Builds|Full (RAM estendida) / Lite (menor uso de RAM)
+info.pt	Title IDs|YTVCB0001 (Full) / YTVCB0002 (Lite)
+info.pt	Requirement|kubridge v0.3.1 ou superior
+link.pt	YouTube|https://github.com/WolffsRoom/YouTubeOnVita/releases/download/v0.65/YouTube.vpk
+link.pt	YouTube Lite|https://github.com/WolffsRoom/YouTubeOnVita/releases/download/v0.65/YouTube-Lite.vpk
+title.en	YouTube on Vita
+tag.en	YouTube on TV · Cobalt · PS Vita
+status.en	v0.65 · Update
+desc.en	YouTube on Vita v0.65: Vertical Shorts, native controller shortcuts, aspect-ratio modes, UI sounds and improved playback/downloads.
+feature_text.en	The real YouTube on TV experience, brought to PlayStation Vita through Cobalt.  New in v0.65: Vertical Shorts, new controls, aspect-ratio modes and interface improvements.  Full and Lite versions available.
+about.en	Hey everyone! Wolff here.  YouTube on Vita v0.65 is now available! The original YouTube on TV experience on PlayStation Vita now includes new controls, features and performance improvements since the first public release.
+sec.en	What's new in v0.65
+item.en	Shorts and Vertical Mode: portrait video playback with gesture navigation while holding the Vita vertically. Inverted screen mode is still experimental.
+item.en	Player: H.264 playback up to 720p, Aspect Ratio modes (Original, Zoom and Stretch), Bilinear/Nearest filtering and improved support for unusual video sizes.
+item.en	Controls: left analog-stick navigation, right-stick volume/brightness shortcuts and Player settings on Triangle.
+item.en	Interface: complete 60 FPS startup animation, adjustable native UI sounds and refined Add-ons.
+item.en	Sleep Timer: 5-minute option, final 60-second countdown and audio alerts.
+item.en	Downloads: improved MP3/MP4 handling, audio conversion during downloading, paginated files and notices when a requested quality is unavailable.
+item.en	Stability: improved memory/GPU handling, network reconnection and preservation of previous-session logs.
+sec.en	Which version should I download?
+para.en	Install using VitaShell. Full and Lite have separate LiveArea bubbles and can coexist.
+para.en	Requirement: install kubridge v0.3.1 or newer under `KERNEL` and reboot. Older versions may crash shortly after the startup animation. You do not need to erase the app's settings or sign-in data when updating.
+item.en	YouTube Full - recommended: extended RAM for better video playback.
+item.en	YouTube Lite - lower RAM usage: better compatibility when keeping other apps in the background.
+sec.en	Known limitations
+para.en	Full HD, Inverted screen and some Shorts controls remain experimental. AdBlock is partial, MP4 downloads may use a lower resolution than requested, and occasional crashes when switching videos are still under investigation. The Square-button comments shortcut is not implemented yet.
+para.en	If you encounter problems, share `cobalt_boot_prev.log`, `starboard15_prev.log` and the `.psp2dmp` dump if available.
+para.en	For setup and technical details, see the YouTube on Vita README.
+para.en	Vita means life!
+info.en	Version|v0.65 · Update
+info.en	Platform|PlayStation Vita / Vita3K
+info.en	Engine|Cobalt / Starboard 15 / VitaGL
+info.en	Video|H.264 / AAC · up to 720p; Full HD experimental
+info.en	Controls|Buttons, analog sticks, touch and microphone
+info.en	Builds|Full (extended RAM) / Lite (lower RAM usage)
+info.en	Title IDs|YTVCB0001 (Full) / YTVCB0002 (Lite)
+info.en	Requirement|kubridge v0.3.1 or newer
+link.en	YouTube|https://github.com/WolffsRoom/YouTubeOnVita/releases/download/v0.65/YouTube.vpk
+link.en	YouTube Lite|https://github.com/WolffsRoom/YouTubeOnVita/releases/download/v0.65/YouTube-Lite.vpk
+cover	1
+shots	10
+end	
+post	youtube-on-vita-ui-sounds-news
+cat	journal
+subcat	news
+group	0
+date	2026-11-21
+title.pt	Novos sons de UI no YouTube on Vita
+tag.pt	News · YouTube on Vita · PS Vita
+status.pt	Atualização em desenvolvimento
+desc.pt	Mais efeitos sonoros para a interface do YouTube on Vita, com inspiração nos sons da Apple TV.
+feature_text.pt	Novos sons de interface estão chegando ao YouTube on Vita. A atualização pode sair ainda hoje!
+about.pt	E aí, pessoal! Wolff aqui.  Estou terminando de ajustar algumas melhorias para o YouTube on Vita, incluindo uma grande ampliação dos efeitos sonoros dentro da interface do aplicativo.  A inspiração continua sendo os sons de interface da Apple TV. A experiência parece muito mais completa e definitiva assim!  Talvez ainda hoje, 21/11/2026, eu publique a atualização.  Fiquem de olho!
+info.pt	Projeto|YouTube on Vita
+info.pt	Plataforma|PlayStation Vita
+info.pt	Melhorias|Sons e efeitos da interface
+info.pt	Situação|Atualização em desenvolvimento
+title.en	New UI Sounds for YouTube on Vita
+tag.en	News · YouTube on Vita · PS Vita
+status.en	Update in development
+desc.en	More UI sound effects are coming to YouTube on Vita, inspired by the Apple TV interface.
+feature_text.en	More interface sounds are coming to YouTube on Vita. The update might arrive later today!
+about.en	Hey everyone! Wolff here.  I'm finishing up a few improvements for YouTube on Vita, including a major expansion of the sound effects throughout the app's interface.  The inspiration is still the Apple TV interface sounds. It makes the experience feel much more complete and polished!  I might even publish the update later today, November 21, 2026.  Stay tuned!
+info.en	Project|YouTube on Vita
+info.en	Platform|PlayStation Vita
+info.en	Improvements|UI sounds and sound effects
+info.en	Status|Update in development
+cover	1
+shots	1
+end	
+post	youtube-on-vita-updates-news
+cat	journal
+subcat	news
+group	0
+date	2026-11-21
+title.pt	YouTube on Vita em atualizações
+tag.pt	News · YouTube on Vita · PS Vita
+status.pt	Atualização em desenvolvimento
+desc.pt	Correções de crashes, otimizações de downloads, melhorias na reprodução de vídeo e investigação dos artefatos da interface.
+feature_text.pt	Estou preparando melhorias e correções para o YouTube on Vita. Uma nova atualização deve chegar em breve.
+about.pt	E aí, pessoal! Wolff aqui.  O YouTube on Vita continua recebendo correções e otimizações.  Estou trabalhando em melhorias na função de downloads e na reprodução de vídeo, além de investigar problemas relatados por alguns usuários, como crashes ao iniciar o aplicativo e artefatos visuais (conforme ilustro na imagem) na interface após longos períodos de uso.  Acredito que em breve conseguirei publicar uma nova versão! Se você quiser participar da equipe de testes, me chame pelo Discord.  Um forte abraço e até logo, pessoal!
+info.pt	Projeto|YouTube on Vita
+info.pt	Plataforma|PlayStation Vita
+info.pt	Situação|Atualização em desenvolvimento
+title.en	YouTube on Vita - Updates in Progress
+tag.en	News · YouTube on Vita · PS Vita
+status.en	Update in development
+desc.en	Crash fixes, download optimizations, video playback improvements, and investigation of interface artifacts.
+feature_text.en	I'm working on fixes and improvements for YouTube on Vita. A new update should be available soon.
+about.en	Hey everyone! Wolff here.  YouTube on Vita is still receiving fixes and optimizations.  I'm working on improvements to downloads and video playback, while investigating issues reported by some users, including crashes on startup and visual interface artifacts (as shown in the screenshot) after extended use.  I believe I'll be able to publish a new version soon! If you'd like to join the testing team, please reach out to me on Discord.  Take care, everyone, and see you soon!
+info.en	Project|YouTube on Vita
+info.en	Platform|PlayStation Vita
+info.en	Status|Update in development
+cover	1
+shots	1
+end	
 post	next-vita-project-poll
 cat	journal
 subcat	enquetes
+poll_closed	1
+poll_votes_0	16
+poll_votes_1	1
+poll_votes_2	1
+poll_votes_3	1
 poll_id	next-vita-project-poll
 poll_question	Em qual projeto você gostaria de votar?
 poll_question.en	Vote for the project you want to see next!
@@ -16,113 +291,119 @@ poll_option.en	Internet Archive Vita
 poll_option.en	GameFAQs Vita
 group	0
 date	2026-11-20
-updated	2026-11-21
-feat	1
+updated	2026-11-23
 title.pt	NOVA ENQUETE! - O que devemos trazer ao PS Vita?
 tag.pt	Poll · Wolff's Room · PS Vita
-status.pt	Enquete aberta
+status.pt	Enquete encerrada · New Browser for Vita venceu
 desc.pt	A comunidade decide qual projeto a Wolff's Room deve explorar a seguir no PS Vita.
 feature_text.pt	Quatro ideias. Uma escolha. Você decide.
-about.pt	NEW POLL! What should we bring to PS Vita next? São quatro ideias para futuros aplicativos e experiências no PS Vita. Qual você gostaria de ver primeiro? A votação acontece pelo aplicativo Wolff's Store no PlayStation Vita. As opções são propostas de projetos, não lançamentos confirmados.
+about.pt	NEW POLL! What should we bring to PS Vita next?  São quatro ideias para futuros aplicativos e experiências no PS Vita. Qual você gostaria de ver primeiro?  A votação acontece pelo aplicativo Wolff's Store no PlayStation Vita. As opções são propostas de projetos, não lançamentos confirmados.  Resultado oficial: New Browser for Vita venceu! - 16 de 19 votos.
 title.en	NEW POLL! - What should we bring to PS Vita next?
 tag.en	Poll · Wolff's Room · PS Vita
-status.en	Poll open
+status.en	Poll closed · New Browser for Vita won
 desc.en	The community gets to choose which PS Vita project Wolff's Room should explore next.
 feature_text.en	Four ideas. One choice. You decide.
-about.en	NEW POLL! What should we bring to PS Vita next? Four ideas for possible future PS Vita apps and experiences. Which one would you like to see first? Voting takes place through the Wolff's Store app on PlayStation Vita. These are project ideas, not confirmed releases.
+about.en	NEW POLL! What should we bring to PS Vita next?  Four ideas for possible future PS Vita apps and experiences. Which one would you like to see first?  Voting takes place through the Wolff's Store app on PlayStation Vita. These are project ideas, not confirmed releases.  Official results: New Browser for Vita won! - 16 of 19 votes.
 cover	1
 shots	0
 end	
-post	youtube-on-vita
-github_downloads_total	731
-cat	ferramentas
-subcat	apps
+post	pokemon-emerald-voxel-ptbr-058
+cat	journal
+subcat	news
 group	0
-date	2026-11-17
-updated	2026-11-20
-title.pt	YouTube on Vita
-tag.pt	YouTube on TV · Cobalt · PS Vita
-status.pt	v0.58 · First Release
-desc.pt	YouTube on Vita - cliente não oficial do YouTube para PS Vita. A experiência real do YouTube on TV através do Cobalt. Disponível nas versões Full e Lite.
-feature_text.pt	YouTube on Vita - Cliente não oficial do YouTube para PS Vita  A experiência real do YouTube on TV, trazida ao PlayStation Vita através do Cobalt.  Disponível em duas versões: Full e Lite.
-about.pt	E aí, pessoal! Wolff aqui. O YouTube on Vita v0.58 chegou à sua primeira versão pública! O projeto traz a interface original do YouTube on TV para o PlayStation Vita, utilizando Cobalt e integração com os recursos nativos do console.
-sec.pt	O que oferece
-item.pt	YouTube de verdade: navegação, pesquisa, login e player da interface de TV.
-item.pt	Controles nativos: botões físicos, touchscreen e suporte ao microfone para recursos de voz compatíveis.
-item.pt	Reprodução de vídeo: H.264/AAC, até 720p e suporte a vídeos de até 60 FPS quando disponíveis e compatíveis.
-item.pt	Add-ons: capturas de tela, temporizador, tela preta ou escurecida, ajustes de desempenho e sons de navegação.
-item.pt	Downloads: vídeos em MP4 e músicas em MP3, com capas quadradas nos novos arquivos de áudio.
-item.pt	Sessão protegida: comunicação HTTPS e armazenamento local criptografado dos dados de sessão.
-sec.pt	Cobalt e desempenho
-para.pt	Sobre o FPS da interface: o Cobalt evita redesenhar telas paradas desnecessariamente. Por isso, contadores de FPS podem indicar valores baixos nos menus, mesmo sem lentidão perceptível. Esse comportamento também ajuda a economizar energia.
-para.pt	A reprodução também foi testada com o Vita configurado a 222 MHz de CPU / 111 MHz de GPU, com resultado satisfatório no conteúdo testado.
-sec.pt	Qual versão baixar?
-para.pt	As duas versões possuem ícones próprios na LiveArea e podem ser instaladas pelo VitaShell. Nenhum PC ou servidor auxiliar é necessário para usar o YouTube.
-item.pt	YouTube Full - recomendado: o YouTube.vpk utiliza RAM estendida para favorecer a reprodução de vídeos.
-item.pt	YouTube Lite - menos RAM: o YouTube-Lite.vpk utiliza o perfil de memória normal, mais adequado para manter outros aplicativos abertos em segundo plano.
-sec.pt	Limitações conhecidas
-para.pt	O AdBlock é parcial e não bloqueia todos os anúncios do YouTube. Alguns vídeos podem ter restrições de formato ou conteúdo. Travamentos ocasionais ao trocar vídeos em HD, especialmente durante downloads, continuam em investigação.
-para.pt	Para instruções de compilação, detalhes sobre o login e mais imagens, acesse o README do projeto.
-para.pt	Vita means life!
-info.pt	Version|v0.58 · First Release
-info.pt	Platform|PlayStation Vita / Vita3K
-info.pt	Engine|Cobalt / Starboard 15 / VitaGL
-info.pt	Video|H.264 / AAC · até 720p
-info.pt	Controls|Botões, toque e microfone nativo
-info.pt	Builds|Full (RAM estendida) / Lite (menor uso de RAM)
-info.pt	Title IDs|YTVCB0001 (Full) / YTVCB0002 (Lite)
-link.pt	YouTube Full - Download recomendado|https://github.com/WolffsRoom/YouTubeOnVita/releases/download/v0.58/YouTube.vpk
-link.pt	YouTube Lite - Menos RAM|https://github.com/WolffsRoom/YouTubeOnVita/releases/download/v0.58/YouTube-Lite.vpk
-link.pt	Release v0.58 no GitHub|https://github.com/WolffsRoom/YouTubeOnVita/releases/tag/v0.58
-title.en	YouTube on Vita
-tag.en	YouTube on TV · Cobalt · PS Vita
-status.en	v0.58 · First Release
-desc.en	YouTube on Vita - unofficial YouTube client for PS Vita. The real YouTube on TV experience, brought to PlayStation Vita through Cobalt. Available in Full and Lite editions.
-feature_text.en	YouTube on Vita - Unofficial YouTube client for PS Vita  The real YouTube on TV experience, brought to PlayStation Vita through Cobalt.  Available in two editions: Full and Lite.
-about.en	Hey everyone! Wolff here. YouTube on Vita v0.58 is here as its first public release! This port brings the genuine YouTube on TV experience to PlayStation Vita using Cobalt and the console's native features.
-sec.en	Features
-item.en	Real YouTube interface: browsing, search, account sign-in and TV player controls.
-item.en	Native input: physical buttons, touchscreen and microphone integration for supported voice features.
-item.en	Video playback: H.264/AAC up to 720p, with support for up to 60 FPS when the video and device allow it.
-item.en	Add-ons: screenshots, sleep timer, black/dimmed screen, performance settings and navigation sounds.
-item.en	Downloads: MP4 video and MP3 audio, with square artwork on newly downloaded songs.
-item.en	Session protection: HTTPS connections and encrypted local session storage.
-sec.en	Cobalt and performance
-para.en	About interface FPS: Cobalt does not need to redraw an unchanged screen. An FPS counter may show low values in static menus even when navigation is responsive, helping save processing work and battery life.
-para.en	Playback has also been tested at 222 MHz CPU / 111 MHz GPU, with satisfactory results for the tested content.
-sec.en	Which version should I download?
-para.en	Install either VPK using VitaShell. The two editions have separate LiveArea bubbles. No PC or companion server is needed.
-item.en	YouTube Full - recommended: YouTube.vpk uses extended RAM for video playback.
-item.en	YouTube Lite - lower memory usage: YouTube-Lite.vpk uses normal RAM for better compatibility with suspended background apps.
-sec.en	Known limitations
-para.en	AdBlock is partial and cannot remove every YouTube ad. Some videos are restricted by their encoding or content. Occasional crashes while switching HD videos, especially during downloads, are still being investigated.
-para.en	For build instructions, Google sign-in details and more screenshots, see the project README.
-para.en	Vita means life!
-info.en	Version|v0.58 · First Release
-info.en	Platform|PlayStation Vita / Vita3K
-info.en	Engine|Cobalt / Starboard 15 / VitaGL
-info.en	Video|H.264 / AAC · up to 720p
-info.en	Controls|Buttons, touchscreen and built-in microphone
-info.en	Builds|Full (extended RAM) / Lite (lower RAM usage)
-info.en	Title IDs|YTVCB0001 (Full) / YTVCB0002 (Lite)
-link.en	YouTube Full - Recommended download|https://github.com/WolffsRoom/YouTubeOnVita/releases/download/v0.58/YouTube.vpk
-link.en	YouTube Lite - Lower RAM usage|https://github.com/WolffsRoom/YouTubeOnVita/releases/download/v0.58/YouTube-Lite.vpk
-link.en	GitHub Release v0.58|https://github.com/WolffsRoom/YouTubeOnVita/releases/tag/v0.58
+date	2026-11-20
+title.pt	Em andamento a atualização do Pokémon Emerald 3D Voxel em PTBR (Versão v0.5.8)
+tag.pt	News · Pokémon Emerald · PS Vita · PT-BR
+status.pt	Em andamento · v0.5.8 ainda não disponível
+desc.pt	A edição em português brasileiro de Pokémon Emerald 3D Voxel para PS Vita está sendo atualizada para a v0.5.8.
+feature_text.pt	A atualização PT-BR da v0.5.8 está em desenvolvimento. Confira uma captura do jogo.
+about.pt	E aí pessoal! Wolff aqui  Estou trabalhando agora na atualização do Pokémon Emerald 3D Voxel (PTBR), com base na última versão v0.5.8.  Segue uma espiadinha no visual da nova versão.  Em breve será disponibilizada na Wolff's Room e aqui na Wolff's Store.  Vita means life!
+sec.pt	Estado atual
+para.pt	Esta publicação é um aviso de desenvolvimento, não um anúncio de lançamento. A edição PT-BR da v0.5.8 ainda está sendo preparada e não há um novo VPK disponibilizado nesta notícia.
+info.pt	Projeto|Pokémon Emerald 3D Voxel
+info.pt	Plataforma|PlayStation Vita
+info.pt	Idioma|Português brasileiro
+info.pt	Versão em preparação|v0.5.8
+info.pt	Situação|Em andamento
+title.en	Pokémon Emerald 3D Voxel PT-BR v0.5.8 update in progress
+tag.en	News · Pokémon Emerald · PS Vita · PT-BR
+status.en	In progress · v0.5.8 not yet available
+desc.en	The Brazilian Portuguese edition of Pokémon Emerald 3D Voxel for PS Vita is being updated to v0.5.8.
+feature_text.en	PT-BR v0.5.8 is in development. Here's an in-game screenshot.
+about.en	Hey everyone! Wolff here.  I'm now working on the Pokémon Emerald 3D Voxel (PT-BR) update, based on the latest v0.5.8 release.  Here's a sneak peek at how the new version looks.  Coming soon to Wolff's Room and here on Wolff's Store.  Vita means life!
+sec.en	Current status
+para.en	This post is a development progress notice, not a release announcement. The PT-BR v0.5.8 update is still being prepared and there is no new VPK available in this news post.
+info.en	Project|Pokémon Emerald 3D Voxel
+info.en	Platform|PlayStation Vita
+info.en	Language|Brazilian Portuguese
+info.en	Target version|v0.5.8
+info.en	Status|In progress
 cover	1
-shots	12
+shots	1
+end	
+post	dd-touchonvita
+cat	ferramentas
+subcat	plugins
+group	0
+date	2026-11-18
+updated	2026-11-18
+title.pt	Darkest Dungeon - TouchOnVita
+tag.pt	Plugin taiHEN · Touch · PS Vita
+status.pt	v0.59 Experimental · Testado no Vita real
+desc.pt	Toque real na interface de Darkest Dungeon no PS Vita, sem substituir os controles físicos.
+feature_text.pt	Um toque para selecionar e ativar elementos da interface, com painel próprio e controles preservados.
+about.pt	TouchOnVita é um plugin não oficial para Darkest Dungeon no PS Vita, com interação por toque frontal e painel de configurações personalizado.
+sec.pt	O que funciona
+item.pt	Tocar para selecionar e ativar elementos reconhecidos da interface.
+item.pt	Foco persistente após soltar o dedo, com retorno ao controle físico.
+item.pt	Painel TouchOnVita com indicador ON/OFF, abertura pelo Start + L e animações.
+sec.pt	Versão e limitações
+para.pt	A v0.59 está instalada e foi testada no Vita real com Darkest Dungeon PCSE00919, atualização 1.17. A ativação por toque recebeu retorno positivo na v0.58; as otimizações de FPS e áudio da v0.59 ainda precisam de validação completa.
+para.pt	Arrastar o mapa, drag-and-drop e alguns fluxos avançados ainda não possuem suporte completo. O plugin não altera os arquivos do jogo nem os saves.
+sec.pt	Instalação
+para.pt	Na Wolff's Store v1.0.4 ou superior, escolha entre Apenas baixar (salva em ux0:Downloads/Plugins/) e Baixar e instalar (instala em ur0:tai e ux0:data, com backup automático e confirmação). Reinicie o PS Vita após a primeira instalação. Em versões anteriores da loja, use apenas o download e instale manualmente seguindo o GitHub.
+para.pt	O download não contém dados comerciais ou áudio protegido do jogo.
+info.pt	Versão|v0.59 (experimental)
+info.pt	Jogo|Darkest Dungeon PS Vita
+info.pt	Game ID|PCSE00919
+info.pt	Testado em|Update 1.17 no Vita real
+info.pt	Tipo|Plugin taiHEN (.suprx)
+info.pt	Instalação|Manual com backup da configuração taiHEN
+title.en	Darkest Dungeon - TouchOnVita
+tag.en	PS Vita · Touchscreen · taiHEN plugin
+status.en	v0.59 Experimental · Tested on real hardware
+desc.en	Native touch interactions for Darkest Dungeon on PS Vita, while preserving physical controls.
+feature_text.en	Tap a recognized UI element to select and activate it, with a themed in-game panel.
+about.en	TouchOnVita is an unofficial touchscreen plugin for Darkest Dungeon on PS Vita, adding direct front-touch interaction and a themed settings panel.
+sec.en	Working features
+item.en	Single-tap selection and activation of recognized interface widgets.
+item.en	Persistent touch focus, with handoff back to the physical controller.
+item.en	TouchOnVita panel with ON/OFF indicator, Start + L shortcut and transitions.
+sec.en	Version and limitations
+para.en	v0.59 is installed and has been smoke-tested on real hardware with PCSE00919 update 1.17. Single-tap interaction received positive feedback in v0.58; v0.59 audio and FPS optimizations still require full on-device verification.
+para.en	Map dragging, drag-and-drop and some advanced flows are not yet fully supported. Game archives and saves are not modified.
+sec.en	Installation
+para.en	In Wolff's Store v1.0.4 or newer, choose Download only (saves the ZIP under ux0:Downloads/Plugins/) or Download and install (backs up taiHEN and installs the plugin and assets). Reboot the PS Vita after first-time installation. Older Store versions support download only; follow the GitHub manual instructions.
+para.en	No commercial game data or copyrighted audio is included.
+info.en	Version|v0.59 (experimental)
+info.en	Game|Darkest Dungeon PS Vita
+info.en	Game ID|PCSE00919
+info.en	Tested|Update 1.17 on real PS Vita
+info.en	Format|taiHEN plugin (.suprx)
+cover	1
+shots	4
 end	
 post	pokemon-emerald
 cat	ports
 subcat	
 group	3
 date	2026-11-16
-updated	2026-11-20
 title.pt	Pokémon Emerald Voxel 3DS - PT-BR v0.5.8
 tag.pt	Port nativo · PS Vita · PT-BR · v0.5.8
 status.pt	Disponível · v0.5.8
 desc.pt	Pokémon Emerald PT-BR v0.5.8 para PS Vita, com novas telas, melhorias no jogo, câmera ajustada e LiveArea personalizada.
 feature_text.pt	Nova v0.5.8 PT-BR, menus aprimorados, mundo voxel 3D e câmera livre com movimento alinhado à tela.
-about.pt	Pokémon Emerald recebeu um port nativo não oficial para PS Vita, desenvolvido por HctrRB a partir da descompilação pret/pokeemerald. Não é um emulador: o código C do jogo é compilado para o processador ARM do Vita, com uma camada de plataforma que substitui as funções do hardware do GBA. Com vitaGL e recursos do Emerald 3DS, o port transforma a experiência clássica com cenários e batalhas 3D, mantendo a aventura original.
+about.pt	Pokémon Emerald recebeu um port nativo não oficial para PS Vita, desenvolvido por HctrRB a partir da descompilação pret/pokeemerald. Não é um emulador: o código C do jogo é compilado para o processador ARM do Vita, com uma camada de plataforma que substitui as funções do hardware do GBA.  Com vitaGL e recursos do Emerald 3DS, o port transforma a experiência clássica com cenários e batalhas 3D, mantendo a aventura original.
 sec.pt	Novidades da v0.5.8 - Interface e estabilidade
 item.pt	Novos menus nativos: avanços no Estojo de Pokéblocos, Pokédex após capturas, Seleção de Pokémon, Bolsa e Resumo dos Pokémon armazenados no PC.
 item.pt	Battle Frontier e Battle Pyramid: mais telas, opções e fluxos adaptados à interface do Vita, incluindo a Bolsa da Pirâmide e as escolhas de equipe.
@@ -170,7 +451,7 @@ tag.en	Native port · PS Vita · PT-BR · v0.5.8
 status.en	Available · v0.5.8
 desc.en	Pokémon Emerald v0.5.8 PT-BR on PS Vita with expanded menus, improved stability and screen-aligned free-look controls.
 feature_text.en	New v0.5.8 PT-BR edition with upgraded native menus, voxel 3D and intuitive free-look controls.
-about.en	Pokémon Emerald has an unofficial native PS Vita port developed by HctrRB, based on the pret/pokeemerald decompilation. It is not an emulator: the game's C code is compiled for Vita ARM, while a platform layer replaces GBA hardware functions. Using vitaGL and features from Emerald 3DS, the port offers a modern 3D presentation of the original adventure.
+about.en	Pokémon Emerald has an unofficial native PS Vita port developed by HctrRB, based on the pret/pokeemerald decompilation. It is not an emulator: the game's C code is compiled for Vita ARM, while a platform layer replaces GBA hardware functions.  Using vitaGL and features from Emerald 3DS, the port offers a modern 3D presentation of the original adventure.
 sec.en	What's new in v0.5.8 - Native menus and fixes
 item.en	Expanded native interface: upgraded Pokéblock Case, post-catch Pokédex page, party choices, Bag, and boxed Pokémon summary.
 item.en	Battle Frontier and Battle Pyramid: more native menus for party selection, the Pyramid Bag and challenge workflows.
@@ -216,47 +497,11 @@ link.en	Download VPK (Google Drive)|https://drive.google.com/file/d/1Tt_DDvS6_LO
 cover	1
 shots	14
 end	
-post	pokemon-emerald-voxel-ptbr-058
-cat	journal
-subcat	news
-group	0
-date	2026-11-20
-title.pt	Em andamento a atualização do Pokémon Emerald 3D Voxel em PTBR (Versão v0.5.8)
-tag.pt	News · Pokémon Emerald · PS Vita · PT-BR
-status.pt	Em andamento · v0.5.8 ainda não disponível
-desc.pt	A edição em português brasileiro de Pokémon Emerald 3D Voxel para PS Vita está sendo atualizada para a v0.5.8.
-feature_text.pt	A atualização PT-BR da v0.5.8 está em desenvolvimento. Confira uma captura do jogo.
-about.pt	E aí pessoal! Wolff aqui Estou trabalhando agora na atualização do Pokémon Emerald 3D Voxel (PTBR), com base na última versão v0.5.8. Segue uma espiadinha no visual da nova versão. Em breve será disponibilizada na Wolff's Room e aqui na Wolff's Store. Vita means life!
-sec.pt	Estado atual
-para.pt	Esta publicação é um aviso de desenvolvimento, não um anúncio de lançamento. A edição PT-BR da v0.5.8 ainda está sendo preparada e não há um novo VPK disponibilizado nesta notícia.
-info.pt	Projeto|Pokémon Emerald 3D Voxel
-info.pt	Plataforma|PlayStation Vita
-info.pt	Idioma|Português brasileiro
-info.pt	Versão em preparação|v0.5.8
-info.pt	Situação|Em andamento
-title.en	Pokémon Emerald 3D Voxel PT-BR v0.5.8 update in progress
-tag.en	News · Pokémon Emerald · PS Vita · PT-BR
-status.en	In progress · v0.5.8 not yet available
-desc.en	The Brazilian Portuguese edition of Pokémon Emerald 3D Voxel for PS Vita is being updated to v0.5.8.
-feature_text.en	PT-BR v0.5.8 is in development. Here's an in-game screenshot.
-about.en	Hey everyone! Wolff here. I'm now working on the Pokémon Emerald 3D Voxel (PT-BR) update, based on the latest v0.5.8 release. Here's a sneak peek at how the new version looks. Coming soon to Wolff's Room and here on Wolff's Store. Vita means life!
-sec.en	Current status
-para.en	This post is a development progress notice, not a release announcement. The PT-BR v0.5.8 update is still being prepared and there is no new VPK available in this news post.
-info.en	Project|Pokémon Emerald 3D Voxel
-info.en	Platform|PlayStation Vita
-info.en	Language|Brazilian Portuguese
-info.en	Target version|v0.5.8
-info.en	Status|In progress
-cover	1
-shots	1
-end	
 post	pizza
-github_downloads_total	38
 cat	ports
 subcat	
 group	1
 date	2026-11-14
-updated	2026-11-18
 pixel	1
 video_arquivo	https://wolffsroom.github.io/WolffsRoomSite/posts/pizza/trailer-vita-v2.mp4
 progress	95
@@ -356,61 +601,7 @@ link.en	Download data|https://drive.google.com/file/d/1CBof60EExpF4IrZMhyix6CvRi
 cover	1
 shots	6
 end	
-post	dd-touchonvita
-github_downloads_total	19
-cat	ferramentas
-subcat	plugins
-group	0
-date	2026-11-18
-updated	2026-11-18
-title.pt	Darkest Dungeon - TouchOnVita
-tag.pt	Plugin taiHEN · Touch · PS Vita
-status.pt	v0.59 Experimental · Testado no Vita real
-desc.pt	Toque real na interface de Darkest Dungeon no PS Vita, sem substituir os controles físicos.
-feature_text.pt	Um toque para selecionar e ativar elementos da interface, com painel próprio e controles preservados.
-about.pt	TouchOnVita é um plugin não oficial para Darkest Dungeon no PS Vita, com interação por toque frontal e painel de configurações personalizado.
-sec.pt	O que funciona
-item.pt	Tocar para selecionar e ativar elementos reconhecidos da interface.
-item.pt	Foco persistente após soltar o dedo, com retorno ao controle físico.
-item.pt	Painel TouchOnVita com indicador ON/OFF, abertura pelo Start + L e animações.
-sec.pt	Versão e limitações
-para.pt	A v0.59 está instalada e foi testada no Vita real com Darkest Dungeon PCSE00919, atualização 1.17. A ativação por toque recebeu retorno positivo na v0.58; as otimizações de FPS e áudio da v0.59 ainda precisam de validação completa.
-para.pt	Arrastar o mapa, drag-and-drop e alguns fluxos avançados ainda não possuem suporte completo. O plugin não altera os arquivos do jogo nem os saves.
-sec.pt	Instalação
-para.pt	Na Wolff's Store v1.0.4 ou superior, escolha entre Apenas baixar (salva em ux0:Downloads/Plugins/) e Baixar e instalar (instala em ur0:tai e ux0:data, com backup automático e confirmação). Reinicie o PS Vita após a primeira instalação. Em versões anteriores da loja, use apenas o download e instale manualmente seguindo o GitHub.
-para.pt	O download não contém dados comerciais ou áudio protegido do jogo.
-info.pt	Versão|v0.59 (experimental)
-info.pt	Jogo|Darkest Dungeon PS Vita
-info.pt	Game ID|PCSE00919
-info.pt	Testado em|Update 1.17 no Vita real
-info.pt	Tipo|Plugin taiHEN (.suprx)
-info.pt	Instalação|Manual com backup da configuração taiHEN
-title.en	Darkest Dungeon - TouchOnVita
-tag.en	PS Vita · Touchscreen · taiHEN plugin
-status.en	v0.59 Experimental · Tested on real hardware
-desc.en	Native touch interactions for Darkest Dungeon on PS Vita, while preserving physical controls.
-feature_text.en	Tap a recognized UI element to select and activate it, with a themed in-game panel.
-about.en	TouchOnVita is an unofficial touchscreen plugin for Darkest Dungeon on PS Vita, adding direct front-touch interaction and a themed settings panel.
-sec.en	Working features
-item.en	Single-tap selection and activation of recognized interface widgets.
-item.en	Persistent touch focus, with handoff back to the physical controller.
-item.en	TouchOnVita panel with ON/OFF indicator, Start + L shortcut and transitions.
-sec.en	Version and limitations
-para.en	v0.59 is installed and has been smoke-tested on real hardware with PCSE00919 update 1.17. Single-tap interaction received positive feedback in v0.58; v0.59 audio and FPS optimizations still require full on-device verification.
-para.en	Map dragging, drag-and-drop and some advanced flows are not yet fully supported. Game archives and saves are not modified.
-sec.en	Installation
-para.en	In Wolff's Store v1.0.4 or newer, choose Download only (saves the ZIP under ux0:Downloads/Plugins/) or Download and install (backs up taiHEN and installs the plugin and assets). Reboot the PS Vita after first-time installation. Older Store versions support download only; follow the GitHub manual instructions.
-para.en	No commercial game data or copyrighted audio is included.
-info.en	Version|v0.59 (experimental)
-info.en	Game|Darkest Dungeon PS Vita
-info.en	Game ID|PCSE00919
-info.en	Tested|Update 1.17 on real PS Vita
-info.en	Format|taiHEN plugin (.suprx)
-cover	1
-shots	4
-end	
 post	vampire-survivors-vita
-github_downloads_total	1776
 cat	ports
 subcat	
 group	3
@@ -486,7 +677,6 @@ cat	ferramentas
 subcat	apps
 group	3
 date	2026-11-14
-updated	2026-11-19
 title.pt	ShinoKaiVita
 tag.pt	Entretenimento · Anime
 status.pt	Disponível · Brasil
@@ -541,7 +731,6 @@ cat	ferramentas
 subcat	apps
 group	0
 date	2026-11-14
-updated	2026-11-19
 progress	70
 title.pt	File Manager
 tag.pt	Ferramenta · Arquivos
@@ -586,12 +775,10 @@ cover	1
 shots	2
 end	
 post	fm
-github_downloads_total	6452
 cat	ferramentas
 subcat	apps
 group	1
 date	2026-11-14
-updated	2026-11-19
 title.pt	FMVita
 tag.pt	Ferramenta · Arquivos
 status.pt	v0.6.2
@@ -640,12 +827,10 @@ cover	1
 shots	3
 end	
 post	void
-github_downloads_total	163
 cat	ports
 subcat	
 group	0
 date	2026-11-11
-updated	2026-11-14
 pixel	1
 progress	95
 title.pt	Void Stranger - PS Vita Edition
@@ -716,12 +901,10 @@ cover	1
 shots	0
 end	
 post	delta
-github_downloads_total	10238
 cat	ports
 subcat	
 group	0
 date	2026-11-10
-updated	2026-11-14
 pixel	1
 trofeus	1
 video_arquivo	https://wolffsroom.github.io/WolffsRoomSite/posts/delta/trailer-vita-v2.mp4
@@ -817,12 +1000,59 @@ link.en	Download VPK (v0.81)|https://github.com/WolffsRoom/DeltaruneVita/release
 cover	1
 shots	8
 end	
+post	call-of-duty-black-ops-zombies-ptbr
+cat	traducoes
+subcat	
+group	1
+date	2026-06-25
+title.pt	Call of Duty: Black Ops Zombies [PSVITA] - Tradução PT-BR
+tag.pt	Tradução · Call of Duty · PS Vita · PT-BR
+status.pt	Tradução completa · PT-BR
+desc.pt	Tradução brasileira de Call of Duty: Black Ops Zombies para PlayStation Vita, baseada no port de devnoname120, com localização da GameLab Traduções e trabalho de MeninoSung.
+feature_text.pt	Sobreviva às hordas de zumbis em Call of Duty: Black Ops Zombies no PS Vita, agora com tradução para português brasileiro.
+about.pt	Call of Duty: Black Ops Zombies é uma adaptação para dispositivos móveis do modo Zombies da série Call of Duty. O jogo inclui o mapa Kino der Toten, de Call of Duty: Black Ops, e 50 níveis de Dead-Ops Arcade.  A experiência está disponível no PlayStation Vita, com tradução completa para o português brasileiro pela GameLab Traduções.
+sec.pt	Sobre a tradução
+para.pt	A versão para PS Vita foi portada por devnoname120, com localização em português brasileiro pela GameLab Traduções e participação de MeninoSung.
+sec.pt	Créditos
+item.pt	Port para PS Vita: devnoname120
+item.pt	Tradução PT-BR: GameLab Traduções
+item.pt	Trabalho de tradução e adaptação: MeninoSung
+sec.pt	Mais informações
+para.pt	O registro original foi publicado em 25 de junho de 2026. A publicação original é mantida como referência histórica, mas o endereço anterior pode estar indisponível. Os links de download enviados para The Wolf Among Us não pertencem a este jogo e não foram incluídos.
+info.pt	Jogo|Call of Duty: Black Ops Zombies
+info.pt	Plataforma|PlayStation Vita
+info.pt	Idioma|Português brasileiro
+info.pt	Port para PS Vita|devnoname120
+info.pt	Tradução PT-BR|GameLab Traduções
+info.pt	Trabalho de tradução e adaptação|MeninoSung
+title.en	Call of Duty: Black Ops Zombies [PSVITA] - Brazilian Portuguese Translation
+tag.en	Translation · Call of Duty · PS Vita · PT-BR
+status.en	Complete Brazilian Portuguese translation
+desc.en	Brazilian Portuguese translation for Call of Duty: Black Ops Zombies on PS Vita, based on the port by devnoname120, localized by GameLab Traduções with work by MeninoSung.
+feature_text.en	Survive the zombie hordes in Call of Duty: Black Ops Zombies on PS Vita, now with a Brazilian Portuguese translation.
+about.en	Call of Duty: Black Ops Zombies is a mobile adaptation of the Call of Duty Zombies mode. It includes the original Kino der Toten map from Call of Duty: Black Ops and 50 levels of Dead-Ops Arcade.  It is available on PlayStation Vita with a complete Brazilian Portuguese translation by GameLab Traduções.
+sec.en	About the translation
+para.en	The PS Vita port was developed by devnoname120, with Brazilian Portuguese localization by GameLab Traduções and work by MeninoSung.
+sec.en	Credits
+item.en	PS Vita port: devnoname120
+item.en	Brazilian Portuguese translation: GameLab Traduções
+item.en	Translation and adaptation: MeninoSung
+sec.en	More information
+para.en	The original article was dated June 25, 2026. The original article is retained as a historical reference, although the legacy URL may be unavailable. The supplied The Wolf Among Us download links do not belong to this game and have not been included.
+info.en	Game|Call of Duty: Black Ops Zombies
+info.en	Platform|PlayStation Vita
+info.en	Language|Brazilian Portuguese
+info.en	PS Vita port|devnoname120
+info.en	PT-BR translation|GameLab Traduções
+info.en	Translation and adaptation|MeninoSung
+cover	1
+shots	0
+end	
 post	ystool
 cat	ferramentas
 subcat	ferramentas
 group	0
 date	2026-06-10
-updated	2026-11-19
 title.pt	Ys Origins Translation Tool
 tag.pt	Ferramenta · Python
 status.pt	Beta
@@ -855,7 +1085,6 @@ cover	1
 shots	2
 end	
 post	godot
-github_downloads_total	298
 cat	ferramentas
 subcat	ferramentas
 group	0
@@ -947,12 +1176,10 @@ cover	1
 shots	1
 end	
 post	idol
-github_downloads_total	254
 cat	ports
 subcat	
 group	0
 date	2026-06-01
-updated	2026-11-14
 title.pt	The Case of the Golden Idol
 tag.pt	Port · Godot · PS Vita
 status.pt	Em andamento
@@ -1009,12 +1236,10 @@ cover	1
 shots	0
 end	
 post	uty
-github_downloads_total	435
 cat	ports
 subcat	
 group	1
 date	2026-05-20
-updated	2026-11-14
 pixel	1
 title.pt	Undertale Yellow
 tag.pt	Port · GameMaker · PS Vita
@@ -1078,7 +1303,6 @@ cat	ferramentas
 subcat	modificacoes
 group	1
 date	2026-05-15
-updated	2026-11-19
 title.pt	Horizon Chase Turbo: Patch de Otimização
 tag.pt	Mod · PS Vita
 status.pt	Publicado · 05/2026
@@ -1154,12 +1378,10 @@ shots	0
 video	https://youtu.be/uLmCN01wOwo
 end	
 post	sonic
-github_downloads_total	84942
 cat	traducoes
 subcat	
 group	0
 date	2026-02-25
-updated	2026-11-13
 progress	58
 title.pt	Sonic Mania Plus
 tag.pt	Tradução PT-BR · PS Vita
@@ -1223,7 +1445,6 @@ cat	traducoes
 subcat	
 group	2
 date	2026-02-25
-updated	2026-11-13
 progress	58
 title.pt	Don't Starve: Reign of Giants
 tag.pt	Tradução PT-BR · PS Vita
@@ -1277,7 +1498,6 @@ cat	traducoes
 subcat	
 group	3
 date	2026-02-23
-updated	2026-11-16
 progress	100
 title.pt	The Wolf Among Us
 tag.pt	Tradução PT-BR · GameLab Traduções
@@ -1373,7 +1593,6 @@ cat	traducoes
 subcat	
 group	3
 date	2026-02-21
-updated	2026-11-16
 progress	100
 title.pt	WipEout 2048
 tag.pt	Tradução e dublagem PT-BR · Rubinho146
@@ -1454,7 +1673,6 @@ cat	traducoes
 subcat	
 group	3
 date	2026-02-18
-updated	2026-11-16
 progress	100
 title.pt	The Walking Dead: Temporada 2
 tag.pt	Tradução PT-BR · GameLab Traduções
@@ -1546,7 +1764,6 @@ cat	traducoes
 subcat	
 group	3
 date	2026-02-17
-updated	2026-11-16
 progress	100
 title.pt	The Walking Dead: Temporada 1
 tag.pt	Tradução PT-BR · GameLab Traduções
@@ -1625,7 +1842,6 @@ cat	traducoes
 subcat	
 group	0
 date	2025-06-10
-updated	2026-11-13
 progress	58
 title.pt	Alone With You
 tag.pt	Tradução PT-BR · PS Vita
@@ -1683,7 +1899,6 @@ cat	journal
 subcat	reviews
 group	1
 date	2025-04-26
-updated	2026-11-19
 title.pt	Persona 4 Golden - Análise PS Vita
 tag.pt	Review · PS Vita · JRPG
 status.pt	Nota 8.9/10
@@ -1786,7 +2001,6 @@ cat	traducoes
 subcat	
 group	2
 date	2025-03-31
-updated	2026-11-13
 progress	1
 title.pt	Atelier Ayesha: The Alchemist of Dusk
 tag.pt	Tradução PT-BR · PS Vita
@@ -1840,7 +2054,6 @@ cat	traducoes
 subcat	
 group	2
 date	2025-02-20
-updated	2026-11-13
 progress	60
 title.pt	Bastion
 tag.pt	Tradução PT-BR · PS Vita
@@ -1892,7 +2105,6 @@ cat	traducoes
 subcat	
 group	2
 date	2025-02-12
-updated	2026-11-13
 progress	70
 title.pt	Undertale: Melhorias na Tradução
 tag.pt	Tradução PT-BR · PS Vita
@@ -1938,7 +2150,6 @@ cat	traducoes
 subcat	
 group	1
 date	2025-02-06
-updated	2026-11-16
 progress	100
 title.pt	Deltarune: Capítulo 1
 tag.pt	Port + Tradução PT-BR
@@ -2040,7 +2251,6 @@ cat	traducoes
 subcat	
 group	1
 date	2025-02-06
-updated	2026-11-16
 progress	84
 title.pt	Cave Story
 tag.pt	Port + Tradução PT-BR
@@ -2126,7 +2336,6 @@ cat	traducoes
 subcat	
 group	2
 date	2025-01-29
-updated	2026-11-13
 progress	38
 title.pt	Ys Origin
 tag.pt	Tradução PT-BR · PS Vita
@@ -2182,7 +2391,6 @@ cat	ferramentas
 subcat	modificacoes
 group	0
 date	2025-01-27
-updated	2026-11-19
 title.pt	Darkest Dungeon: Pilha Reforçada
 tag.pt	Mod · PS Vita
 status.pt	Ainda não disponível
@@ -2215,7 +2423,6 @@ cat	journal
 subcat	reviews
 group	1
 date	2025-01-26
-updated	2026-11-19
 title.pt	God of War Ragnarök - Análise PS4
 tag.pt	Review · PlayStation 4 · Ação
 status.pt	Nota 198/216
@@ -2312,7 +2519,6 @@ cat	traducoes
 subcat	
 group	1
 date	2025-01-25
-updated	2026-11-16
 progress	70
 title.pt	Iconoclasts
 tag.pt	Tradução PT-BR · PS Vita
@@ -2396,7 +2602,6 @@ cat	traducoes
 subcat	
 group	1
 date	2025-01-12
-updated	2026-11-16
 progress	69
 title.pt	VA-11 HALL-A [Tradução PT-BR]
 tag.pt	Tradução · PS Vita · PT-BR

@@ -116,6 +116,23 @@ int store_parse(const char *text, Post *out, int max, AppRelease *app) {
                          json_string(json_object_get(poll,"starts_at"),""));
                 snprintf(p->poll_ends_at,sizeof(p->poll_ends_at),"%s",
                          json_string(json_object_get(poll,"ends_at"),""));
+                p->poll_closed=json_bool(json_object_get(poll,"closed"),0);
+                const JsonValue *snapshot=json_object_get(poll,"counts");
+                int count=json_array_count(snapshot), total=0;
+                if (p->poll_closed && count>=2 && count<=8) {
+                    int valid=1;
+                    for(int x=0;x<count;x++) {
+                        const JsonValue *entry=json_array_get(snapshot,x);
+                        double n=json_number(entry,-1);
+                        if(n<0 || n>100000000 || (double)(int)n!=n) {valid=0;break;}
+                        p->poll_votes[x]=(int)n;
+                        total+=p->poll_votes[x];
+                    }
+                    if(valid && total>0) {
+                        p->poll_has_counts=1;
+                        p->poll_total=total;
+                    }
+                }
                 const JsonValue *opts=json_object_get(poll,"options_pt");
                 if(!opts)opts=json_object_get(poll,"options");
                 const JsonValue *opts_en=json_object_get(poll,"options_en");

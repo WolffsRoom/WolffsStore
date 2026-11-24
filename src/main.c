@@ -32,7 +32,7 @@
 #include "sync.h"
 
 #ifndef WS_VERSION
-#define WS_VERSION "1.1.3"
+#define WS_VERSION "1.1.4"
 #endif
 
 /* ================================================================ textos */
@@ -1331,6 +1331,43 @@ static int post_date_display(const char *iso, char *out, size_t len) {
     return 1;
 }
 
+/* Fully native pixel-art bars for the closed community Poll result post.
+ * Uses the same localized bars supplied by site metadata, in cached and
+ * bundled catalogs, so no HTML renderer or web browser is needed. */
+static float news_poll_result_chart(const PostText *t, float y) {
+    const float bx=110.f, bw=740.f, left=138.f, iw=684.f;
+    const int count=t->nbars<4?t->nbars:4;
+    const float row_h=112.f, pad_top=72.f;
+    const float full_h=pad_top+row_h*count+18.f;
+    rect(bx+6,y+6,bw,full_h,C_SH1);
+    rect(bx,y,bw,full_h,RGBA8(10,10,10,255));
+    frame(bx,y,bw,full_h,C_BORDER,C_WHITE,-1);
+    const char *heading_text=lang==LANG_PT?"RESULTADO FINAL":"FINAL RESULTS";
+    heading(heading_text,bx+16,y+18,bw-32,2,C_WHITE,C_SHADOW,1,0,24);
+    for(int i=0;i<count;i++) {
+        const Pair *bar=&t->bars[i];
+        int pct=bar->pct<0?0:bar->pct>100?100:bar->pct;
+        const float yy=y+pad_top+i*row_h;
+        const unsigned accent=(i==0)?RGBA8(255,0,51,255):C_WHITE;
+        rect(left-8,yy-5,iw+16,row_h-7,RGBA8(i==0?30:19,10,14,255));
+        frame(left-8,yy-5,iw+16,row_h-7,i==0?accent:C_BORDER,C_WHITE,-1);
+        heading(bar->a,left,yy+4,iw,1,C_WHITE,0,1,0,21);
+        rect(left+12,yy+37,iw-24,22,RGBA8(30,30,30,255));
+        frame(left+12,yy+37,iw-24,22,C_BORDER,C_BORDER,-1);
+        float fill=(iw-32)*pct/100.f;
+        if(fill>0) {
+            /* 12px block cadence, no interpolation, sharp old-school edges. */
+            const int blocks=(int)(fill/12.f);
+            for(int j=0;j<blocks;j++)
+                rect(left+16+j*12,yy+41,10,14,accent);
+        }
+        char stats[72];
+        snprintf(stats,sizeof(stats),"%s",bar->c);
+        para(stats,left,yy+66,iw,C_SOFT,1,2,0);
+    }
+    return full_h+22.f;
+}
+
 /* Journal/News: brief feed-style native article, media and timestamp.
  * Separate from verbose release/port details. */
 static void build_news(int pi) {
@@ -1346,8 +1383,15 @@ static void build_news(int pi) {
         y += para(stamp, 90, y, 780, C_MUTED, 0, 2, 0) + 20;
     if (t->about && t->about[0])
         y += para(t->about, 90, y, 780, C_TEXT, 0, 36, 0) + 18;
+    const int is_poll_result=!strcmp(p->slug,"next-vita-project-poll-result");
     for (int j = 0; j < t->nblocks; j++) {
         Block *block = &t->blocks[j];
+        if (is_poll_result && block->type == BLK_SEC &&
+            (!strcmp(block->text,"Final results") ||
+             !strcmp(block->text,"Resultado final"))) {
+            if(t->nbars) y += news_poll_result_chart(t,y);
+            continue;
+        }
         if (block->type == BLK_SEC)
             y += heading(block->text, 90, y, 780, 2, C_SOFT, 0, 0, 1, 24) + 8;
         else if (block->type == BLK_ITEM) {
@@ -1398,7 +1442,9 @@ static void build_poll(int pi) {
     Post *p=&g_posts[pi];
     PollState ps;
     poll_state(&ps);
-    const int ended=poll_local_ended(p->poll_ends_at);
+    /* The official results embedded in the synced catalog override the Vita
+     * clock, which can be incorrect or unset on homebrew consoles. */
+    const int ended=p->poll_closed || poll_local_ended(p->poll_ends_at);
     poll_box_page_y = -1.f;
     poll_receipt_page_y = -1.f;
     layout_begin();
@@ -1412,7 +1458,10 @@ static void build_poll(int pi) {
     y+=para(poll_question,24,y,912,C_WHITE,0,5,1)+24;
     char time_label[96];
     char countdown_utf8[96];
-    snprintf(countdown_utf8,sizeof(countdown_utf8),
+    if (ended) {
+        snprintf(countdown_utf8,sizeof(countdown_utf8),"%s",
+                 lang==LANG_PT ? "Votação encerrada!" : "Poll ended!");
+    } else snprintf(countdown_utf8,sizeof(countdown_utf8),
              lang==LANG_PT ? "Resultado sairá em %d dia(s)" : "Results in %d day(s)",
              poll_days_remaining(p->poll_ends_at));
     utf8_to_latin1(countdown_utf8,time_label,sizeof(time_label));
@@ -1450,9 +1499,12 @@ static void build_poll(int pi) {
     if(ended) {
         const char *heading_text=lang==LANG_PT?"RESULTADOS":"RESULTS";
         y+=heading(heading_text,24,y,912,3,C_SOFT,0,0,1,32)+20;
-        if(matched && ps.results_ready) {
+        if((matched && ps.results_ready) || p->poll_has_counts) {
+            const int use_live=matched && ps.results_ready;
+            const int total=use_live ? ps.total : p->poll_total;
+            const int *votes=use_live ? ps.votes : p->poll_votes;
             for(int i=0;i<p->poll_count;i++) {
-                int pct=ps.total ? (ps.votes[i]*100+ps.total/2)/ps.total : 0;
+                int pct=total ? (votes[i]*100+total/2)/total : 0;
                 char label[172], right[24];
                 const char *choice_label = lang==LANG_EN && p->poll_options_en[i][0]
                     ? p->poll_options_en[i] : p->poll_options[i];
@@ -3501,7 +3553,7 @@ static void activate(int it) {
             poll_anim_post=-1;
             poll_success_t0=-100;
             poll_open(poll->poll_id,poll->poll_ends_at,
-                      poll->poll_count,poll_local_ended(poll->poll_ends_at));
+                      poll->poll_count,poll->poll_closed || poll_local_ended(poll->poll_ends_at));
         }
         go(V_POST, x->arg);
         break;
